@@ -83,4 +83,11 @@ parse_git_branch () {
   git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e "s/* \(.*\)/\1$(parse_git_dirty)/"
 }
 
+# Put the PWD in the tab/title bar
+case $TERM in
+xterm*|rxvt)
+PROMPT_COMMAND='echo -ne "\033]0; ${PWD}\007"'
+;;
+esac
+
 PS1="\n \[${MAGENTA}\]\u \[$WHITE\]@ \[$PURPLE\]\h \[$WHITE\]\n    \[$GREEN\]\w\[$WHITE\]\$([[ -n \$(git branch 2> /dev/null) ]] && echo \" on \")\[$YELLOW\]\$(parse_git_branch)\[$CYAN\]\n→ \[$RESET\]"

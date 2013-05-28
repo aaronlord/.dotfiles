@@ -8,6 +8,10 @@ function f() {
     find . -name "$1"
 }
 
+function fcount() {
+    find . | grep $1 | wc -l
+}
+
 # cd into whatever is the forefront Finder window.
 cdf() {  # short for cdfinder
   cd "`osascript -e 'tell app "Finder" to POSIX path of (insertion location as alias)'`"
@@ -96,4 +100,8 @@ gifify() {
   else
     echo "proper usage: gifify <input_movie.mov>. You DO need to include extension."
   fi
+}
+
+cphooks() {
+    cp -a ~/.githooks/. .git/hooks/
 }

@@ -11,11 +11,12 @@ alias -- -="cd -"
 
 # programs
 alias sublime='open -a "Sublime Text"'
+alias sub='open -a "Sublime Text"'
 alias spotify="osascript ~/code/SpotifyControl/SpotifyControl.scpt"
 
 # Apache
 alias restartapache="sudo apachectl restart"
-alias vhosts="sublime /etc/apache2/extra/httpd-vhosts.conf"
+alias vhosts="sudo $EDITOR /etc/apache2/extra/httpd-vhosts.conf"
 alias apachelog="tail /private/var/log/apache2/error_log"
 alias hosts='sudo $EDITOR /etc/hosts'
 
