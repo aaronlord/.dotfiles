@@ -5,7 +5,7 @@ for file in ~/dotfiles/.{extra,bash_prompt,exports,aliases,functions}; do
 done
 unset file
 
-# init z   https://github.com/rupa/z
+# init z @ https://github.com/rupa/z
 . ~/code/z/z.sh
 
 # init rvm

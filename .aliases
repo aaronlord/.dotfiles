@@ -9,17 +9,15 @@ alias .....="cd ../../../.."
 alias ~="cd ~" # `cd` is probably faster to type though
 alias -- -="cd -"
 
-# Programs
+# Editor
 alias subl='open -a "Sublime Text"'
-alias sub='open -a "Sublime Text"'
-alias spotify="osascript ~/code/SpotifyControl/SpotifyControl.scpt"
 
 # Apache
 alias restartapache="sudo apachectl restart"
+alias apacher="sudo apachectl restart"
+alias apachel="tail /private/var/log/apache2/error_log"
 alias vhosts="sudo $EDITOR /etc/apache2/extra/httpd-vhosts.conf"
-alias apachelog="tail /private/var/log/apache2/error_log"
 alias hosts='sudo $EDITOR /etc/hosts'
-
 
 # Detect which `ls` flavor is in use
 if ls --color > /dev/null 2>&1; then # GNU `ls`
