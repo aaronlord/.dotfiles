@@ -1,4 +1,4 @@
-alias please=sudo
+alias please="sudo"
 
 # Easier navigation: .., ..., ~ and -
 alias ..="cd .."
@@ -9,8 +9,8 @@ alias .....="cd ../../../.."
 alias ~="cd ~" # `cd` is probably faster to type though
 alias -- -="cd -"
 
-# programs
-alias sublime='open -a "Sublime Text"'
+# Programs
+alias subl='open -a "Sublime Text"'
 alias sub='open -a "Sublime Text"'
 alias spotify="osascript ~/code/SpotifyControl/SpotifyControl.scpt"
 
@@ -46,17 +46,7 @@ else
 fi
 
 # sudo easy_install Pygments
-alias c='pygmentize -O style=monokai -f console256 -g'
-
-# Undo a `git push`
-alias undopush="git push -f origin HEAD^:master"
-alias ga='git add .'
-alias gl='git log --oneline --all --graph --decorate'
-alias gc='git commit -am'
-alias gp='git push'
-alias gs='git status'
-alias gd='git checkout -f --'
-alias gcr='git commit --amend -m'
+alias c="pygmentize -O style=monokai -f console256 -g"
 
 # IP addresses
 alias ip="dig +short myip.opendns.com @resolver1.opendns.com"
@@ -80,8 +70,18 @@ alias trimcopy="tr -d '\n' | pbcopy"
 alias cleanup="find . -name '*.DS_Store' -type f -ls -delete"
 
 # Shortcuts
-alias g="git"
 alias v="vim"
+alias g="git"
+# Undo a `git push`
+alias undopush="git push -f origin HEAD^:master"
+alias ga="git add ."
+alias gb="git branch"
+alias gl="git log --oneline --all --graph --decorate"
+alias gc="git commit -m"
+alias gca="git commit --amend -m"
+alias gp="git push"
+alias gs="git status"
+alias gd="git checkout -f --"
 
 # File size
 alias fs="stat -f \"%z bytes\""

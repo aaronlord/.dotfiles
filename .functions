@@ -19,9 +19,9 @@ cdf() {  # short for cdfinder
 
 # lets toss an image onto my server and pbcopy that bitch.
 function scpp() {
-    scp -P 1337 "$1" aaron@192.81.222.90:/var/www/jetpack.flyingpi.gs/;
-    echo "http://jetpack.flyingpi.gs/$1" | pbcopy;
-    echo "Copied to clipboard: http://jetpack.flyingpi.gs/$1"
+	scp $1 nebuchadnezzar:/var/www/aaronlord.is/assets/
+    echo "http://assets.aaronlord.is/$1" | pbcopy;
+    echo "Copied to clipboard: http://assets.aaronlord.is/$1"
 }
 
 # Start an HTTP server from a directory, optionally specifying the port
@@ -59,6 +59,10 @@ function json() {
 function gitexport(){
 	mkdir -p "$1"
 	git archive master | tar -x -C "$1"
+}
+
+function githooks() {
+    cp -a ~/.githooks/. .git/hooks/
 }
 
 # get gzipped size
@@ -100,8 +104,4 @@ gifify() {
   else
     echo "proper usage: gifify <input_movie.mov>. You DO need to include extension."
   fi
-}
-
-cphooks() {
-    cp -a ~/.githooks/. .git/hooks/
 }
