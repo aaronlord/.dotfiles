@@ -62,7 +62,7 @@ function gitexport(){
 }
 
 function githooks() {
-    cp -a ~/.githooks/. .git/hooks/
+    cp -a ~/.dotfiles/git-hooks/ .git/hooks/
 }
 
 # get gzipped size

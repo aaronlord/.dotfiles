@@ -1,8 +1,8 @@
-# Basic options
---recurse=yes
 --exclude=.git
 --exclude=node_modules
---exclude=.sass-cache
---exclude=data
---exclude=cache
+--exclude=vendor
+--exclude=storage
 --exclude=logs
+--exclude=cache
+--exclude=tags
+--exclude=data

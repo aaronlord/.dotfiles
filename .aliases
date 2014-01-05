@@ -1,5 +1,4 @@
 alias please="sudo"
-
 # Easier navigation: .., ..., ~ and -
 alias ..="cd .."
 alias cd..="cd .."

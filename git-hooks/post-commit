@@ -1,0 +1,5 @@
+#!/usr/bin/env ruby
+file="~/Sites/.gitshots/#{Time.now.to_i}.jpg"
+puts "[post-commit] Saving gitshot as #{file}!"
+system "imagesnap -q -w 3 #{file}"
+exit 0
