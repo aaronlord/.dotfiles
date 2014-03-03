@@ -23,10 +23,20 @@ cdf() {  # short for cdfinder
 }
 
 # lets toss an image onto my server and pbcopy that bitch.
-function scpp() {
-	scp $1 nebuchadnezzar:/var/www/aaronlord.is/assets/
-    echo "http://assets.aaronlord.is/$1" | pbcopy;
-    echo "Copied to clipboard: http://assets.aaronlord.is/$1"
+function share() {
+    scp $1 nebuchadnezzar:/var/www/up.aaronlord.is/
+    echo "http://up.aaronlord.is/$1" | pbcopy;
+    echo "Copied to clipboard: http://up.aaronlord.is/$1"
+}
+
+function up() {
+    scp $1 nebuchadnezzar:/home/aaron
+    echo "Uploaded $1 to nebuchadnezzar:/home/aaron/$1"
+}
+
+function down() {
+    scp nebuchadnezzar:/home/aaron/$1 ~/Downloads/$1
+    echo "Downloaded $1 to ~/Downloads/$1"
 }
 
 # Start an HTTP server from a directory, optionally specifying the port
