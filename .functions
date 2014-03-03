@@ -3,6 +3,11 @@ function md() {
 	mkdir -p "$@" && cd "$@"
 }
 
+# Git tag
+function gt() {
+    git tag -a $1 -m "$2"
+}
+
 # find shorthand
 function f() {
     find . -name "$1"
