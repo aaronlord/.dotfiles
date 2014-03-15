@@ -68,6 +68,7 @@ alias cleanup="find . -name '*.DS_Store' -type f -ls -delete"
 
 # Shortcuts
 alias v="vim"
+alias git="hub"
 alias g="git"
 # Undo a `git push`
 alias undopush="git push -f origin HEAD^:master"
