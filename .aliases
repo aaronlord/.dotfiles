@@ -10,6 +10,7 @@ alias -- -="cd -"
 
 # Editor
 alias subl='open -a "Sublime Text"'
+alias mou='open -a "Mou"'
 
 # Apache
 alias restartapache="sudo apachectl restart"
