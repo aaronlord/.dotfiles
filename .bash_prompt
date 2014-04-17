@@ -90,4 +90,4 @@ PROMPT_COMMAND='echo -ne "\033]0; ${PWD}\007"'
 ;;
 esac
 
-PS1="\n \[${MAGENTA}\]\u \[$WHITE\]@ \[$PURPLE\]\h \[$WHITE\]\n    \[$GREEN\]\w\[$WHITE\]\$([[ -n \$(git branch 2> /dev/null) ]] && echo \" on \")\[$YELLOW\]\$(parse_git_branch)\[$CYAN\]\n→ \[$RESET\]"
+PS1="\n \[${MAGENTA}\]\u \[$WHITE\]@ \[$PURPLE\]\h \[$WHITE\]in \[$GREEN\]\w\[$WHITE\]\$([[ -n \$(git branch 2> /dev/null) ]] && echo \" on \")\[$YELLOW\]\$(parse_git_branch)\[$CYAN\]\n→ \[$RESET\]"
