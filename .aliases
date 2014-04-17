@@ -19,6 +19,9 @@ alias apachel="tail /private/var/log/apache2/error_log"
 alias vhosts="sudo $EDITOR /etc/apache2/extra/httpd-vhosts.conf"
 alias hosts='sudo $EDITOR /etc/hosts'
 
+# PHP
+alias art="php artisan"
+
 # Detect which `ls` flavor is in use
 if ls --color > /dev/null 2>&1; then # GNU `ls`
     colorflag="--color"
