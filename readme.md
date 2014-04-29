@@ -6,7 +6,7 @@
 
 ```
 $ cd ~
-$ git clone git@github.com:aaronlord/.dotfiles.git
+$ git clone https://github.com/aaronlord/.dotfiles.git
 $ ln -s ~/.dotfiles/.bash_profile ~/.bash_profile
 $ source ~/.bash_profile
 ```
