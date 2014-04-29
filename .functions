@@ -3,16 +3,23 @@ function md() {
     mkdir -p "$@" && cd "$@"
 }
 
+# Show / Hide hidden files
+function showHidden() {
+    defaults write com.apple.finder AppleShowAllFiles $1
+    killall Finder /System/Library/CoreServices/Finder.app
+}
+
 # Git tag
 function gt() {
     git tag -a $1 -m "$2"
 }
 
-# find shorthand
+# Find shorthand
 function f() {
     find . -name "$1"
 }
 
+# Count files matching expressions
 function fcount() {
     find . | grep $1 | wc -l
 }
@@ -22,7 +29,7 @@ cdf() {  # short for cdfinder
   cd "`osascript -e 'tell app "Finder" to POSIX path of (insertion location as alias)'`"
 }
 
-# lets toss an image onto my server and pbcopy that bitch.
+# Lets toss an image onto my server and pbcopy that bitch.
 function share() {
     scp $1 nebuchadnezzar:/var/www/up.aaronlord.is/
     echo "http://up.aaronlord.is/$1" | pbcopy;
