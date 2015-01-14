@@ -1,8 +1,0 @@
---exclude=.git
---exclude=node_modules
---exclude=vendor
---exclude=storage
---exclude=logs
---exclude=cache
---exclude=tags
---exclude=data
