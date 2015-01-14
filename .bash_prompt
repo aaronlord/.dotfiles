@@ -70,7 +70,7 @@ if [ -x /usr/bin/dircolors ]; then
     alias egrep='egrep --color=auto'
 fi
 
-export PATH="/usr/local/bin:./vendor/bin:$PATH"
+export PATH="~/.composer/vendor/bin:/usr/local/bin:./vendor/bin:$PATH"
 
 # Sex up some output
 MAGENTA="\e[0;31m" ORANGE="\e[0;33m" GREEN="\e[0;32m" PURPLE="\e[0;35m"
