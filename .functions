@@ -37,13 +37,13 @@ function share() {
 }
 
 function up() {
-    scp $1 nebuchadnezzar:/home/aaron
-    echo "Uploaded $1 to nebuchadnezzar:/home/aaron/$1"
+    scp $1 $2:/home/aaron
+    echo "Uploaded $1 to $2:/home/aaron/$1"
 }
 
 function down() {
-    scp nebuchadnezzar:/home/aaron/$1 ~/Downloads/$1
-    echo "Downloaded $1 to ~/Downloads/$1"
+    scp $2:/home/aaron/$1 ~/Downloads/$1
+    echo "Downloaded $1 from $2 to ~/Downloads/$1"
 }
 
 # Start an HTTP server from a directory, optionally specifying the port
