@@ -1,10 +1,11 @@
-set show-author = email
-set show-date = relative
-set show-refs = true
-set line-graphics = utf-8
-set show-line-numbers = true
-set line-number-interval = 1
-set show-id = true
-set tab-size = 4
+set blame-view  = date:default author:email file-name:auto id:yes,color line-number:no,interval=5 text
+set grep-view   = file-name:no line-number:yes,interval=1 text
+set main-view   = line-number:no,interval=5 id:no date:default author:email commit-title:yes,graph,refs,overflow=no
+set refs-view   = date:default author:email ref commit-title
+set stash-view  = line-number:no,interval=5 id:no date:default author:email commit-title
+set status-view = line-number:no,interval=5 status:short file-name
+set tree-view   = line-number:no,interval=5 mode author:email file-size date:default id:no file-name
 
-bind status P !git push %(prompt) %(branch)
+set show-changes  = yes
+set tab-size      = 4
+set line-graphics = utf-8
