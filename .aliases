@@ -21,6 +21,7 @@ alias hosts='sudo $EDITOR /etc/hosts'
 
 # PHP
 alias art="php artisan"
+alias selenium="java -jar ~/.code/selenium-server-*.jar"
 
 # Detect which `ls` flavor is in use
 if ls --color > /dev/null 2>&1; then # GNU `ls`
