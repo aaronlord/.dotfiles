@@ -1,0 +1,15 @@
+[ui]
+theme=xoria256
+
+history=true
+
+beep=true
+
+[connection]
+account=aaronlord1@gmail.com
+
+[logging]
+chlog=true
+
+[otr]
+warn=false
