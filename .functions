@@ -1,3 +1,8 @@
+# Homestead
+function homestead() {
+    ( cd ~/Code/homestead && vagrant $* )
+}
+
 # Create a new directory and enter it
 function md() {
     mkdir -p "$@" && cd "$@"
@@ -39,16 +44,6 @@ function fcount() {
 # cd into whatever is the forefront Finder window.
 cdf() {  # short for cdfinder
   cd "`osascript -e 'tell app "Finder" to POSIX path of (insertion location as alias)'`"
-}
-
-function up() {
-    scp $1 $2:/home/aaron
-    echo "Uploaded $1 to $2:/home/aaron/$1"
-}
-
-function down() {
-    scp $2:/home/aaron/$1 ~/Downloads/$1
-    echo "Downloaded $1 from $2 to ~/Downloads/$1"
 }
 
 # Syntax-highlight JSON strings or files

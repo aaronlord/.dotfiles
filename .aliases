@@ -12,6 +12,8 @@ alias -- -="cd -"
 alias hosts='sudo $EDITOR /etc/hosts'
 alias open='xdg-open'
 alias codecept='./vendor/bin/codecept'
+alias laratail='tail -f -n 300 storage/logs/laravel.log | grep -A 3 -P "^\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\]"'
+alias deployer='dep'
 
 # Detect which `ls` flavor is in use
 if ls --color > /dev/null 2>&1; then # GNU `ls`
@@ -44,8 +46,7 @@ alias c="pygmentize -O style=monokai -f console256 -g"
 alias cleanup="find . -name '*.DS_Store' -type f -ls -delete"
 
 # Shortcuts
-alias v="vim"
-alias git="hub"
+# alias git="hub"
 alias g="git"
 # Undo a `git push`
 alias undopush="git push -f origin HEAD^:master"
