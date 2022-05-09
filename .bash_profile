@@ -9,6 +9,8 @@ if [ $TILIX_ID ] || [ $VTE_VERSION ]; then
     source /etc/profile.d/vte.sh
 fi
 
+# source ~/Code/z/z.sh
+
 # Case-insensitive globbing (used in pathname expansion)
 shopt -s nocaseglob
 

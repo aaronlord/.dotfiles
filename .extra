@@ -1,4 +1,4 @@
-. ~/Code/z/z.sh
-
-. ~/Code/pomodoro.sh
+if [ -f $HOME/Code/pomodoro.sh ]; then
+    source ~/Code/pomodoro.sh
+fi
 
