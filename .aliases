@@ -17,6 +17,7 @@ alias sail='[ -f sail ] && bash sail || bash vendor/bin/sail'
 alias deployer='dep'
 alias vpn="protonvpn-cli"
 alias vim="nvim"
+alias sail='[ -f sail ] && bash sail || bash vendor/bin/sail'
 
 # Detect which `ls` flavor is in use
 if ls --color > /dev/null 2>&1; then # GNU `ls`
