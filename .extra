@@ -1,4 +1,0 @@
-if [ -f $HOME/Code/pomodoro.sh ]; then
-    source ~/Code/pomodoro.sh
-fi
-

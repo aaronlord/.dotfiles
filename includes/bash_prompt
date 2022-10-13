@@ -1,15 +1,10 @@
 [ -z "$PS1" ] && return
 
-# don't put duplicate lines in the history. See bash(1) for more options
-# ... or force ignoredups and ignorespace
-HISTCONTROL=ignoredups:ignorespace
+# Case-insensitive globbing (used in pathname expansion)
+shopt -s nocaseglob
 
 # append to the history file, don't overwrite it
 shopt -s histappend
-
-# for setting history length see HISTSIZE and HISTFILESIZE in bash(1)
-HISTSIZE=1000
-HISTFILESIZE=2000
 
 # check the window size after each command and, if necessary,
 # update the values of LINES and COLUMNS.
@@ -28,19 +23,16 @@ case "$TERM" in
     xterm-color) color_prompt=yes;;
 esac
 
-# uncomment for a colored prompt, if the terminal has the capability; turned
-# off by default to not distract the user: the focus in a terminal window
-# should be on the output of commands, not on the prompt
 force_color_prompt=yes
 
 if [ -n "$force_color_prompt" ]; then
     if [ -x /usr/bin/tput ] && tput setaf 1 >&/dev/null; then
-	# We have color support; assume it's compliant with Ecma-48
-	# (ISO/IEC-6429). (Lack of such support is extremely rare, and such
-	# a case would tend to support setf rather than setaf.)
-	color_prompt=yes
+    # We have color support; assume it's compliant with Ecma-48
+    # (ISO/IEC-6429). (Lack of such support is extremely rare, and such
+    # a case would tend to support setf rather than setaf.)
+    color_prompt=yes
     else
-	color_prompt=
+    color_prompt=
     fi
 fi
 
@@ -70,18 +62,9 @@ if [ -x /usr/bin/dircolors ]; then
     alias egrep='egrep --color=auto'
 fi
 
-export PATH="/usr/local/bin:~/.local/bin/:~/.composer/vendor/bin:~/.node_modules/bin:~/Code/bin/:./vendor/bin:./node_modules/.bin:$PATH"
-
 # Sex up some output
 MAGENTA="\e[0;31m" ORANGE="\e[0;33m" GREEN="\e[0;32m" PURPLE="\e[0;35m"
 WHITE="\e[0;37m" YELLOW="\e[0;33m" CYAN="\e[0;34m" RESET="\e[m"
-
-parse_git_dirty () {
-  [[ $(git status 2> /dev/null | tail -n1) != "nothing to commit, working tree clean" ]] && echo "*"
-}
-parse_git_branch () {
-  git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e "s/* \(.*\)/\1$(parse_git_dirty)/"
-}
 
 # Put the PWD in the tab/title bar
 case $TERM in
@@ -90,6 +73,12 @@ PROMPT_COMMAND='echo -ne "\033]0; ${PWD}\007"'
 ;;
 esac
 
-PS1="\n╭─ \[${GREEN}\]\u@\h\[$WHITE\] in \[$CYAN\]\w\[$WHITE\]\$([[ -n \$(git branch 2> /dev/null) ]] && echo \" ⎇  \")\[$YELLOW\]\$(parse_git_branch)\[$CYAN\]\n\[$RESET\]╰─ $ "
+parse_git_dirty () {
+  [[ $(git status 2> /dev/null | tail -n1) != "nothing to commit, working tree clean" ]] && echo "*"
+}
 
-# →
+parse_git_branch () {
+  git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e "s/* \(.*\)/\1$(parse_git_dirty)/"
+}
+
+PS1="\n╭─ \[${GREEN}\]\u@\h\[$WHITE\] in \[$CYAN\]\w\[$WHITE\]\$([[ -n \$(git branch 2> /dev/null) ]] && echo \" ⎇  \")\[$YELLOW\]\$(parse_git_branch)\[$CYAN\]\n\[$RESET\]╰─ $ "

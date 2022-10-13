@@ -1,0 +1,4 @@
+# Open the PWD
+alias open='xdg-open'
+
+alias hosts='sudo $EDITOR /etc/hosts'

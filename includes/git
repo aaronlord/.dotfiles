@@ -1,0 +1,26 @@
+# alias git="hub"
+alias g="git"
+alias gs="git status"
+alias ga="git add --all ."
+alias gb="git branch"
+alias gl="git log --oneline --all --graph --decorate"
+alias gc="git commit -m"
+alias gca="git commit --amend -m"
+alias gp="git push"
+alias gd="git checkout -f --"
+
+# Undo a `git push`
+alias undopush="git push -f origin HEAD^:master"
+
+# Git tag
+function gt() {
+    git tag -a $1 -m "$2"
+}
+
+# take this repo and copy it to somewhere else minus the .git stuff.
+function ge(){
+    mkdir -p "$1"
+    git archive master | tar -x -C "$1"
+}
+
+

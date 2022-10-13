@@ -1,0 +1,4 @@
+# Strip the audio from a video
+function m4a() {
+    ffmpeg -i $1.mp4 -c:a copy -vn -sn $1.m4a
+}

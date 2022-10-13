@@ -1,0 +1,25 @@
+# cat with syntax highlighting
+alias c="pygmentize -O style=monokai -f console256 -g"
+
+# Syntax-highlight JSON strings or files
+# n.b. this will format the json
+function json() {
+    if [ -p /dev/stdin ]; then
+        # piping, e.g. `echo '{"foo":42}' | json`
+        python -mjson.tool | pygmentize -l javascript
+    else
+        # e.g. `json '{"foo":42}'`
+        python -mjson.tool <<< "$*" | pygmentize -l javascript
+    fi
+}
+
+# get gzipped size
+function gz() {
+    echo "orig size    (bytes): "
+    cat "$1" | wc -c
+    echo "gzipped size (bytes): "
+    gzip -c "$1" | wc -c
+}
+
+# File size
+alias fs="stat -f \"%z bytes\""
