@@ -1,0 +1,33 @@
+[/]
+app-title='${title} - ${appName}'
+copy-on-select=true
+enable-wide-handle=true
+prompt-on-close=true
+quake-specific-monitor=0
+session-name='Default'
+terminal-title-show-when-single=false
+theme-variant='dark'
+use-tabs=true
+window-style='disable-csd-hide-toolbar'
+
+[profiles/2b7c4080-0ddd-46c5-8f23-563fd3ba789d]
+background-color='#3A3A3A3A3A3A'
+badge-color-set=false
+badge-font='Hack 12'
+badge-text=''
+badge-use-system-font=false
+bold-color-set=false
+cell-height-scale=1.2000000000000002
+cursor-colors-set=false
+cursor-shape='block'
+default-size-columns=80
+font='Hack 12'
+foreground-color='#F8F8F8F8F2F2'
+highlight-colors-set=false
+login-shell=true
+palette=['#757571715E5E', '#BFBF3E3E3E3E', '#A6A6E2E22D2D', '#F4F4BFBF7474', '#6666D9D9EFEF', '#AEAE8181FFFF', '#2929A1A19797', '#F9F9F8F8F5F5', '#757571715E5E', '#BFBF3E3E3E3E', '#A6A6E2E22D2D', '#F4BF75', '#66D9EF', '#AE81FF', '#2929A1A19797', '#F9F9F8F8F5F5']
+show-scrollbar=false
+terminal-title='${id}: ${title}'
+use-system-font=false
+use-theme-colors=false
+visible-name='Default'

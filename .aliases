@@ -9,19 +9,16 @@ alias .....="cd ../../../.."
 alias ~="cd ~" # `cd` is probably faster to type though
 alias -- -="cd -"
 
-# Editor
-alias subl='open -a "Sublime Text"'
-alias mou='open -a "Mou"'
-
-# Apache
-alias apacher="sudo apachectl restart"
-alias apachel="tail /private/var/log/apache2/error_log"
-alias vhosts="sudo $EDITOR /etc/apache2/extra/httpd-vhosts.conf"
 alias hosts='sudo $EDITOR /etc/hosts'
-
-# PHP
-alias art="php artisan"
-alias selenium="java -jar ~/.code/selenium-server-*.jar"
+alias open='xdg-open'
+alias codecept='./vendor/bin/codecept'
+alias laratail='tail -f -n 300 storage/logs/laravel.log | grep -A 3 -P "^\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\]"'
+alias sail='[ -f sail ] && bash sail || bash vendor/bin/sail'
+alias dep='vendor/bin/dep'
+alias deployer='dep'
+alias vpn="protonvpn-cli"
+alias vim="nvim"
+alias sail='[ -f sail ] && bash sail || bash vendor/bin/sail'
 
 # Detect which `ls` flavor is in use
 if ls --color > /dev/null 2>&1; then # GNU `ls`
@@ -50,30 +47,11 @@ fi
 # sudo easy_install Pygments
 alias c="pygmentize -O style=monokai -f console256 -g"
 
-# IP addresses
-alias ip="dig +short myip.opendns.com @resolver1.opendns.com"
-alias localip="ipconfig getifaddr en1"
-alias ips="ifconfig -a | perl -nle'/(\d+\.\d+\.\d+\.\d+)/ && print $1'"
-
-# Enhanced WHOIS lookups
-alias whois="whois -h whois-servers.net"
-
-# Flush Directory Service cache
-alias flush="dscacheutil -flushcache"
-
-# View HTTP traffic
-alias sniff="sudo ngrep -d 'en1' -t '^(GET|POST) ' 'tcp and port 80'"
-alias httpdump="sudo tcpdump -i en1 -n -s 0 -w - | grep -a -o -E \"Host\: .*|GET \/.*\""
-
-# Trim new lines and copy to clipboard
-alias trimcopy="tr -d '\n' | pbcopy"
-
 # Recursively delete `.DS_Store` files
 alias cleanup="find . -name '*.DS_Store' -type f -ls -delete"
 
 # Shortcuts
-alias v="vim"
-alias git="hub"
+# alias git="hub"
 alias g="git"
 # Undo a `git push`
 alias undopush="git push -f origin HEAD^:master"

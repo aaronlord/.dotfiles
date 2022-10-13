@@ -5,11 +5,11 @@ for file in ~/.dotfiles/.{extra,bash_prompt,exports,aliases,functions}; do
 done
 unset file
 
-# init z @ https://github.com/rupa/z
-. ~/.code/z/z.sh
+if [ $TILIX_ID ] || [ $VTE_VERSION ]; then
+    source /etc/profile.d/vte.sh
+fi
 
-# init rvm
-source ~/.rvm/scripts/rvm
+# source ~/Code/z/z.sh
 
 # Case-insensitive globbing (used in pathname expansion)
 shopt -s nocaseglob

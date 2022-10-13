@@ -70,14 +70,14 @@ if [ -x /usr/bin/dircolors ]; then
     alias egrep='egrep --color=auto'
 fi
 
-export PATH="~/.composer/vendor/bin:/usr/local/bin:./vendor/bin:$PATH"
+export PATH="/usr/local/bin:~/.local/bin/:~/.composer/vendor/bin:~/.node_modules/bin:~/Code/bin/:./vendor/bin:./node_modules/.bin:$PATH"
 
 # Sex up some output
 MAGENTA="\e[0;31m" ORANGE="\e[0;33m" GREEN="\e[0;32m" PURPLE="\e[0;35m"
-WHITE="\e[0;37m" YELLOW="\e[0;33m" CYAN="\e[0;36m" RESET="\e[m"
+WHITE="\e[0;37m" YELLOW="\e[0;33m" CYAN="\e[0;34m" RESET="\e[m"
 
 parse_git_dirty () {
-  [[ $(git status 2> /dev/null | tail -n1) != "nothing to commit, working directory clean" ]] && echo "*"
+  [[ $(git status 2> /dev/null | tail -n1) != "nothing to commit, working tree clean" ]] && echo "*"
 }
 parse_git_branch () {
   git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e "s/* \(.*\)/\1$(parse_git_dirty)/"
@@ -90,4 +90,6 @@ PROMPT_COMMAND='echo -ne "\033]0; ${PWD}\007"'
 ;;
 esac
 
-PS1="\n \[${MAGENTA}\]\u \[$WHITE\]@ \[$PURPLE\]\h \[$WHITE\]in \[$GREEN\]\w\[$WHITE\]\$([[ -n \$(git branch 2> /dev/null) ]] && echo \" on \")\[$YELLOW\]\$(parse_git_branch)\[$CYAN\]\n→ \[$RESET\]"
+PS1="\n╭─ \[${GREEN}\]\u@\h\[$WHITE\] in \[$CYAN\]\w\[$WHITE\]\$([[ -n \$(git branch 2> /dev/null) ]] && echo \" ⎇  \")\[$YELLOW\]\$(parse_git_branch)\[$CYAN\]\n\[$RESET\]╰─ $ "
+
+# →
