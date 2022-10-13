@@ -14,6 +14,7 @@ alias open='xdg-open'
 alias codecept='./vendor/bin/codecept'
 alias laratail='tail -f -n 300 storage/logs/laravel.log | grep -A 3 -P "^\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\]"'
 alias sail='[ -f sail ] && bash sail || bash vendor/bin/sail'
+alias dep='vendor/bin/dep'
 alias deployer='dep'
 alias vpn="protonvpn-cli"
 alias vim="nvim"
