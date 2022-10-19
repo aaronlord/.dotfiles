@@ -4,11 +4,13 @@
 
 ### Installation
 
+Usually, your existing .bashrc will automatically include a .bash_aliases:
+
 ```
 $ cd ~
 $ git clone https://github.com/aaronlord/.dotfiles.git
-$ ln -s ~/.dotfiles/.bash_profile ~/.bash_profile
-$ source ~/.bash_profile
+$ ln -s ~/.dotfiles/.bash_profile .bash_aliases
+$ source .bashrc
 ```
 
 ### Screenshot
