@@ -9,6 +9,9 @@ alias gca="git commit --amend -m"
 alias gp="git push"
 alias gd="git checkout -f --"
 
+# Undo a commit
+alias gu="git reset --soft HEAD^"
+
 # Undo a `git push`
 alias undopush="git push -f origin HEAD^:master"
 
