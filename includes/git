@@ -9,7 +9,6 @@ alias gl="git log --oneline --all --graph --decorate"
 alias gc="git commit -m"
 alias gca="git commit --amend -m"
 alias gp="git push"
-alias gd="git checkout -f --"
 
 # Undo a commit
 alias gu="git reset --soft HEAD^"
