@@ -10,6 +10,9 @@ alias gc="git commit -m"
 alias gca="git commit --amend -m"
 alias gp="git push"
 
+# bad
+# alias gd="git checkout -f -- && git reset --hard"
+
 # Undo a commit
 alias gu="git reset --soft HEAD^"
 
