@@ -66,10 +66,21 @@ fi
 MAGENTA="\e[0;31m" ORANGE="\e[0;33m" GREEN="\e[0;32m" PURPLE="\e[0;35m"
 WHITE="\e[0;37m" YELLOW="\e[0;33m" CYAN="\e[0;34m" RESET="\e[m"
 
+# Short PWD
+# https://stackoverflow.com/a/1618602
+_PS1 ()
+{
+    local PRE= NAME="$1" LENGTH="$2";
+    [[ "$NAME" != "${NAME#$HOME/}" || -z "${NAME#$HOME}" ]] &&
+        PRE+='~' NAME="${NAME#$HOME}" LENGTH=$[LENGTH-1];
+    ((${#NAME}>$LENGTH)) && NAME="/...${NAME:$[${#NAME}-LENGTH+4]}";
+    echo "$PRE$NAME"
+}
+
 # Put the PWD in the tab/title bar
 case $TERM in
 xterm*|rxvt)
-PROMPT_COMMAND='echo -ne "\033]0; ${PWD}\007"'
+PROMPT_COMMAND='echo -ne "\033]0; $(_PS1 "$PWD" 20)\007"'
 ;;
 esac
 
