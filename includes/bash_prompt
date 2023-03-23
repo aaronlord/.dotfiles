@@ -80,7 +80,7 @@ _PS1 ()
 # Put the PWD in the tab/title bar
 case $TERM in
 xterm*|rxvt)
-PROMPT_COMMAND='echo -ne "\033]0; $(_PS1 "$PWD" 20)\007"'
+PROMPT_COMMAND='echo -ne "\033]0; $(_PS1 "$PWD" 25)\007"'
 ;;
 esac
 
