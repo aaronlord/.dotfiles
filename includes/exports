@@ -28,4 +28,4 @@ export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || pr
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
 
 # PATH
-export PATH="/usr/local/bin:~/.local/bin/:~/.composer/vendor/bin:~/.node_modules/bin:~/Code/bin/:./vendor/bin:./node_modules/.bin:$PATH"
+export PATH="/usr/local/bin:~/.local/bin/:/home/linuxbrew/.linuxbrew/bin:~/.composer/vendor/bin:~/.node_modules/bin:~/Code/bin/:./vendor/bin:./node_modules/.bin:$PATH"
