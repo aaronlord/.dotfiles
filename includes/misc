@@ -1,4 +1,5 @@
 alias please="sudo"
+alias vpn=protonvpn-cli
 
 function giz() {
     sudo chown $USER:$USER $*
