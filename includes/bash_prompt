@@ -46,7 +46,7 @@ unset color_prompt force_color_prompt
 # If this is an xterm set the title to user@host:dir
 case "$TERM" in
 xterm*|rxvt*)
-    PS1="\[\e]0;${debian_chroot:+($debian_chroot)}\u@\h: \w\a\]$PS1"
+    # PS1="\[\e]0;${debian_chroot:+($debian_chroot)}\u@\h: \w\a\]$PS1"
     ;;
 *)
     ;;
@@ -78,11 +78,7 @@ _PS1 ()
 }
 
 # Put the PWD in the tab/title bar
-case $TERM in
-xterm*|rxvt)
 PROMPT_COMMAND='echo -ne "\033]0; $(_PS1 "$PWD" 25)\007"'
-;;
-esac
 
 parse_git_dirty () {
   [[ $(git status 2> /dev/null | tail -n1) != "nothing to commit, working tree clean" ]] && echo "*"
