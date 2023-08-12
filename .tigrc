@@ -1,10 +1,14 @@
-set blame-view  = date:default author:email file-name:auto id:yes,color line-number:no,interval=5 text
+set blame-view  = date:custom author:email,width=20 file-name:auto id:yes,color line-number:no,interval=5 text
 set grep-view   = file-name:no line-number:yes,interval=1 text
-set main-view   = line-number:no,interval=5 id:yes date:default author:email commit-title:yes,graph,refs,overflow=no
-set refs-view   = date:default author:email ref commit-title
-set stash-view  = line-number:no,interval=5 id:no date:default author:email commit-title
+set main-view   = line-number:no,interval=5 id:yes date:custom author:email,width=20 commit-title:yes,graph,refs,overflow=no
+set refs-view   = date:default author:email,width=20 ref commit-title
+set stash-view  = line-number:no,interval=5 id:no date:default author:email,width=20 commit-title
 set status-view = line-number:no,interval=5 status:short file-name
-set tree-view   = line-number:no,interval=5 mode author:email file-size date:default id:no file-name
+set tree-view   = date:custom file-size id:no file-name
+
+set blame-view-date-format	= "%Y-%m-%d %H:%M"
+set main-view-date-format	= "%Y-%m-%d %H:%M"
+set tree-view-date-format	= "%Y-%m-%d %H:%M"
 
 set show-changes  = yes
 set tab-size      = 4
