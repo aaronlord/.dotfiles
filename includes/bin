@@ -1,1 +1,1 @@
-alias tmux-cht="~/.dotfiles/bin/tmux-cht.sh"
+alias cht="~/.dotfiles/bin/cht.sh"
