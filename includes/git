@@ -12,6 +12,10 @@ alias gp="git push"
 
 # alias gd="git checkout -f -- && git reset --hard"
 
+function g~() {
+    git checkout $(git remote show origin | sed -n '/HEAD branch/s/.*: //p')
+}
+
 # Undo a commit
 alias gu="git reset --soft HEAD^"
 
@@ -28,5 +32,3 @@ function ge(){
     mkdir -p "$1"
     git archive master | tar -x -C "$1"
 }
-
-
