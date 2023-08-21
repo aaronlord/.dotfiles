@@ -10,17 +10,13 @@ alias gc="git commit -m"
 alias gca="git commit --amend -m"
 alias gp="git push"
 
-# alias gd="git checkout -f -- && git reset --hard"
-
 function g~() {
     git checkout $(git remote show origin | sed -n '/HEAD branch/s/.*: //p')
 }
 
-# Undo a commit
-alias gu="git reset --soft HEAD^"
-
-# Undo a `git push`
-alias undopush="git push -f origin HEAD^:master"
+function gpu() {
+    git push --set-upstream origin $(parse_git_branch)
+}
 
 # Git tag
 function gt() {
