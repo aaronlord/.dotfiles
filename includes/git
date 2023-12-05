@@ -2,7 +2,7 @@
 alias g="git"
 alias gs="git status"
 alias ga="git add --all ."
-alias gb="git branch"
+alias gb="git checkout -b"
 alias gf="git fetch"
 alias gpl="git pull"
 alias gl="git log --oneline --all --graph --decorate"
