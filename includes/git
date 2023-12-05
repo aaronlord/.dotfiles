@@ -3,7 +3,6 @@ alias g="git"
 alias gs="git status"
 alias ga="git add --all ."
 alias gb="git branch"
-alias gck="git checkout"
 alias gf="git fetch"
 alias gl="git log --oneline --all --graph --decorate"
 alias gc="git commit -m"
@@ -14,8 +13,20 @@ function g~() {
     git checkout $(git remote show origin | sed -n '/HEAD branch/s/.*: //p')
 }
 
+function gck() {
+    branch=`git branch --format="%(refname:short)" | fzf`
+
+    if [[ -z $branch ]]; then
+        return 1
+    fi
+
+    git checkout $branch
+}
+
 function gpu() {
-    git push --set-upstream origin $(parse_git_branch)
+    branch=`git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e "s/* \(.*\)/\1/"`
+
+    git push --set-upstream origin $branch
 }
 
 # Git tag
