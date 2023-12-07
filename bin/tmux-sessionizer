@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+
+if [[ $# -eq 1 ]]; then
+    path=$1
+else
+    path=$(find ~/Sites ~/Code ~/ -mindepth 1 -maxdepth 1 -type d | fzf)
+fi
+
+if [[ -z $path ]]; then
+    exit 0
+fi
+
+pane=$(basename "$path" | tr . _)
+tmux_running=$(pgrep tmux)
+
+if [[ -z $TMUX ]] && [[ -z $tmux_running ]]; then
+    echo "tmux not running"
+    exit 0
+fi
+
+if ! tmux has-session -t=$pane 2> /dev/null; then
+    tmux new-session -ds $pane -c $path
+    tmux send-keys -t $pane "test -x tmux.sh && ./tmux.sh $pane $path" C-m
+fi
+
+tmux switch-client -t $pane
