@@ -2,6 +2,7 @@
 alias g="git"
 alias gs="git status"
 alias ga="git add --all ."
+alias g-="git checkout -"
 alias gb="git checkout -b"
 alias gf="git fetch"
 alias gpl="git pull"
@@ -15,13 +16,25 @@ function g~() {
 }
 
 function gck() {
-    branch=`git branch --format="%(refname:short)" | fzf`
+    result=(`git branch --format="%(refname:short)" | fzf --print-query`)
+    query=${result[0]}
+    branch=${result[1]}
 
-    if [[ -z $branch ]]; then
+    if [[ -z "$branch" ]]; then
+        branch=$query
+    fi
+
+    if [ `git rev-parse --verify $branch 2>/dev/null` ]; then
+        git checkout $branch
         return 1
     fi
 
-    git checkout $branch
+    read -p "Branch '$branch' does not exist. Create it? [y/n] " -n 1 -r
+    echo
+
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+        git checkout -b $branch
+    fi
 }
 
 function gpu() {
