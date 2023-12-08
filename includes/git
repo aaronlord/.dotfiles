@@ -1,4 +1,3 @@
-# alias git="hub"
 alias g="git"
 alias gs="git status"
 alias ga="git add --all ."
@@ -11,10 +10,12 @@ alias gc="git commit -m"
 alias gca="git commit --amend -m"
 alias gp="git push"
 
+# Checkout the default branch
 function g~() {
     git checkout $(git remote show origin | sed -n '/HEAD branch/s/.*: //p')
 }
 
+# Select branch to checkout using fzf. Asks to create branch if it doesn't exist.
 function gck() {
     result=(`git branch --format="%(refname:short)" | fzf --print-query`)
     query=${result[0]}
@@ -37,6 +38,7 @@ function gck() {
     fi
 }
 
+# Push and set upstream
 function gpu() {
     branch=`git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e "s/* \(.*\)/\1/"`
 
@@ -48,7 +50,7 @@ function gt() {
     git tag -a $1 -m "$2"
 }
 
-# take this repo and copy it to somewhere else minus the .git stuff.
+# Copy the repo, minus the .git folder
 function ge(){
     mkdir -p "$1"
     git archive master | tar -x -C "$1"
