@@ -3,7 +3,7 @@
 if [[ $# -eq 1 ]]; then
     path=$1
 else
-    path=$(find ~/Sites ~/Code ~/ -mindepth 1 -maxdepth 1 -type d | fzf)
+    path=$(find ~/Sites ~/Code ~/ -mindepth 1 -maxdepth 1 -type d | fzf --preview="[[ -e {}/readme.md ]] && cat {}/readme.md || tree -Ca -L 2 {}")
 fi
 
 if [[ -z $path ]]; then
