@@ -4,8 +4,6 @@
 
 ### Installation
 
-Usually, your existing .bashrc will automatically include a .bash_aliases:
-
 ```
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/aaronlord/.dotfiles/HEAD/install.sh)"
 ```
