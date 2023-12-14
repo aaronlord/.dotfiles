@@ -7,10 +7,7 @@
 Usually, your existing .bashrc will automatically include a .bash_aliases:
 
 ```
-$ cd ~
-$ git clone https://github.com/aaronlord/.dotfiles.git
-$ ln -s ~/.dotfiles/.bash_profile .bash_aliases
-$ source .bashrc
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/aaronlord/.dotfiles/HEAD/install.sh)"
 ```
 
 ### Screenshot
