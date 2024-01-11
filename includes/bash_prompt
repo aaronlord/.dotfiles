@@ -95,20 +95,20 @@ parse_git_branch () {
   git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e "s/* \(.*\)/\1$(parse_git_dirty)/"
 }
 
-ARROW="🠦"
+ARROW="→"
 PS1_CMD () {
     LAST_EXIT_CODE=$?
 
     PS1=""
 
-    if [[ -d ".git" ]]; then
+    if [[ -n $(git branch 2> /dev/null) ]]; then
         PS1="$PS1$WHITE"' on '"$YELLOW$(parse_git_branch)"
     fi
 
     if [[ $LAST_EXIT_CODE -gt 0 ]]; then
-        PS1="$PS1\n$RED$ARROW $RESET" # failed
+        PS1="$PS1\n$RED$ARROW$RESET" # failed
     else
-        PS1="$PS1\n$BLUE$ARROW $RESET" # success
+        PS1="$PS1\n$BLUE$ARROW$RESET" # success
     fi
 
     echo -e $PS1
