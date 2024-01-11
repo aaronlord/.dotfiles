@@ -62,13 +62,20 @@ if [ -x /usr/bin/dircolors ]; then
     alias egrep='egrep --color=auto'
 fi
 
-# Sex up some output
-MAGENTA="\e[0;31m" ORANGE="\e[0;33m" GREEN="\e[0;32m" PURPLE="\e[0;35m"
-WHITE="\e[0;37m" YELLOW="\e[0;33m" CYAN="\e[0;34m" RESET="\e[m"
+BLACK="\e[0;30m"
+RED="\e[0;31m"
+GREEN="\e[0;32m"
+YELLOW="\e[0;33m"
+BLUE="\e[0;34m"
+MAGENTA="\e[0;35m"
+CYAN="\e[0;36m"
+WHITE="\e[0;37m"
+DEFAULT="\e[0;39m"
+RESET="\e[m"
 
 # Short PWD
 # https://stackoverflow.com/a/1618602
-_PS1 ()
+SHORT_PS1 ()
 {
     local PRE= NAME="$1" LENGTH="$2";
     [[ "$NAME" != "${NAME#$HOME/}" || -z "${NAME#$HOME}" ]] &&
@@ -78,7 +85,7 @@ _PS1 ()
 }
 
 # Put the PWD in the tab/title bar
-PROMPT_COMMAND='echo -ne "\033]0; $(_PS1 "$PWD" 25)\007"'
+PROMPT_COMMAND='echo -ne "\033]0; $(SHORT_PS1 "$PWD" 25)\007"'
 
 parse_git_dirty () {
   [[ $(git status 2> /dev/null | tail -n1) != "nothing to commit, working tree clean" ]] && echo "*"
@@ -88,4 +95,22 @@ parse_git_branch () {
   git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e "s/* \(.*\)/\1$(parse_git_dirty)/"
 }
 
-PS1="\n \[${MAGENTA}\]\u \[$WHITE\]@ \[$PURPLE\]\h \[$WHITE\]in \[$GREEN\]\w\[$WHITE\]\$([[ -n \$(git branch 2> /dev/null) ]] && echo \" on \")\[$YELLOW\]\$(parse_git_branch)\[$CYAN\]\n→ \[$RESET\]"
+PS1_CMD () {
+    LAST_EXIT_CODE=$?
+
+    PS1=""
+
+    if [[ -d ".git" ]]; then
+        PS1="$PS1$WHITE"' on '"$YELLOW$(parse_git_branch)"
+    fi
+
+    if [[ $LAST_EXIT_CODE -gt 0 ]]; then
+        PS1="$PS1\n$RED→$RESET" # failed
+    else
+        PS1="$PS1\n$GREEN→$RESET" # success
+    fi
+
+    echo -e $PS1
+}
+
+PS1="\n$RED\u $WHITE@ $MAGENTA\h$WHITE in $GREEN\w"'`PS1_CMD` '
