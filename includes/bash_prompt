@@ -106,9 +106,9 @@ PS1_CMD () {
     fi
 
     if [[ $LAST_EXIT_CODE -gt 0 ]]; then
-        PS1="$PS1\n$RED$ARROW$RESET" # failed
+        PS1="$PS1\n$RED$ARROW $RESET" # failed
     else
-        PS1="$PS1\n$BLUE$ARROW$RESET" # success
+        PS1="$PS1\n$BLUE$ARROW $RESET" # success
     fi
 
     echo -e $PS1
