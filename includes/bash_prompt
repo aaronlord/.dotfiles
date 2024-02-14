@@ -78,6 +78,7 @@ RESET="\e[m"
 SHORT_PS1 ()
 {
     local PRE= NAME="$1" LENGTH="$2";
+    LENGTH=$((LENGTH-1));
     [[ "$NAME" != "${NAME#$HOME/}" || -z "${NAME#$HOME}" ]] &&
         PRE+='~' NAME="${NAME#$HOME}" LENGTH=$[LENGTH-1];
     ((${#NAME}>$LENGTH)) && NAME="/...${NAME:$[${#NAME}-LENGTH+4]}";
@@ -95,4 +96,8 @@ parse_git_branch () {
   git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e "s/* \(.*\)/\1$(parse_git_dirty)/"
 }
 
-PS1="\n\[$RED\]\u \[$WHITE\]@ \[$MAGENTA\]\h \[$WHITE\]in \[$GREEN\]\w\[$WHITE\]\$([[ -n \$(git branch 2> /dev/null) ]] && echo \" on \")\[$YELLOW\]\$(parse_git_branch)\n\[$BLUE\]→ \[$RESET\]"
+# PROMPT_DIRTRIM=2
+
+# PS1="\n\[$RED\]\u \[$WHITE\]@ \[$MAGENTA\]\h \[$WHITE\]in \[$GREEN\]\w\[$WHITE\]\$([[ -n \$(git branch 2> /dev/null) ]] && echo \" on \")\[$YELLOW\]\$(parse_git_branch)\n\[$BLUE\]→ \[$RESET\]"
+#PS1="\n\[$GREEN\]\w\[$WHITE\]\[$RED\]\n▊ \[$RESET\]"
+PS1="\n\[$GREEN\]\w\$(parse_git_dirty)\[$WHITE\]\[$RED\]\n$ \[$RESET\]"
