@@ -89,7 +89,7 @@ SHORT_PS1 ()
 PROMPT_COMMAND='echo -ne "\033]0; $(SHORT_PS1 "$PWD" 25)\007"'
 
 parse_git_dirty () {
-  [[ $(git status 2> /dev/null | tail -n1) != "nothing to commit, working tree clean" ]] && echo "*"
+  [[ -n $(git branch 2> /dev/null) ]] && [[ $(git status 2> /dev/null | tail -n1) != "nothing to commit, working tree clean" ]] && echo "*"
 }
 
 parse_git_branch () {
