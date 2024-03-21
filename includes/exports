@@ -21,14 +21,10 @@ export HISTCONTROL=ignoredups:ignorespace
 export HISTTIMEFORMAT='%F %T '
 
 # Make some commands not show up in history
-export HISTIGNORE="ls:ls *:cd:cd -:pwd;exit:date:* --help"
+# export HISTIGNORE="ls:ls *:cd:cd -:pwd;exit:date:* --help"
 
 # Load ripgrep
 export RIPGREP_CONFIG_PATH="$HOME/.dotfiles/.ripgreprc"
-
-# Load nvim
-export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s "${XDG_CONFIG_HOME}/nvm")"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
 
 # PATH
 export PATH="/usr/local/bin:~/.local/bin/:/home/linuxbrew/.linuxbrew/bin:~/.dotfiles/bin:~/.composer/vendor/bin:~/.node_modules/bin:~/Code/bin/:./vendor/bin:./node_modules/.bin:$PATH"
