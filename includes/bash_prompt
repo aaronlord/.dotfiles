@@ -100,4 +100,4 @@ parse_git_branch () {
 
 # PS1="\n\[$RED\]\u \[$WHITE\]@ \[$MAGENTA\]\h \[$WHITE\]in \[$GREEN\]\w\[$WHITE\]\$([[ -n \$(git branch 2> /dev/null) ]] && echo \" on \")\[$YELLOW\]\$(parse_git_branch)\n\[$BLUE\]→ \[$RESET\]"
 #PS1="\n\[$GREEN\]\w\[$WHITE\]\[$RED\]\n▊ \[$RESET\]"
-PS1="\n\[$GREEN\]\w\$(parse_git_dirty)\[$WHITE\]\[$RED\]\n$ \[$RESET\]"
+PS1="\n\[$MAGENTA\]\w\$(parse_git_dirty)\[$WHITE\]\[$GREEN\]\n$ \[$RESET\]"

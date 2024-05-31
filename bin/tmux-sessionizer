@@ -9,7 +9,7 @@ else
         echo $directories | tr ' ' "\n" > ~/.tmux-sessionizer-dirs
     fi
 
-    path=$(cat ~/.tmux-sessionizer-dirs | tr "\n" ' ' | xargs -I {} sh -c "find {} -mindepth 1 -maxdepth 1 -type d" | fzf --preview="[[ -e {}/README.md ]] && cat {}/README.md || tree -Ca -L 2 {}")
+    path=$(cat ~/.tmux-sessionizer-dirs | tr "\n" ' ' | xargs -I {} sh -c "find {} -mindepth 1 -maxdepth 1 -type d" | fzf --preview="[[ -e {}/README.md ]] && batcat -p --color=always  --line-range=:500 {}/README.md || tree -Ca -L 2 {}")
 fi
 
 if [[ -z $path ]]; then
