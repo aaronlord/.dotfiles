@@ -30,6 +30,10 @@ function gck() {
         return 1
     fi
 
+    if [[ -z "$branch" ]]; then
+        return 1
+    fi
+
     read -p "Branch '$branch' does not exist. Create it? [y/n] " -n 1 -r
     echo
 

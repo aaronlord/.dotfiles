@@ -1,0 +1,13 @@
+#!/bin/bash
+
+set -uo pipefail
+
+LIST_PANES="$(tmux list-panes -F '#F' )"
+PANE_ZOOMED="$(echo "${LIST_PANES}" | grep Z)"
+PANE_COUNT="$(echo "${LIST_PANES}" | wc -l | bc)"
+
+if [ "$(tmux display-message -p -F "#{session_name}")" = "popup" ];then
+    tmux detach-client
+else
+    tmux popup -xC -yC -w90% -h80% -c "#{pane_current_path}" "[[ -e TODO.md ]] && nvim TODO.md || nvim ~/todo.md"
+fi
