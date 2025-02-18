@@ -30,4 +30,8 @@ export RIPGREP_CONFIG_PATH="$HOME/.dotfiles/.ripgreprc"
 export FZF_DEFAULT_OPTS=$FZF_DEFAULT_OPTS' --color=fg:#ffffff,bg:#1c1c1c,hl:#ff5ea0 --color=fg+:#ffffff,bg+:#262626,hl+:#ff5ea0 --color=info:#87ff00,prompt:#87ff00,pointer:#ff5ea0 --color=marker:#f1ff5e,spinner:#5ef1ff,header:#87ff00'
 
 # PATH
-export PATH="~/.python/venv/bin/:/usr/local/bin:~/.local/bin/:/home/linuxbrew/.linuxbrew/bin:~/.dotfiles/bin:~/.composer/vendor/bin:~/.node_modules/bin:~/Code/bin/:./vendor/bin:./node_modules/.bin:$PATH"
+export PATH="~/.python/venv/bin/:/usr/local/bin:~/.local/bin/:/home/linuxbrew/.linuxbrew/sbin:/home/linuxbrew/.linuxbrew/bin:~/.dotfiles/bin:~/.composer/vendor/bin:~/.node_modules/bin:~/Code/bin/:./vendor/bin:./node_modules/.bin:$PATH"
+
+export JAVA_HOME=/opt/android-studio/jbr
+export ANDROID_HOME="$HOME/Android/Sdk"
+export NDK_HOME="$ANDROID_HOME/ndk/$(ls -1 $ANDROID_HOME/ndk)"

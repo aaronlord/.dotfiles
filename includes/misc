@@ -2,6 +2,10 @@ alias please="sudo"
 alias vpn=protonvpn-cli
 alias clipboard="xclip -sel clip"
 
+function co() {
+    gh copilot suggest "$*"
+}
+
 function giz() {
     sudo chown $USER:$USER $*
 }
