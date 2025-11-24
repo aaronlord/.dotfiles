@@ -2,16 +2,16 @@ function homestead() {
     ( cd ~/Homestead && vagrant $* )
 }
 
-alias laratail='tail -n 500 -f storage/logs/laravel.log | grep --line-buffered -E "local.\w+:" | sed -E \
-    -e "s/(local\.DEBUG:[^{]+?)/\x1b[34m&\x1b[0m/" \
-    -e "s/(local\.INFO:[^{]+?)/\x1b[36m&\x1b[0m/" \
-    -e "s/(local\.NOTICE:[^{]+?)/\x1b[32m&\x1b[0m/" \
-    -e "s/(local\.WARNING:[^{]+?)/\x1b[33m&\x1b[0m/" \
-    -e "s/(local\.ERROR:[^{]+?)/\x1b[31m&\x1b[0m/" \
-    -e "s/(local\.CRITICAL:[^{]+?)/\x1b[91m&\x1b[0m/" \
-    -e "s/(local\.ALERT:[^{]+?)/\x1b[93m&\x1b[0m/" \
-    -e "s/(local\.EMERGENCY:[^{]+?)/\x1b[91m&\x1b[0m/"'
+alias laratail='tail -n 1000 -f storage/logs/laravel.log | grep --line-buffered -E "local.\w+:" | sed -E \
+    -e "s/(local\.DEBUG:[^{]\+?)/\x1b[34m&\x1b[0m/" \
+    -e "s/(local\.INFO:[^{]\+?)/\x1b[36m&\x1b[0m/" \
+    -e "s/(local\.NOTICE:[^{]\+?)/\x1b[32m&\x1b[0m/" \
+    -e "s/(local\.WARNING:[^{]\+?)/\x1b[33m&\x1b[0m/" \
+    -e "s/(local\.ERROR:[^{]\+?)/\x1b[31m&\x1b[0m/" \
+    -e "s/(local\.CRITICAL:[^{]\+?)/\x1b[91m&\x1b[0m/" \
+    -e "s/(local\.ALERT:[^{]\+?)/\x1b[93m&\x1b[0m/" \
+    -e "s/(local\.EMERGENCY:[^{]\+?)/\x1b[91m&\x1b[0m/"'
 
-alias sail='[ -f sail ] && bash sail || bash vendor/bin/sail'
+alias sail='sh $([ -f sail ] && echo sail || echo vendor/bin/sail)'
 
 alias dep='vendor/bin/dep'
