@@ -58,16 +58,12 @@ warn() {
 info "Cloning .dotfiles"
 
 line "$repo -> $dir"
-git clone --recursive $repo $dir
+git clone $repo $dir
 
 info "Creating symlinks"
 
-line "$dir/.bashrc -> $HOME/.bashrc" 
+line "$dir/.bash_aliases -> $HOME/.bash_aliases" 
 ln -s $dir/.bash_profile $HOME/.bash_aliases
-
-line "$dir/.vim -> $HOME/.config/nvim"
-rm -rf $HOME/.config/nvim
-ln -s $dir/.vim $HOME/.config/nvim
 
 line "$dir/.tmux.conf -> $HOME/.tmux.conf"
 ln -s $dir/.tmux.conf $HOME/.tmux.conf
