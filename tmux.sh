@@ -7,7 +7,7 @@ if [ -z "$pane" ] || [ -z "$path" ]; then
   exit 1
 fi
 
-tmux rename-window -t $pane "vim"
+tmux rename-window -t $pane "code"
 tmux send-keys -t $pane "nvim" C-m
 
 tmux new-window -d -n "misc" -t $pane -c "$path"
