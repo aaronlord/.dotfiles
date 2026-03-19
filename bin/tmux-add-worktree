@@ -1,0 +1,68 @@
+#!/usr/bin/env bash
+# Usage: tmux-add-worktree [--pr <number>] <branch> [base-branch]
+# Creates a new git worktree as a sibling directory with a configured .env and tmux session.
+# Can be run from any worktree in the repo.
+
+set -e
+
+# shellcheck source=lib/worktree-utils
+source "${BASH_SOURCE[0]%/*}/lib/worktree-utils"
+
+# Handle --pr flag: resolve branch name from GitHub PR number
+if [ "${1:-}" = "--pr" ]; then
+    PR_NUMBER=${2:?Usage: tmux-add-worktree --pr <number>}
+    echo "Fetching PR #${PR_NUMBER}..."
+    BRANCH=$(gh pr view "$PR_NUMBER" --json headRefName -q '.headRefName')
+    git fetch origin "$BRANCH"
+    BASE="origin/${BRANCH}"
+    shift 2
+else
+    BRANCH=${1:?Usage: tmux-add-worktree [--pr <number>] <branch> [base-branch]}
+    BASE=${2:-HEAD}
+    shift 1
+fi
+
+MAIN_ROOT=$(get_main_root)
+REPO_NAME=$(basename "$MAIN_ROOT")
+SIBLING_DIR=$(dirname "$MAIN_ROOT")
+SLUG=$(compute_slug "$BRANCH")
+WORKTREE_PATH="${SIBLING_DIR}/${REPO_NAME}-${SLUG}"
+
+APP_PORT=$(find_free_port 8082)
+VITE_PORT=$(find_free_port 5174)
+
+# Create the worktree (branch may already exist)
+echo "Creating worktree at ${WORKTREE_PATH}..."
+git worktree add "$WORKTREE_PATH" -b "$BRANCH" "$BASE" 2>/dev/null \
+    || git worktree add "$WORKTREE_PATH" "$BRANCH"
+
+# Copy gitignored config files from main worktree
+for file in .env .npmrc .env.testing auth.json docker-compose.yml docker-compose.shared.yml docker-compose.custom.yml tmux.sh; do
+    src="${MAIN_ROOT}/${file}"
+    if [ -e "$src" ] && [ ! -L "$src" ]; then
+        echo "Copying ${file}..."
+        cp -R "$src" "${WORKTREE_PATH}/${file}"
+    fi
+done
+
+echo "Creating logfile..."
+touch "${WORKTREE_PATH}/storage/logs/laravel.log"
+
+# Patch worktree-specific .env values
+echo "Patching .env (port ${APP_PORT}, vite ${VITE_PORT})..."
+patch_worktree_env "${WORKTREE_PATH}/.env" "$REPO_NAME" "$SLUG" "$APP_PORT" "$VITE_PORT"
+
+# Create tmux session and switch to it if inside tmux
+SESSION_NAME="$SLUG"
+if pgrep tmux > /dev/null 2>&1; then
+    if ! tmux has-session -t "$SESSION_NAME" 2>/dev/null; then
+        echo "Creating tmux session '${SESSION_NAME}'..."
+        tmux new-session -ds "$SESSION_NAME" -c "$WORKTREE_PATH"
+        tmux send-keys -t "$SESSION_NAME" \
+            "test -x tmux.sh && ./tmux.sh $SESSION_NAME $WORKTREE_PATH" C-m
+    fi
+    [ -n "${TMUX:-}" ] && tmux switch-client -t "$SESSION_NAME"
+fi
+
+echo "Done → ${WORKTREE_PATH}"
+

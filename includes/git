@@ -2,17 +2,22 @@ alias g="git"
 alias gs="git status"
 alias ga="git add --all ."
 alias g-="git checkout -"
-alias gb="git checkout -b"
 alias gf="git fetch"
 alias gpl="git pull"
 alias gl="git log --oneline --all --graph --decorate"
 alias gc="git commit -m"
 alias gca="git commit --amend -m"
 alias gp="git push"
+alias ghs="gh status -o MagnusHealth"
 
 # Checkout the default branch
 function g~() {
     git checkout $(git remote show origin | sed -n '/HEAD branch/s/.*: //p')
+}
+
+# Create a branch if it doesn't exist, checkout if it does
+function gb() {
+    git switch $1 2>/dev/null || git switch -c $1;
 }
 
 # Select branch to checkout using fzf. Asks to create branch if it doesn't exist.
@@ -58,4 +63,12 @@ function gt() {
 function ge(){
     mkdir -p "$1"
     git archive master | tar -x -C "$1"
+}
+
+function gw() {
+    $HOME/.dotfiles/bin/tmux-add-worktree "$@"
+}
+
+function cya() {
+    $HOME/.dotfiles/bin/tmux-delete-worktree
 }

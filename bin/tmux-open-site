@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+# Open the current worktree's site in the browser.
+# Reads APP_PORT from the nearest .env up the directory tree.
+
+dir="${1:-$PWD}"
+
+while [[ "$dir" != "/" && "$dir" != "$HOME" ]]; do
+    if [[ -f "$dir/.env" ]]; then
+        break
+    fi
+    dir="$(dirname "$dir")"
+done
+
+if [[ -f "$dir/.env" ]]; then
+    APP_URL=$(grep -E '^APP_URL=' "$dir/.env" | tail -1 | cut -d= -f2-)
+    APP_PORT=$(grep -E '^APP_PORT=' "$dir/.env" | tail -1 | cut -d= -f2)
+fi
+
+if [[ -n "$APP_URL" ]]; then
+    open "$APP_URL"
+elif [[ "${APP_PORT:-80}" == "80" ]]; then
+    open "http://localhost"
+else
+    open "http://localhost:$APP_PORT"
+fi

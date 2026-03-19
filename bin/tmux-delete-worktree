@@ -1,0 +1,69 @@
+#!/usr/bin/env bash
+# Usage: tmux-delete-worktree
+# From within a worktree's tmux session: switches back to the previous tmux
+# session, tears down containers, and removes the worktree. Must be run from
+# a non-main worktree.
+#
+# The tmux client is moved away FIRST so you land cleanly in your previous
+# session while cleanup happens in the background. The session is killed LAST
+# so it doesn't interrupt the script mid-run.
+
+set -e
+
+# shellcheck source=lib/worktree-utils
+source "${BASH_SOURCE[0]%/*}/lib/worktree-utils"
+
+MAIN_ROOT=$(get_main_root)
+CURRENT_ROOT=$(git rev-parse --show-toplevel)
+
+if [ "$CURRENT_ROOT" = "$MAIN_ROOT" ]; then
+    echo "You're in the main worktree — nothing to delete." >&2
+    exit 1
+fi
+
+BRANCH=$(git branch --show-current)
+if [ -z "$BRANCH" ]; then
+    echo "Detached HEAD — can't determine branch to delete." >&2
+    exit 1
+fi
+
+SLUG=$(compute_slug "$BRANCH")
+SESSION_NAME="$SLUG"
+WORKTREE_PATH="$CURRENT_ROOT"
+REPO_NAME=$(basename "$MAIN_ROOT")
+SHARED_PROJECT="${REPO_NAME}-shared"
+COMPOSE_PROJECT=$(get_env_value COMPOSE_PROJECT_NAME "${WORKTREE_PATH}/.env")
+
+echo "👋"
+
+# Switch the tmux client to the last active session before tearing anything down.
+if [ -n "${TMUX:-}" ]; then
+    tmux switch-client -l 2>/dev/null || true
+fi
+
+# Stop and remove app containers
+if [ -n "${COMPOSE_PROJECT:-}" ]; then
+    echo "Stopping containers for ${COMPOSE_PROJECT}..."
+    docker ps -q --filter "label=com.docker.compose.project=${COMPOSE_PROJECT}" \
+        | xargs -r docker stop
+    docker ps -aq --filter "label=com.docker.compose.project=${COMPOSE_PROJECT}" \
+        | xargs -r docker rm
+
+    OTHER_APPS=$(docker ps --filter "network=${SHARED_PROJECT}" --format '{{.Names}}' \
+        | grep -v "^${SHARED_PROJECT}-" || true)
+    if [ -z "$OTHER_APPS" ]; then
+        docker compose -f "${MAIN_ROOT}/docker-compose.shared.yml" \
+            -p "${SHARED_PROJECT}" down
+    else
+        echo "Shared infra left running (still used by: $(echo "$OTHER_APPS" | tr '\n' ' '))"
+    fi
+fi
+
+# cd out of the worktree before removing it
+cd "$MAIN_ROOT"
+rm -rf "$WORKTREE_PATH"
+git worktree prune
+echo "Removed worktree: $BRANCH"
+
+# Kill the now-detached tmux session last
+tmux kill-session -t "$SESSION_NAME" 2>/dev/null || true

@@ -15,3 +15,5 @@ alias laratail='tail -n 1000 -f storage/logs/laravel.log | grep --line-buffered 
 alias sail='sh $([ -f sail ] && echo sail || echo vendor/bin/sail)'
 
 alias dep='vendor/bin/dep'
+
+alias sail=magnus

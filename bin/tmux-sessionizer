@@ -3,7 +3,7 @@
 if [[ $# -eq 1 ]]; then
     path=$1
 else
-    directories="~/Sites ~/Code ~/"
+    directories="~/Sites ~/Code ~"
 
     if [[ ! -f ~/.tmux-sessionizer-dirs ]]; then
         echo $directories | tr ' ' "\n" > ~/.tmux-sessionizer-dirs

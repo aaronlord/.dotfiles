@@ -1,6 +1,7 @@
 alias please="sudo"
 alias vpn=protonvpn-cli
 alias clipboard="xclip -sel clip"
+alias ai="gh copilot"
 
 function co() {
     gh copilot suggest "$*"
@@ -8,4 +9,17 @@ function co() {
 
 function giz() {
     sudo chown $USER:$USER $*
+}
+
+function hist() {
+    local cmd
+
+    cmd="$(
+    HISTTIMEFORMAT= history 5000 \
+        | sed -E 's/^[[:space:]]*[0-9]+[*]?[[:space:]]+//' \
+        | awk '!seen[$0]++' \
+        | fzf --tac
+    )"
+
+    [ -n "$cmd" ] && history -s "$cmd" && eval "$cmd"
 }
