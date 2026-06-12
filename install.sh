@@ -71,6 +71,40 @@ ln -s $dir/.tmux.conf $HOME/.tmux.conf
 line "$dir/.tigrc -> $HOME/.tigrc"
 ln -s $dir/.tigrc $HOME/.tigrc
 
+info "Linking pi agent files"
+
+mkdir -p "$HOME/.pi/agent"
+
+for d in agents extensions skills prompts themes; do
+  src="$dir/pi/$d"
+  dst="$HOME/.pi/agent/$d"
+  mkdir -p "$src"
+  if [[ -e "$dst" && ! -L "$dst" ]]; then
+    mv "$dst" "${dst}.bak"
+    warn "Backed up existing $dst to ${dst}.bak"
+  fi
+  ln -sf "$src" "$dst"
+  line "$src -> $dst"
+done
+
+for f in settings.json; do
+  src="$dir/pi/$f"
+  dst="$HOME/.pi/agent/$f"
+  if [[ -e "$dst" && ! -L "$dst" ]]; then
+    mv "$dst" "${dst}.bak"
+    warn "Backed up existing $dst to ${dst}.bak"
+  fi
+  ln -sf "$src" "$dst"
+  line "$src -> $dst"
+done
+
+line "$dir/AGENTS.md -> $HOME/AGENTS.md"
+if [[ -e "$HOME/AGENTS.md" && ! -L "$HOME/AGENTS.md" ]]; then
+  mv "$HOME/AGENTS.md" "$HOME/AGENTS.md.bak"
+  warn "Backed up existing ~/AGENTS.md"
+fi
+ln -sf "$dir/AGENTS.md" "$HOME/AGENTS.md"
+
 info "Saucy"
 line "source $HOME/.bashrc"
 source $HOME/.bashrc
