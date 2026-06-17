@@ -2,6 +2,7 @@ alias please="sudo"
 alias vpn=protonvpn-cli
 alias clipboard="xclip -sel clip"
 alias ai="gh copilot"
+alias papa="gh copilot"
 
 function co() {
     gh copilot suggest "$*"

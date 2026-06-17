@@ -1,0 +1,566 @@
+/**
+ * pi-json-tools v5.2.3
+ * Qwen Coder Tool Execution Engine — Merged Best Edition
+ * Combines:
+ *   - v4.0.1: robust multi-format JSON parser, auto-detect, retry logic, Pi native toolCall delegate
+ *   - v5.x:   execWithTimeout bash, env context inject, hallucinated path gate, before_agent_start
+ * By: DayuWidayadi
+ */
+
+import * as fs from "fs";
+import * as path from "path";
+import * as os from "os";
+import { exec } from "child_process";
+
+// ============================================================
+// CONFIG
+// ============================================================
+
+const CONFIG_PATH = path.join(os.homedir(), ".pi", "agent", "pi-json-tools.json");
+const LOG_PATH = path.join(os.homedir(), ".pi", "agent", "pi-json-tools.log");
+
+interface Config {
+  models: string[];
+  logging: boolean;
+  language?: string;
+  maxRetries: number;
+  timeout: number;
+  injectEnvContext: boolean;
+}
+
+const DEFAULT_CONFIG: Config = {
+  models: [
+    "qwen", "gemma", "llama", "mistral", "phi", "deepseek",
+    "yi", "solar", "vicuna", "orca", "wizard", "openchat",
+    "neural", "nous", "hermes", "zephyr", "falcon"
+  ],
+  logging: true,
+  maxRetries: 2,
+  timeout: 30000,
+  injectEnvContext: true,
+};
+
+function loadConfig(): Config {
+  try {
+    if (fs.existsSync(CONFIG_PATH)) {
+      const raw = fs.readFileSync(CONFIG_PATH, "utf-8");
+      return { ...DEFAULT_CONFIG, ...JSON.parse(raw) };
+    }
+  } catch (e) {
+    log("WARN", `Failed to load config: ${e}`);
+  }
+  return DEFAULT_CONFIG;
+}
+
+// ============================================================
+// LOGGING
+// ============================================================
+
+function log(level: string, message: string): void {
+  const config = loadConfig();
+  if (!config.logging) return;
+  const timestamp = new Date().toISOString();
+  const line = `[${timestamp}] [${level}] ${message}\n`;
+  try { fs.appendFileSync(LOG_PATH, line); } catch {}
+}
+
+// ============================================================
+// LANGUAGE DETECTION (v4.0.1)
+// ============================================================
+
+const LANG_PATTERNS: Record<string, RegExp> = {
+  indonesian: /\b(apa|ini|itu|yang|dan|di|ke|dari|untuk|dengan|saya|kamu|tolong|coba|buat|bisa|bang|ya|tidak|jalankan|cek|hapus)\b/i,
+  chinese: /[\u4e00-\u9fff]/,
+  japanese: /[\u3040-\u30ff]/,
+  korean: /[\uac00-\ud7af]/,
+  arabic: /[\u0600-\u06ff]/,
+};
+
+function detectLanguage(text: string): string {
+  for (const [lang, pattern] of Object.entries(LANG_PATTERNS)) {
+    if (pattern.test(text)) return lang;
+  }
+  return "english";
+}
+
+function languageInstruction(lang: string): string {
+  const map: Record<string, string> = {
+    indonesian: "Always respond in Indonesian (Bahasa Indonesia).",
+    chinese: "Always respond in Chinese (中文).",
+    japanese: "Always respond in Japanese (日本語).",
+    korean: "Always respond in Korean (한국어).",
+    arabic: "Always respond in Arabic (العربية).",
+    english: "Always respond in English.",
+  };
+  return map[lang] ?? "Always respond in the same language as the user.";
+}
+
+// ============================================================
+// BASH EXECUTION (v5.x)
+// ============================================================
+
+function execWithTimeout(
+  command: string,
+  timeout: number,
+  cwd?: string
+): Promise<{ stdout: string; stderr: string; code: number }> {
+  return new Promise((resolve) => {
+    let timedOut = false;
+    const timeoutId = setTimeout(() => {
+      timedOut = true;
+      resolve({ stdout: "", stderr: `Command timed out after ${timeout}ms`, code: 124 });
+    }, timeout);
+
+    exec(
+      command,
+      { maxBuffer: 10 * 1024 * 1024, shell: "/bin/bash", cwd: cwd ?? process.cwd() },
+      (error: any, stdout: string, stderr: string) => {
+        if (!timedOut) {
+          clearTimeout(timeoutId);
+          resolve({ stdout, stderr, code: error?.code ?? 0 });
+        }
+      }
+    );
+  });
+}
+
+// ============================================================
+// ENV CONTEXT BUILDER (v5.x)
+// ============================================================
+
+async function buildEnvContext(cwd: string): Promise<string> {
+  const commands: Array<[string, string]> = [
+    ["cwd", "pwd"],
+    ["user", "whoami"],
+    ["os", "uname -sr"],
+    ["shell", "echo $SHELL"],
+  ];
+
+  const results: string[] = [];
+  for (const [key, cmd] of commands) {
+    const r = await execWithTimeout(cmd, 3000, cwd);
+    const val = (r.stdout || r.stderr).trim();
+    if (val) results.push(`${key}: ${val}`);
+  }
+
+  return `[Real Environment — always use tools for real data, never fabricate]\n${results.join("\n")}`;
+}
+
+// ============================================================
+// HALLUCINATED PATH PATTERNS (v5.x)
+// ============================================================
+
+const HALLUCINATED_PATH_PATTERNS = [
+  /\/home\/website\/\.npm-global\/lib\/node_modules\/@mariozechner/,
+  /piadmin/,
+  /\/app\/config\.json/,
+  /\/dist\/cli\.js/,
+  /keybindings\.json/,
+];
+
+function isHallucinatedPath(cmd: string): boolean {
+  return HALLUCINATED_PATH_PATTERNS.some(p => p.test(cmd));
+}
+
+// ============================================================
+// TOOL CALL PARSER (v4.0.1 — robust multi-format)
+// ============================================================
+
+interface ToolCall {
+  name: string;
+  arguments: Record<string, any>;
+}
+
+const VALID_TOOLS = new Set([
+  "bash", "read", "write", "edit", "grep", "find", "ls"
+]);
+
+function validateToolCall(tc: ToolCall): ToolCall | null {
+  if (!VALID_TOOLS.has(tc.name)) {
+    log("WARN", `Invalid tool name: ${tc.name}`);
+    return null;
+  }
+  return tc;
+}
+
+function isJsonTruncated(text: string): boolean {
+  const trimmed = text.trim();
+  if (!trimmed.includes("{")) return false;
+  try {
+    const match = trimmed.match(/\{[\s\S]*/);
+    if (!match) return false;
+    JSON.parse(match[0]);
+    return false;
+  } catch {
+    return true;
+  }
+}
+
+function isResponseTruncated(text: string, stopReason: string): boolean {
+  if (stopReason === "length") return true;
+  const trimmed = text.trim();
+  if (trimmed.endsWith("...")) return true;
+  if (trimmed.endsWith(",")) return true;
+  if (isJsonTruncated(trimmed)) return true;
+  return false;
+}
+
+function parseJsonToolCall(text: string): ToolCall[] {
+  const results: ToolCall[] = [];
+  const seen = new Set<string>();
+  const candidates: string[] = [];
+
+  // Extract dari markdown code blocks
+  const mdMatches = text.matchAll(/```(?:json)?\s*([\s\S]*?)\s*```/g);
+  for (const m of mdMatches) candidates.push(m[1]);
+
+  // Extract bare JSON objects
+  const bareMatches = text.matchAll(/\{[\s\S]*?\}/g);
+  for (const m of bareMatches) candidates.push(m[0]);
+
+  // Try full text
+  candidates.push(text.trim());
+
+  for (const raw of candidates) {
+    let parsed: any;
+    try { parsed = JSON.parse(raw); } catch { continue; }
+
+    let tc: ToolCall | null = null;
+
+    // Format: {"name": "bash", "arguments": {...}}
+    if (parsed.name && typeof parsed.name === "string")
+      tc = { name: parsed.name, arguments: parsed.arguments ?? parsed.input ?? parsed.params ?? {} };
+    // Format: {"tool": "bash", "input": {...}}
+    else if (parsed.tool && typeof parsed.tool === "string")
+      tc = { name: parsed.tool, arguments: parsed.input ?? parsed.arguments ?? parsed.params ?? {} };
+    // Format: {"type": "function", "function": {...}}
+    else if (parsed.type === "function" && parsed.function?.name)
+      tc = { name: parsed.function.name, arguments: parsed.function.arguments ?? parsed.function.input ?? {} };
+    // Format: {"action": "bash", "action_input": {...}}
+    else if (parsed.action && typeof parsed.action === "string")
+      tc = { name: parsed.action, arguments: parsed.action_input ?? parsed.input ?? {} };
+    // Format: {"command": "ls -la"}
+    else if (parsed.command && typeof parsed.command === "string")
+      tc = { name: "bash", arguments: { command: parsed.command } };
+    // Format: {"type": "bash", "command": "ls"} — Qwen 3b style
+    else if (parsed.type && VALID_TOOLS.has(parsed.type))
+      tc = { name: parsed.type, arguments: { command: parsed.command, path: parsed.path, ...parsed } };
+
+    if (!tc) continue;
+    const validated = validateToolCall(tc);
+    if (!validated) continue;
+
+    const key = `${validated.name}:${JSON.stringify(validated.arguments)}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    results.push(validated);
+  }
+
+  return results;
+}
+
+function stripJsonFromText(text: string): string {
+  let cleaned = text;
+  cleaned = cleaned.replace(/```(?:json)?\s*[\s\S]*?```/g, "");
+  cleaned = cleaned.replace(/\{[\s\S]*?\}/g, "");
+  cleaned = cleaned.replace(/\n{3,}/g, "\n\n").trim();
+  return cleaned;
+}
+
+// ============================================================
+// MAIN EXTENSION - v5.2.2
+// ============================================================
+
+export default function (pi: any) {
+  let activeModelId = "";
+  let detectedLanguage = "english";
+  let config = loadConfig();
+  let retryCount = 0;
+  let envContextInjected = false;
+
+  const noToolModelCache = new Set<string>();
+
+  function isNoToolModel(modelId: string): boolean {
+    if (noToolModelCache.has(modelId)) return true;
+    const lower = modelId.toLowerCase();
+    return config.models.some((name) => lower.includes(name));
+  }
+
+  // ── session_start ─────────────────────────────────────────
+  pi.on("session_start", async (_event: any, ctx: any) => {
+    config = loadConfig();
+    retryCount = 0;
+    envContextInjected = false;
+    log("INFO", "pi-json-tools v5.2.3 - Merged Best Edition");
+    ctx?.ui?.notify("pi-json-tools v5.2.3", "info");
+  });
+
+  // ── agent_start ───────────────────────────────────────────
+  pi.on("agent_start", async () => {
+    config = loadConfig();
+    retryCount = 0;
+    log("INFO", `Agent start, maxRetries: ${config.maxRetries}`);
+  });
+
+  // ── turn_start ────────────────────────────────────────────
+  pi.on("turn_start", async () => {
+    retryCount = 0;
+  });
+
+  // ── before_provider_request: strip native tools for JSON-mode models ──
+  pi.on("before_provider_request", (event: any) => {
+    if (!isNoToolModel(activeModelId) && activeModelId !== "") return;
+    const payload = event.payload;
+    if (!payload) return;
+    // Strip tool definitions so the model only sees the JSON-mode system prompt.
+    // Without this, Qwen/MLX models receive both native tool schemas AND JSON
+    // instructions, producing garbled tool names like "edit<|channel|>analysis".
+    const stripped = { ...payload };
+    delete stripped.tools;
+    delete stripped.tool_choice;
+    log("INFO", `Stripped native tools from provider payload for ${activeModelId}`);
+    return stripped;
+  });
+
+  // ── before_agent_start: inject system prompt ──────────────
+  pi.on("before_agent_start", async (event: any) => {
+    const modelId: string = event.model?.id ?? "";
+    activeModelId = modelId;
+
+    const prompt: string = event.prompt ?? "";
+    detectedLanguage = config.language ?? detectLanguage(prompt);
+    log("INFO", `Model: ${modelId}, Language: ${detectedLanguage}`);
+
+    if (!isNoToolModel(modelId) && modelId !== "") return;
+
+    const langInstruction = languageInstruction(detectedLanguage);
+
+    const extra = `
+
+## Language & Behavior
+- ${langInstruction}
+- Be concise after tool execution. One or two sentences max.
+- Never explain what you are about to do, just do it.
+- NEVER fabricate command output or file contents — always use tools.
+
+## Tool Calling Instructions (JSON Mode)
+To use a tool, output ONLY a raw JSON object, nothing else:
+{"name": "<tool_name>", "arguments": {<args>}}
+
+Available tools:
+{"name": "bash", "arguments": {"command": "ls -la"}}
+{"name": "read", "arguments": {"path": "/path/to/file"}}
+{"name": "write", "arguments": {"path": "file.txt", "content": "text here"}}
+{"name": "edit", "arguments": {"path": "file.txt", "oldText": "old", "newText": "new"}}
+{"name": "grep", "arguments": {"pattern": "search term", "path": "."}}
+{"name": "find", "arguments": {"pattern": "*.ts", "path": "."}}
+
+Rules:
+- Output ONE JSON tool call at a time, nothing else
+- After receiving tool result, respond in plain text
+- Never mix JSON and plain text in same response
+- Never repeat JSON in your final answer
+- Always output complete valid JSON, never truncate
+- NEVER invent file paths or command outputs`;
+
+    return { systemPrompt: event.systemPrompt + extra };
+  });
+
+  // ── context: inject real env (v5.x) ──────────────────────
+  pi.on("context", async (event: any, ctx: any) => {
+    const modelId: string = activeModelId ?? "";
+    const isQwen = isNoToolModel(modelId);
+    if (!config.injectEnvContext || !isQwen) return;
+    if (envContextInjected) return;
+    envContextInjected = true;
+
+    const cwd = ctx?.cwd ?? process.cwd();
+    const envInfo = await buildEnvContext(cwd);
+    log("INFO", "Injecting env context");
+
+    return {
+      messages: [
+        {
+          role: "user" as const,
+          content: [{ type: "text" as const, text: envInfo }],
+        },
+        {
+          role: "assistant" as const,
+          content: [{
+            type: "text" as const,
+            text: "Got it. I have your real environment. I will always use tools for commands and never fabricate output.",
+          }],
+        },
+        ...event.messages,
+      ],
+    };
+  });
+
+  // ── message_end: CORE — parse + execute ───────────────────
+  pi.on("message_end", async (event: any, ctx: any) => {
+    const message = event.message;
+    if (!message || message.role !== "assistant") return;
+
+    const modelId: string = message.model ?? activeModelId ?? "";
+    const stopReason: string = message.stopReason ?? "stop";
+    const errorMessage: string = message.errorMessage ?? "";
+
+    // ── Auto-detect: model tidak support tools ────────────
+    if (stopReason === "error" && (
+      errorMessage.toLowerCase().includes("does not support tools") ||
+      errorMessage.toLowerCase().includes("tool") ||
+      errorMessage.toLowerCase().includes("function call")
+    )) {
+      if (!noToolModelCache.has(modelId)) {
+        log("WARN", `Auto-detected no-tool model: ${modelId}`);
+        noToolModelCache.add(modelId);
+        return {
+          message: {
+            ...message,
+            content: [{ type: "text", text: `⚠️ Model ${modelId} switched to JSON mode. Please resend your message.` }],
+            stopReason: "stop",
+            errorMessage: undefined,
+          }
+        };
+      }
+      return {
+        message: {
+          ...message,
+          content: [{ type: "text", text: "" }],
+          stopReason: "stop",
+          errorMessage: undefined,
+        }
+      };
+    }
+
+    if (!isNoToolModel(modelId) && modelId !== "") return;
+
+    const textContent = message.content?.find((c: any) => c.type === "text");
+    if (!textContent?.text) return;
+
+    const text = textContent.text.trim();
+    if (!text) return;
+
+    log("INFO", `message_end: ${text.slice(0, 120)}`);
+
+    // ── Sanitize any native toolCall content with garbled names ──────────
+    // Guard against models that still emit native tool_use blocks despite
+    // JSON-mode instructions (e.g. Qwen3 leaking <|channel|> special tokens).
+    if (message.content?.some((c: any) => c.type === "toolCall")) {
+      const sanitizedContent = message.content.map((c: any) => {
+        if (c.type !== "toolCall") return c;
+        const cleanName = c.name?.replace(/<\|[^|]*\|>/g, "").trim();
+        if (cleanName && cleanName !== c.name) {
+          log("WARN", `Sanitized garbled tool name: ${c.name} → ${cleanName}`);
+        }
+        return cleanName && VALID_TOOLS.has(cleanName)
+          ? { ...c, name: cleanName }
+          : { type: "text" as const, text: `{"name": "${cleanName}", "arguments": ${JSON.stringify(c.arguments ?? {})}}` };
+      });
+      const hasValidToolCall = sanitizedContent.some(
+        (c: any) => c.type === "toolCall" && VALID_TOOLS.has(c.name)
+      );
+      if (hasValidToolCall) {
+        return { message: { ...message, content: sanitizedContent, stopReason: "tool_use" } };
+      }
+      // Fall through to JSON text parser with any converted text blocks
+    }
+
+    // ── Parse tool calls dulu ─────────────────────────────
+    const toolCalls = parseJsonToolCall(text);
+
+    // ── Retry: truncated JSON (hanya kalau tidak ada tool call valid) ──
+    if (toolCalls.length === 0 && isResponseTruncated(text, stopReason) && retryCount < config.maxRetries) {
+      retryCount++;
+      log("WARN", `Truncated response, retry ${retryCount}/${config.maxRetries}`);
+
+      const hint = isJsonTruncated(text)
+        ? `Your JSON was incomplete. Output the complete valid JSON tool call again: {"name": "<tool>", "arguments": {...}}`
+        : `Your response was cut off. Please continue from where you left off.`;
+
+      return {
+        message: {
+          ...message,
+          content: [{ type: "text", text: hint }],
+          stopReason: "stop",
+        }
+      };
+    }
+
+    retryCount = 0;
+
+    if (toolCalls.length === 0) {
+      // Tidak ada tool call → strip sisa JSON dari teks
+      const cleaned = stripJsonFromText(text);
+      if (cleaned !== text && cleaned.length > 0) {
+        log("INFO", "Stripped residual JSON from text response");
+        return {
+          message: {
+            ...message,
+            content: [{ type: "text", text: cleaned }],
+          }
+        };
+      }
+      return;
+    }
+
+    log("INFO", `Tool calls: ${toolCalls.map(t => t.name).join(", ")}`);
+
+    // ── Gate hallucinated paths (semua tool) ─────────────
+    for (const tc of toolCalls) {
+      const pathArg: string = tc.arguments.path ?? tc.arguments.command ?? "";
+      if (isHallucinatedPath(pathArg)) {
+        log("WARN", `Blocked hallucinated path: ${pathArg}`);
+        return {
+          message: {
+            ...message,
+            content: [{ type: "text", text: `⚠️ Blocked: command contains a hallucinated path. Use real paths only.` }],
+            stopReason: "stop",
+          }
+        };
+      }
+    }
+
+    // ── Execute bash directly (v5.x) ─────────────────────
+    const bashCall = toolCalls.find(t => t.name === "bash");
+    if (bashCall) {
+      const cmd: string = bashCall.arguments.command ?? "";
+      if (!cmd) return;
+
+      const cwd = ctx?.cwd ?? process.cwd();
+      const result = await execWithTimeout(cmd, config.timeout, cwd);
+      const raw = result.stderr && !result.stdout
+        ? `$ ${cmd}\n\nError:\n${result.stderr}`
+        : `$ ${cmd}\n\n${result.stdout}`;
+      const output = raw.length > 8000
+        ? raw.substring(0, 8000) + "\n\n... (truncated)"
+        : raw;
+
+      log("INFO", `Bash exit: ${result.code}`);
+
+      return {
+        message: {
+          ...message,
+          content: [{ type: "text", text: output.trim() || "(no output)" }],
+          stopReason: "stop",
+        }
+      };
+    }
+
+    // ── Delegate read/write/edit/grep/find ke Pi native ──
+    const toolCallContents = toolCalls.map((tc) => ({
+      type: "toolCall",
+      id: `toolu_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+      name: tc.name,
+      arguments: tc.arguments,
+    }));
+
+    return {
+      message: {
+        ...message,
+        content: toolCallContents,
+        stopReason: "tool_use",
+      }
+    };
+  });
+}

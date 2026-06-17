@@ -20,6 +20,7 @@ import {
   matchesKey,
   Text,
   truncateToWidth,
+  wrapTextWithAnsi,
 } from "@earendil-works/pi-tui";
 import { Type } from "typebox";
 
@@ -161,11 +162,15 @@ export default function clarify(pi: ExtensionAPI) {
             add(theme.fg("accent", "─".repeat(width)));
 
             // Question
-            add(theme.fg("text", theme.bold(` ${params.question}`)));
+            for (const line of wrapTextWithAnsi(theme.fg("text", theme.bold(params.question)), width - 1)) {
+              add(` ${line}`);
+            }
 
             // Context (optional)
             if (params.context) {
-              add(theme.fg("muted", ` ${params.context}`));
+              for (const line of wrapTextWithAnsi(theme.fg("muted", params.context), width - 1)) {
+                add(` ${line}`);
+              }
             }
 
             // Suggestions
