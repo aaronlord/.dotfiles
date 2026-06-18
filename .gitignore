@@ -1,5 +1,9 @@
 includes/extra
 
+# AI teaching/learning state
+ai/teaching/
+ai/lessons/
+
 # Pi — machine-specific / sensitive
 pi/auth.json
 pi/trust.json
