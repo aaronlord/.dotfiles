@@ -23,9 +23,9 @@ Given the plan name, read both files immediately — before asking the user any 
 
 If either file is missing, tell the user which one and stop. If the ARD status is still `draft` rather than `reviewed`, warn the user that running `/review-plan` first is strongly recommended, but proceed if they confirm. Only ask the user questions if something remains genuinely unclear after reading both files.
 
-### 2. Explore the codebase
+### 2. Load codebase context
 
-Understand the current state of the code that this plan touches. Look for:
+Read `.plans/{name}/context.md`. This was written during `/plan` and contains all codebase exploration findings. Use it as your starting point — don't re-do broad discovery. Then do targeted exploration of the specific code this plan will touch, looking for:
 
 - Prefactoring opportunities: "make the change easy, then make the easy change" — if existing code needs restructuring to make the implementation cleaner, that's a task too
 - Natural implementation order based on dependencies (schema before repositories, interfaces before implementations, etc.)
@@ -42,6 +42,8 @@ Break the work into **tracer bullet** tasks. Each task should be a thin vertical
 Avoid horizontal slices (e.g. "all repositories" as one task). Each slice should cut through the layers it needs.
 
 Order tasks so dependencies come first. Number them sequentially.
+
+Always append one final task — **"Ensure CI passes"** — as the last item, depending on all other tasks. This task is not negotiable and must not be removed during the quiz. Its job is to run the full CI suite end-to-end and fix any failures (test coverage gaps, static analysis errors, formatting issues) that slipped through during individual task implementation.
 
 ### 4. Quiz the user on the breakdown
 
@@ -62,7 +64,59 @@ Iterate until the user approves the breakdown.
 
 For each approved task, create `.plans/{name}/tasks/{nnn}-{task-slug}.md` (zero-padded three-digit index, e.g. `001-create-upsert-student-command.md`).
 
-Use the template below:
+The final **"Ensure CI passes"** task always uses the template below — populate it as shown:
+
+<ci-gate-task-template>
+# Task {n}: Ensure CI passes
+
+_Status: todo_
+
+## What
+
+Run the full CI pipeline and fix any failures. This is the final gate before the feature branch is ready for review.
+
+**Backend (PHP):**
+```bash
+./vendor/bin/pint           # format
+./vendor/bin/phpstan analyse --memory-limit=1G
+./vendor/bin/pest --ci --parallel --compact --coverage --min=100 --exclude-testsuite Browser
+```
+
+**Frontend (JS/TS):**
+```bash
+pnpm run format
+pnpm run types:check
+pnpm run lint:check
+pnpm run test:run
+```
+
+If the project has a `.bin/magnus` wrapper, use that instead.
+
+## Why
+
+Individual tasks run CI locally but coverage gaps, cross-module type errors, and formatting drift can accumulate across tasks. This task ensures the branch is green end-to-end before going to review.
+
+## Dependencies
+
+All previous tasks.
+
+## Acceptance Criteria
+
+- [ ] Formatting passes with no changes
+- [ ] Static analysis reports no errors
+- [ ] All tests pass
+- [ ] Coverage meets the project minimum (100% where enforced)
+
+## Relevant ARD Sections
+
+N/A — this task is a CI gate, not a feature.
+
+## Notes
+
+Do not skip or shortcut this task. If CI fails, fix the root cause — do not suppress warnings or lower thresholds.
+</ci-gate-task-template>
+
+For all other tasks, use the template below:
 
 <task-template>
 # Task {n}: {Title}
@@ -108,6 +162,7 @@ Create or overwrite `.plans/{name}/tasks.md`:
 | 1 | [Task title](tasks/001-task-name.md) | todo | — |
 | 2 | [Task title](tasks/002-task-name.md) | todo | 1 |
 | 3 | [Task title](tasks/003-task-name.md) | todo | 1, 2 |
+| 4 | [Ensure CI passes](tasks/004-ensure-ci-passes.md) | todo | all |
 
 ## Progress
 

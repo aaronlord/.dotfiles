@@ -37,10 +37,22 @@ Reference what you find in both documents.
 
 ```
 .plans/{name}/
+  context.md   ← written now, read by all downstream skills
   prd.md
   ard.md
-  tasks/        ← empty for now, created by /groom-plan
+  tasks/                ← empty for now, created by /groom-plan
 ```
+
+### 4a. Write context.md
+
+Before drafting the documents, write `.plans/{name}/context.md` with everything you discovered during exploration. This file is the single source of codebase context for all downstream skills (`/review-plan`, `/groom-plan`, `/implement-tasks`) — they will read it instead of re-exploring.
+
+Include as much detail as the agent judges necessary to make re-exploration unnecessary:
+- For simple references, a file path and a one-line note is enough
+- For important modules with non-obvious patterns or conventions, include more detail (key classes, interfaces, naming patterns, layering decisions)
+- Cover: relevant modules, existing patterns, ADRs, prior art, anything the feature will touch or extend
+
+Format: use headings and bullet lists. Be practical — the goal is that a downstream skill reading only this file has everything it needs.
 
 ### 5. Draft the PRD
 

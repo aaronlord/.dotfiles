@@ -18,9 +18,9 @@ The user passes the plan name (matching the directory under `.plans/`). If no na
 
 Read both `.plans/{name}/prd.md` and `.plans/{name}/ard.md` in full.
 
-### 2. Explore the codebase (if not already done this session)
+### 2. Load codebase context
 
-Check that your understanding of the relevant modules and patterns is current. If the plan references specific modules or interfaces, read them.
+Read `.plans/{name}/context.md`. This was written during `/plan` and contains all codebase exploration findings. Do not re-explore — trust this file. Only read additional source files if the plan references something not covered there.
 
 ### 3. Identify gaps and ambiguities
 

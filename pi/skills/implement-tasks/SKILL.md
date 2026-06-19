@@ -30,15 +30,33 @@ Pick the next uncompleted task in order. If there's no such task (all done, or b
 
 #### 3a. Read the task file
 
-Load `.plans/{name}/tasks/{nnn}-task-name.md` in full. Also read the ARD (`.plans/{name}/ard.md`) for broader design context. Read any relevant files in the codebase called out in the task's **Notes** or **Relevant ARD Sections**.
+Load `.plans/{name}/tasks/{nnn}-task-name.md` in full. Read `.plans/{name}/ard.md` for broader design context. Read `.plans/{name}/context.md` for codebase context — do not re-explore the codebase. Only open additional source files called out in the task's **Notes** or **Relevant ARD Sections**.
 
 #### 3b. Implement
 
-Write the code. Follow the project's conventions (DDD/Hexagonal/CQRS/layering) as described in the ARD and any AGENTS.md files in scope.
+Write the code. Hold yourself to these non-negotiable standards:
 
+**SOLID**
+- Single responsibility: each class/function does one thing
+- Open/closed: extend behaviour without modifying existing code
+- Liskov: subtypes are substitutable for their base types
+- Interface segregation: depend on narrow interfaces, not fat ones
+- Dependency inversion: depend on abstractions, inject concretions
+
+**Well tested**
 - Use TDD where natural seams exist
-- Run typechecking and static analysis regularly during implementation, not just at the end
+- Tests assert observable behaviour through the public interface, not implementation details
+- Cover happy paths, edge cases, and failure modes
 - Run the relevant test file(s) after each logical unit of change
+
+**Idiomatic**
+- Match the conventions of the surrounding codebase — naming, layering, patterns, file structure
+- Read `context.md` and prior art in the codebase before writing new code; don't invent patterns that already exist
+- When in doubt, find an analogous feature and follow its lead
+
+**General**
+- Run typechecking and static analysis regularly during implementation, not just at the end
+- Always follow any AGENTS.md or path-level instruction files in scope for the project
 
 #### 3c. Run CI
 
@@ -83,6 +101,8 @@ Use conventional commit types: `feat`, `fix`, `refactor`, `test`, `chore`. The m
 #### 3f. Stop
 
 Always stop here. Report the completed task, how many tasks remain, and wait for the user to invoke again. Do not begin the next task under any circumstances.
+
+If this was the final task (all tasks now done), tell the user the feature is fully implemented and suggest running `/review` before pushing — e.g. `/review main` to review everything against the PRD and the project's coding standards.
 
 ## Notes
 
