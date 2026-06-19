@@ -22,4 +22,4 @@ fi
 
 # Pane 3: papa
 tmux new-window -d -n "papa" -t $pane -c "$path"
-tmux send-keys -t $pane:3  "gh copilot" C-m
+tmux send-keys -t $pane:3  "pi" C-m

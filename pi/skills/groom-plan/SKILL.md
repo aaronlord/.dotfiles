@@ -14,9 +14,14 @@ The user passes the plan name (matching the directory under `.plans/`). If no na
 
 ## Process
 
-### 1. Load the plan
+### 1. Load the plan — read before asking
 
-Read `.plans/{name}/ard.md` (primary source for task derivation) and `.plans/{name}/prd.md` (for user story context). If the ARD status is still `draft` rather than `reviewed`, warn the user that running `/review-plan` first is strongly recommended, but proceed if they confirm.
+Given the plan name, read both files immediately — before asking the user any questions about goals, context, or scope. The plan files are the source of truth.
+
+- `.plans/{name}/prd.md` — user story, problem statement, goals
+- `.plans/{name}/ard.md` — architecture decisions (primary source for task derivation)
+
+If either file is missing, tell the user which one and stop. If the ARD status is still `draft` rather than `reviewed`, warn the user that running `/review-plan` first is strongly recommended, but proceed if they confirm. Only ask the user questions if something remains genuinely unclear after reading both files.
 
 ### 2. Explore the codebase
 

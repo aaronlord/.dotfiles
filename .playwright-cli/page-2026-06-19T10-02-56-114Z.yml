@@ -1,0 +1,2103 @@
+- generic [active] [ref=e1]:
+  - link "Skip to main content" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=e3]:
+    - banner [ref=e4]:
+      - generic [ref=e5]:
+        - link "GitHub Agentic Workflows GitHub Agentic Workflows" [ref=e7] [cursor=pointer]:
+          - /url: /gh-aw/
+          - img "GitHub Agentic Workflows" [ref=e8]
+          - generic [ref=e9]: GitHub Agentic Workflows
+        - button "Search" [ref=e12] [cursor=pointer]:
+          - img [ref=e13]
+          - generic [ref=e15]: Search
+          - generic [ref=e16]:
+            - generic [ref=e17]: ⌘
+            - generic [ref=e18]: K
+        - generic [ref=e19]:
+          - generic [ref=e20]:
+            - navigation "Primary navigation" [ref=e21]:
+              - link "Quick Start" [ref=e22] [cursor=pointer]:
+                - /url: /gh-aw/setup/quick-start/
+              - link "Create" [ref=e23] [cursor=pointer]:
+                - /url: /gh-aw/setup/creating-workflows/
+              - link "Examples" [ref=e24] [cursor=pointer]:
+                - /url: /gh-aw/index.html#gallery
+              - link "Docs" [ref=e25] [cursor=pointer]:
+                - /url: /gh-aw/introduction/overview/
+              - link "FAQ" [ref=e26] [cursor=pointer]:
+                - /url: /gh-aw/reference/faq/
+              - link "Blog" [ref=e27] [cursor=pointer]:
+                - /url: /gh-aw/blog/
+              - link "Peli's Agent Factory" [ref=e28] [cursor=pointer]:
+                - /url: /gh-aw/blog/2026-01-12-welcome-to-pelis-agent-factory/
+            - link "GitHub" [ref=e29] [cursor=pointer]:
+              - /url: https://github.com/github/gh-aw
+              - generic [ref=e30]: GitHub
+              - img [ref=e31]
+            - link "RSS" [ref=e33] [cursor=pointer]:
+              - /url: https://github.github.com/gh-aw/blog/rss.xml
+              - generic [ref=e34]: RSS
+              - img [ref=e35]
+          - generic [ref=e38] [cursor=pointer]:
+            - generic [ref=e39]: Select theme
+            - combobox "Select theme" [ref=e40]:
+              - option "Auto" [selected]
+              - option "Dark"
+              - option "Light"
+            - generic [ref=e41]:
+              - img [ref=e43]
+              - img [ref=e46]
+              - img [ref=e49]
+    - navigation "Main":
+      - list [ref=e54]:
+        - listitem [ref=e55]:
+          - group [ref=e56]:
+            - generic "Introduction" [ref=e57] [cursor=pointer]:
+              - generic [ref=e58]: Introduction
+              - img [ref=e59]
+            - list [ref=e61]:
+              - listitem [ref=e62]:
+                - link "About Workflows" [ref=e63] [cursor=pointer]:
+                  - /url: /gh-aw/introduction/overview/
+              - listitem [ref=e64]:
+                - link "How They Work" [ref=e65] [cursor=pointer]:
+                  - /url: /gh-aw/introduction/how-they-work/
+              - listitem [ref=e66]:
+                - link "Security Architecture" [ref=e67] [cursor=pointer]:
+                  - /url: /gh-aw/introduction/architecture/
+        - listitem [ref=e68]:
+          - group [ref=e69]:
+            - generic "Setup" [ref=e70] [cursor=pointer]:
+              - generic [ref=e71]: Setup
+              - img [ref=e72]
+            - list [ref=e74]:
+              - listitem [ref=e75]:
+                - link "Quick Start" [ref=e76] [cursor=pointer]:
+                  - /url: /gh-aw/setup/quick-start/
+              - listitem [ref=e77]:
+                - link "Creating Workflows" [ref=e78] [cursor=pointer]:
+                  - /url: /gh-aw/setup/creating-workflows/
+              - listitem [ref=e79]:
+                - link "CLI Commands" [ref=e80] [cursor=pointer]:
+                  - /url: /gh-aw/setup/cli/
+        - listitem [ref=e81]:
+          - group [ref=e82]:
+            - generic "Guides" [ref=e83] [cursor=pointer]:
+              - generic [ref=e84]: Guides
+              - img [ref=e85]
+            - list [ref=e87]:
+              - listitem [ref=e88]:
+                - link "Agentic Authoring" [ref=e89] [cursor=pointer]:
+                  - /url: /gh-aw/guides/agentic-authoring/
+              - listitem [ref=e90]:
+                - link "Editing Workflows" [ref=e91] [cursor=pointer]:
+                  - /url: /gh-aw/guides/editing-workflows/
+              - listitem [ref=e92]:
+                - link "Reusing Workflows" [ref=e93] [cursor=pointer]:
+                  - /url: /gh-aw/guides/reusing-workflows/
+              - listitem [ref=e94]:
+                - link "Upgrading Workflows" [ref=e95] [cursor=pointer]:
+                  - /url: /gh-aw/guides/upgrading/
+              - listitem [ref=e96]:
+                - link "Using MCPs" [ref=e97] [cursor=pointer]:
+                  - /url: /gh-aw/guides/mcps/
+              - listitem [ref=e98]:
+                - link "Network Configuration" [ref=e99] [cursor=pointer]:
+                  - /url: /gh-aw/guides/network-configuration/
+              - listitem [ref=e100]:
+                - link "OpenTelemetry" [ref=e101] [cursor=pointer]:
+                  - /url: /gh-aw/guides/open-telemetry/
+              - listitem [ref=e102]:
+                - link "GitHub Actions Primer" [ref=e103] [cursor=pointer]:
+                  - /url: /gh-aw/guides/github-actions-primer/
+              - listitem [ref=e104]:
+                - link "Using at Scale in Organizations" [ref=e105] [cursor=pointer]:
+                  - /url: /gh-aw/guides/using-at-scale/
+        - listitem [ref=e106]:
+          - group [ref=e107]:
+            - generic "Design Patterns" [ref=e108] [cursor=pointer]:
+              - generic [ref=e109]: Design Patterns
+              - img [ref=e110]
+            - list [ref=e112]:
+              - listitem [ref=e113]:
+                - link "BatchOps" [ref=e114] [cursor=pointer]:
+                  - /url: /gh-aw/patterns/batch-ops/
+              - listitem [ref=e115]:
+                - link "CentralRepoOps" [ref=e116] [cursor=pointer]:
+                  - /url: /gh-aw/patterns/central-repo-ops/
+              - listitem [ref=e117]:
+                - link "ChatOps" [ref=e118] [cursor=pointer]:
+                  - /url: /gh-aw/patterns/chat-ops/
+              - listitem [ref=e119]:
+                - link "DeterministicOps" [ref=e120] [cursor=pointer]:
+                  - /url: /gh-aw/patterns/deterministic-ops/
+              - listitem [ref=e121]:
+                - link "DispatchOps" [ref=e122] [cursor=pointer]:
+                  - /url: /gh-aw/patterns/dispatch-ops/
+              - listitem [ref=e123]:
+                - link "IssueOps" [ref=e124] [cursor=pointer]:
+                  - /url: /gh-aw/patterns/issue-ops/
+              - listitem [ref=e125]:
+                - link "LabelOps" [ref=e126] [cursor=pointer]:
+                  - /url: /gh-aw/patterns/label-ops/
+              - listitem [ref=e127]:
+                - link "MemoryOps" [ref=e128] [cursor=pointer]:
+                  - /url: /gh-aw/patterns/memory-ops/
+              - listitem [ref=e129]:
+                - link "MonitorOps" [ref=e130] [cursor=pointer]:
+                  - /url: /gh-aw/patterns/monitor-ops/
+              - listitem [ref=e131]:
+                - link "MultiRepoOps" [ref=e132] [cursor=pointer]:
+                  - /url: /gh-aw/patterns/multi-repo-ops/
+              - listitem [ref=e133]:
+                - link "OrchestratorOps" [ref=e134] [cursor=pointer]:
+                  - /url: /gh-aw/patterns/orchestrator-ops/
+              - listitem [ref=e135]:
+                - link "ProjectOps" [ref=e136] [cursor=pointer]:
+                  - /url: /gh-aw/patterns/project-ops/
+              - listitem [ref=e137]:
+                - link "ResearchPlanAssignOps" [ref=e138] [cursor=pointer]:
+                  - /url: /gh-aw/patterns/research-plan-assign-ops/
+              - listitem [ref=e139]:
+                - link "SpecOps" [ref=e140] [cursor=pointer]:
+                  - /url: /gh-aw/patterns/spec-ops/
+              - listitem [ref=e141]:
+                - link "WorkQueueOps" [ref=e142] [cursor=pointer]:
+                  - /url: /gh-aw/patterns/workqueue-ops/
+        - listitem [ref=e143]:
+          - group [ref=e144]:
+            - generic "Practices" [ref=e145] [cursor=pointer]:
+              - generic [ref=e146]: Practices
+              - img [ref=e147]
+            - list [ref=e149]:
+              - listitem [ref=e150]:
+                - link "Safe Rollout in Organizations" [ref=e151] [cursor=pointer]:
+                  - /url: /gh-aw/practices/safe-rollout/
+              - listitem [ref=e152]:
+                - link "Sharing Workflows in Organizations" [ref=e153] [cursor=pointer]:
+                  - /url: /gh-aw/practices/sharing-workflows/
+        - listitem [ref=e154]:
+          - group [ref=e155]:
+            - generic "Examples" [ref=e156] [cursor=pointer]:
+              - generic [ref=e157]: Examples
+              - img [ref=e158]
+            - list [ref=e160]:
+              - listitem [ref=e161]:
+                - link "Automated Repository Maintenance" [ref=e162] [cursor=pointer]:
+                  - /url: /gh-aw/examples/maintaining-repos/
+              - listitem [ref=e163]:
+                - link "Triage from Side Repo" [ref=e164] [cursor=pointer]:
+                  - /url: /gh-aw/examples/multi-repo/triage-from-side-repo/
+              - listitem [ref=e165]:
+                - link "Code Quality Monitoring" [ref=e166] [cursor=pointer]:
+                  - /url: /gh-aw/examples/multi-repo/code-quality-monitoring/
+              - listitem [ref=e167]:
+                - link "Dependabot Rollout" [ref=e168] [cursor=pointer]:
+                  - /url: /gh-aw/examples/multi-repo/dependabot-rollout/
+              - listitem [ref=e169]:
+                - link "Feature Synchronization" [ref=e170] [cursor=pointer]:
+                  - /url: /gh-aw/examples/multi-repo/feature-sync/
+              - listitem [ref=e171]:
+                - link "Cross-Repo Issue Tracking" [ref=e172] [cursor=pointer]:
+                  - /url: /gh-aw/examples/multi-repo/issue-tracking/
+        - listitem [ref=e173]:
+          - group [ref=e174]:
+            - generic "Reference" [ref=e175] [cursor=pointer]:
+              - generic [ref=e176]: Reference
+              - img [ref=e177]
+            - list [ref=e179]:
+              - listitem [ref=e180]:
+                - link "AI Engines" [ref=e181] [cursor=pointer]:
+                  - /url: /gh-aw/reference/engines/
+              - listitem [ref=e182]:
+                - link "Artifacts" [ref=e183] [cursor=pointer]:
+                  - /url: /gh-aw/reference/artifacts/
+              - listitem [ref=e184]:
+                - link "Auditing Workflows" [ref=e185] [cursor=pointer]:
+                  - /url: /gh-aw/reference/audit/
+              - listitem [ref=e186]:
+                - link "Authentication" [ref=e187] [cursor=pointer]:
+                  - /url: /gh-aw/reference/auth/
+              - listitem [ref=e188]:
+                - link "Authentication (Projects)" [ref=e189] [cursor=pointer]:
+                  - /url: /gh-aw/reference/auth-projects/
+              - listitem [ref=e190]:
+                - link "Compilation Process" [ref=e191] [cursor=pointer]:
+                  - /url: /gh-aw/reference/compilation-process/
+              - listitem [ref=e192]:
+                - link "Measuring Impact" [ref=e193] [cursor=pointer]:
+                  - /url: /gh-aw/reference/measuring-impact/
+              - listitem [ref=e194]:
+                - link "Billing" [ref=e195] [cursor=pointer]:
+                  - /url: /gh-aw/reference/billing/
+              - listitem [ref=e196]:
+                - link "Cost Management" [ref=e197] [cursor=pointer]:
+                  - /url: /gh-aw/reference/cost-management/
+              - listitem [ref=e198]:
+                - link "Cost Management (Rate Limiting)" [ref=e199] [cursor=pointer]:
+                  - /url: /gh-aw/reference/rate-limiting-controls/
+              - listitem [ref=e200]:
+                - link "Cost Management (Model Tables)" [ref=e201] [cursor=pointer]:
+                  - /url: /gh-aw/reference/model-tables/
+              - listitem [ref=e202]:
+                - link "Enterprise Configuration" [ref=e203] [cursor=pointer]:
+                  - /url: /gh-aw/reference/enterprise-configuration/
+              - listitem [ref=e204]:
+                - link "Environment Variables" [ref=e205] [cursor=pointer]:
+                  - /url: /gh-aw/reference/environment-variables/
+              - listitem [ref=e206]:
+                - link "FAQ" [ref=e207] [cursor=pointer]:
+                  - /url: /gh-aw/reference/faq/
+              - listitem [ref=e208]:
+                - link "Frontmatter" [ref=e209] [cursor=pointer]:
+                  - /url: /gh-aw/reference/frontmatter/
+              - listitem [ref=e210]:
+                - link "Frontmatter (Concurrency)" [ref=e211] [cursor=pointer]:
+                  - /url: /gh-aw/reference/concurrency/
+              - listitem [ref=e212]:
+                - link "Frontmatter (Schedule Syntax)" [ref=e213] [cursor=pointer]:
+                  - /url: /gh-aw/reference/schedule-syntax/
+              - listitem [ref=e214]:
+                - link "Frontmatter (Triggers)" [ref=e215] [cursor=pointer]:
+                  - /url: /gh-aw/reference/triggers/
+              - listitem [ref=e216]:
+                - link "Frontmatter (Command Triggers)" [ref=e217] [cursor=pointer]:
+                  - /url: /gh-aw/reference/command-triggers/
+              - listitem [ref=e218]:
+                - link "Frontmatter (Full)" [ref=e219] [cursor=pointer]:
+                  - /url: /gh-aw/reference/frontmatter-full/
+              - listitem [ref=e220]:
+                - link "GH-AW Agent" [ref=e221] [cursor=pointer]:
+                  - /url: /gh-aw/reference/custom-agent-for-aw/
+              - listitem [ref=e222]:
+                - link "GH-AW as MCP Server" [ref=e223] [cursor=pointer]:
+                  - /url: /gh-aw/reference/gh-aw-as-mcp-server/
+              - listitem [ref=e224]:
+                - link "GitHub (Checkout)" [ref=e225] [cursor=pointer]:
+                  - /url: /gh-aw/reference/checkout/
+              - listitem [ref=e226]:
+                - link "GitHub (Read Tools)" [ref=e227] [cursor=pointer]:
+                  - /url: /gh-aw/reference/github-tools/
+              - listitem [ref=e228]:
+                - link "GitHub (Read Permissions)" [ref=e229] [cursor=pointer]:
+                  - /url: /gh-aw/reference/permissions/
+              - listitem [ref=e230]:
+                - link "GitHub (Integrity Filtering)" [ref=e231] [cursor=pointer]:
+                  - /url: /gh-aw/reference/integrity/
+              - listitem [ref=e232]:
+                - link "GitHub (Cross-Repository)" [ref=e233] [cursor=pointer]:
+                  - /url: /gh-aw/reference/cross-repository/
+              - listitem [ref=e234]:
+                - link "GitHub (Fork Support)" [ref=e235] [cursor=pointer]:
+                  - /url: /gh-aw/reference/fork-support/
+              - listitem [ref=e236]:
+                - link "Glossary" [ref=e237] [cursor=pointer]:
+                  - /url: /gh-aw/reference/glossary/
+              - listitem [ref=e238]:
+                - link "Imports" [ref=e239] [cursor=pointer]:
+                  - /url: /gh-aw/reference/imports/
+              - listitem [ref=e240]:
+                - link "Imports (APM)" [ref=e241] [cursor=pointer]:
+                  - /url: /gh-aw/reference/dependencies/
+              - listitem [ref=e242]:
+                - link "Imports (Copilot Agent Files)" [ref=e243] [cursor=pointer]:
+                  - /url: /gh-aw/reference/copilot-custom-agents/
+              - listitem [ref=e244]:
+                - link "Imports (Copilot Inline Sub-Agents)" [ref=e245] [cursor=pointer]:
+                  - /url: /gh-aw/reference/inline-sub-agents/
+              - listitem [ref=e246]:
+                - link "Imports (Dependabot)" [ref=e247] [cursor=pointer]:
+                  - /url: /gh-aw/reference/dependabot/
+              - listitem [ref=e248]:
+                - link "Indexing (QMD)" [ref=e249] [cursor=pointer]:
+                  - /url: /gh-aw/reference/qmd/
+              - listitem [ref=e250]:
+                - link "Markdown" [ref=e251] [cursor=pointer]:
+                  - /url: /gh-aw/reference/markdown/
+              - listitem [ref=e252]:
+                - link "Outcomes" [ref=e253] [cursor=pointer]:
+                  - /url: /gh-aw/reference/outcomes/
+              - listitem [ref=e254]:
+                - link "OpenTelemetry Attributes" [ref=e255] [cursor=pointer]:
+                  - /url: /gh-aw/reference/open-telemetry/
+              - listitem [ref=e256]:
+                - link "Package Manifest" [ref=e257] [cursor=pointer]:
+                  - /url: /gh-aw/reference/aw-yml-package-manifest/
+              - listitem [ref=e258]:
+                - link "Releases and Versioning" [ref=e259] [cursor=pointer]:
+                  - /url: /gh-aw/reference/releases/
+              - listitem [ref=e260]:
+                - link "MCP Scripts" [ref=e261] [cursor=pointer]:
+                  - /url: /gh-aw/reference/mcp-scripts/
+              - listitem [ref=e262]:
+                - link "Safe Outputs" [ref=e263] [cursor=pointer]:
+                  - /url: /gh-aw/reference/safe-outputs/
+              - listitem [ref=e264]:
+                - link "Safe Outputs (Copilot Cloud Agent)" [ref=e265] [cursor=pointer]:
+                  - /url: /gh-aw/reference/copilot-cloud-agent/
+              - listitem [ref=e266]:
+                - link "Safe Outputs (Custom)" [ref=e267] [cursor=pointer]:
+                  - /url: /gh-aw/reference/custom-safe-outputs/
+              - listitem [ref=e268]:
+                - link "Safe Outputs (Pull Requests)" [ref=e269] [cursor=pointer]:
+                  - /url: /gh-aw/reference/safe-outputs-pull-requests/
+              - listitem [ref=e270]:
+                - link "Safe Outputs (Staged Mode)" [ref=e271] [cursor=pointer]:
+                  - /url: /gh-aw/reference/staged-mode/
+              - listitem [ref=e272]:
+                - link "Safe Outputs (Ephemerals)" [ref=e273] [cursor=pointer]:
+                  - /url: /gh-aw/reference/ephemerals/
+              - listitem [ref=e274]:
+                - link "Safe Outputs (Footers)" [ref=e275] [cursor=pointer]:
+                  - /url: /gh-aw/reference/footers/
+              - listitem [ref=e276]:
+                - link "Sandbox" [ref=e277] [cursor=pointer]:
+                  - /url: /gh-aw/reference/sandbox/
+              - listitem [ref=e278]:
+                - link "Self-Hosted Runners" [ref=e279] [cursor=pointer]:
+                  - /url: /gh-aw/reference/self-hosted-runners/
+              - listitem [ref=e280]:
+                - link "Sandbox (MCP Gateway)" [ref=e281] [cursor=pointer]:
+                  - /url: /gh-aw/reference/mcp-gateway/
+              - listitem [ref=e282]:
+                - link "Sandbox (Network Access)" [ref=e283] [cursor=pointer]:
+                  - /url: /gh-aw/reference/network/
+              - listitem [ref=e284]:
+                - link "Templating" [ref=e285] [cursor=pointer]:
+                  - /url: /gh-aw/reference/templating/
+              - listitem [ref=e286]:
+                - link "Threat Detection" [ref=e287] [cursor=pointer]:
+                  - /url: /gh-aw/reference/threat-detection/
+              - listitem [ref=e288]:
+                - link "Tools" [ref=e289] [cursor=pointer]:
+                  - /url: /gh-aw/reference/tools/
+              - listitem [ref=e290]:
+                - link "Tools (Cache Memory)" [ref=e291] [cursor=pointer]:
+                  - /url: /gh-aw/reference/cache-memory/
+              - listitem [ref=e292]:
+                - link "Tools (Repo Memory)" [ref=e293] [cursor=pointer]:
+                  - /url: /gh-aw/reference/repo-memory/
+              - listitem [ref=e294]:
+                - link "Tools (Playwright)" [ref=e295] [cursor=pointer]:
+                  - /url: /gh-aw/reference/playwright/
+              - listitem [ref=e296]:
+                - link "Tools (Serena)" [ref=e297] [cursor=pointer]:
+                  - /url: /gh-aw/reference/serena/
+              - listitem [ref=e298]:
+                - link "Tools (Web Search)" [ref=e299] [cursor=pointer]:
+                  - /url: /gh-aw/reference/web-search/
+              - listitem [ref=e300]:
+                - link "Triggering CI" [ref=e301] [cursor=pointer]:
+                  - /url: /gh-aw/reference/triggering-ci/
+              - listitem [ref=e302]:
+                - link "Workflow Structure" [ref=e303] [cursor=pointer]:
+                  - /url: /gh-aw/reference/workflow-structure/
+        - listitem [ref=e304]:
+          - group [ref=e305]:
+            - generic "Specs" [ref=e306] [cursor=pointer]:
+              - generic [ref=e307]: Specs
+              - img [ref=e308]
+            - list [ref=e310]:
+              - listitem [ref=e311]:
+                - link "Package Management (Spec)" [ref=e312] [cursor=pointer]:
+                  - /url: /gh-aw/specs/repository-package-manifest-specification/
+              - listitem [ref=e313]:
+                - link "Forecast Command Specification" [ref=e314] [cursor=pointer]:
+                  - /url: /gh-aw/specs/forecast-specification/
+              - listitem [ref=e315]:
+                - link "Effective Tokens Specification" [ref=e316] [cursor=pointer]:
+                  - /url: /gh-aw/specs/effective-tokens-specification/
+              - listitem [ref=e317]:
+                - link "Frontmatter Hash Specification" [ref=e318] [cursor=pointer]:
+                  - /url: /gh-aw/specs/frontmatter-hash-specification/
+              - listitem [ref=e319]:
+                - link "Fuzzy Schedule Time Syntax Specification" [ref=e320] [cursor=pointer]:
+                  - /url: /gh-aw/specs/fuzzy-schedule-specification/
+              - listitem [ref=e321]:
+                - link "MCP Scripts Specification" [ref=e322] [cursor=pointer]:
+                  - /url: /gh-aw/specs/mcp-scripts-specification/
+              - listitem [ref=e323]:
+                - link "Model Alias Format Specification" [ref=e324] [cursor=pointer]:
+                  - /url: /gh-aw/specs/model-alias-specification/
+              - listitem [ref=e325]:
+                - link "Safe Outputs MCP Gateway Specification" [ref=e326] [cursor=pointer]:
+                  - /url: /gh-aw/specs/safe-outputs-specification/
+              - listitem [ref=e327]:
+                - link "AI Credits Specification" [ref=e328] [cursor=pointer]:
+                  - /url: /gh-aw/specs/ai-credits-specification/
+              - listitem [ref=e329]:
+                - link "Copilot SDK Driver Specification" [ref=e330] [cursor=pointer]:
+                  - /url: /gh-aw/specs/copilot-sdk-driver-specification/
+              - listitem [ref=e331]:
+                - link "Bash Command Parser Specification" [ref=e332] [cursor=pointer]:
+                  - /url: /gh-aw/specs/bash-command-parser-specification/
+        - listitem [ref=e333]:
+          - group [ref=e334]:
+            - generic "Troubleshooting" [ref=e335] [cursor=pointer]:
+              - generic [ref=e336]: Troubleshooting
+              - img [ref=e337]
+            - list [ref=e339]:
+              - listitem [ref=e340]:
+                - link "Error Reference" [ref=e341] [cursor=pointer]:
+                  - /url: /gh-aw/troubleshooting/errors/
+              - listitem [ref=e342]:
+                - link "Common Issues" [ref=e343] [cursor=pointer]:
+                  - /url: /gh-aw/troubleshooting/common-issues/
+              - listitem [ref=e344]:
+                - link "Debugging Workflows" [ref=e345] [cursor=pointer]:
+                  - /url: /gh-aw/troubleshooting/debugging/
+              - listitem [ref=e346]:
+                - link "Debugging GHE Cloud with Data Residency" [ref=e347] [cursor=pointer]:
+                  - /url: /gh-aw/troubleshooting/debug-ghe/
+        - listitem [ref=e348]:
+          - group [ref=e349]:
+            - generic "Experimental" [ref=e350] [cursor=pointer]:
+              - generic [ref=e351]: Experimental
+              - img [ref=e352]
+        - listitem [ref=e354]:
+          - link "Agent Factory" [ref=e355] [cursor=pointer]:
+            - /url: /gh-aw/agent-factory-status/
+        - listitem [ref=e356]:
+          - link "Editors" [ref=e357] [cursor=pointer]:
+            - /url: /gh-aw/reference/editors/
+    - generic [ref=e359]:
+      - complementary [ref=e360]:
+        - navigation "On this page" [ref=e365]:
+          - heading "On this page" [level=2] [ref=e366]
+          - list [ref=e367]:
+            - listitem [ref=e368]:
+              - link "Overview" [ref=e369] [cursor=pointer]:
+                - /url: "#_top"
+            - listitem [ref=e370]:
+              - link "Abstract" [ref=e371] [cursor=pointer]:
+                - /url: "#abstract"
+            - listitem [ref=e372]:
+              - link "Status of This Document" [ref=e373] [cursor=pointer]:
+                - /url: "#status-of-this-document"
+            - listitem [ref=e374]:
+              - link "Table of Contents" [ref=e375] [cursor=pointer]:
+                - /url: "#table-of-contents"
+            - listitem [ref=e376]:
+              - link "1. Introduction" [ref=e377] [cursor=pointer]:
+                - /url: "#1-introduction"
+              - list [ref=e378]:
+                - listitem [ref=e379]:
+                  - link "1.1 Purpose" [ref=e380] [cursor=pointer]:
+                    - /url: "#11-purpose"
+                - listitem [ref=e381]:
+                  - link "1.2 Scope" [ref=e382] [cursor=pointer]:
+                    - /url: "#12-scope"
+                - listitem [ref=e383]:
+                  - link "1.3 Design Goals" [ref=e384] [cursor=pointer]:
+                    - /url: "#13-design-goals"
+            - listitem [ref=e385]:
+              - link "2. Conformance" [ref=e386] [cursor=pointer]:
+                - /url: "#2-conformance"
+              - list [ref=e387]:
+                - listitem [ref=e388]:
+                  - link "2.1 Conformance Classes" [ref=e389] [cursor=pointer]:
+                    - /url: "#21-conformance-classes"
+                - listitem [ref=e390]:
+                  - link "2.2 Requirements Notation" [ref=e391] [cursor=pointer]:
+                    - /url: "#22-requirements-notation"
+                - listitem [ref=e392]:
+                  - link "2.3 Compliance Levels" [ref=e393] [cursor=pointer]:
+                    - /url: "#23-compliance-levels"
+            - listitem [ref=e394]:
+              - link "3. AI Credits Accounting Model" [ref=e395] [cursor=pointer]:
+                - /url: "#3-ai-credits-accounting-model"
+              - list [ref=e396]:
+                - listitem [ref=e397]:
+                  - link "3.1 Unit Definition" [ref=e398] [cursor=pointer]:
+                    - /url: "#31-unit-definition"
+                - listitem [ref=e399]:
+                  - link "3.2 Token Classes" [ref=e400] [cursor=pointer]:
+                    - /url: "#32-token-classes"
+                - listitem [ref=e401]:
+                  - link "3.3 Per-Invocation Cost Formula" [ref=e402] [cursor=pointer]:
+                    - /url: "#33-per-invocation-cost-formula"
+                - listitem [ref=e403]:
+                  - link "3.4 Price Fallback Rules" [ref=e404] [cursor=pointer]:
+                    - /url: "#34-price-fallback-rules"
+                - listitem [ref=e405]:
+                  - link "3.5 Provider-Specific Input Handling" [ref=e406] [cursor=pointer]:
+                    - /url: "#35-provider-specific-input-handling"
+                - listitem [ref=e407]:
+                  - link "3.6 Aggregation" [ref=e408] [cursor=pointer]:
+                    - /url: "#36-aggregation"
+            - listitem [ref=e409]:
+              - link "4. Pricing Catalog Format (models.json)" [ref=e410] [cursor=pointer]:
+                - /url: "#4-pricing-catalog-format-modelsjson"
+              - list [ref=e411]:
+                - listitem [ref=e412]:
+                  - link "4.1 Top-Level Structure" [ref=e413] [cursor=pointer]:
+                    - /url: "#41-top-level-structure"
+                - listitem [ref=e414]:
+                  - link "4.2 Required and Optional Fields" [ref=e415] [cursor=pointer]:
+                    - /url: "#42-required-and-optional-fields"
+                - listitem [ref=e416]:
+                  - link "4.3 Provider Keys" [ref=e417] [cursor=pointer]:
+                    - /url: "#43-provider-keys"
+                - listitem [ref=e418]:
+                  - link "4.4 Model Lookup Normalization" [ref=e419] [cursor=pointer]:
+                    - /url: "#44-model-lookup-normalization"
+            - listitem [ref=e420]:
+              - link "5. Catalog Provisioning and Synchronization" [ref=e421] [cursor=pointer]:
+                - /url: "#5-catalog-provisioning-and-synchronization"
+              - list [ref=e422]:
+                - listitem [ref=e423]:
+                  - link "5.1 Embedded Runtime Catalogs" [ref=e424] [cursor=pointer]:
+                    - /url: "#51-embedded-runtime-catalogs"
+                - listitem [ref=e425]:
+                  - link "5.2 Source and Refresh Expectations" [ref=e426] [cursor=pointer]:
+                    - /url: "#52-source-and-refresh-expectations"
+                - listitem [ref=e427]:
+                  - link "5.3 Change Control" [ref=e428] [cursor=pointer]:
+                    - /url: "#53-change-control"
+            - listitem [ref=e429]:
+              - link "6. Copilot Billing Reference Requirements" [ref=e430] [cursor=pointer]:
+                - /url: "#6-copilot-billing-reference-requirements"
+            - listitem [ref=e431]:
+              - link "7. Reporting Requirements" [ref=e432] [cursor=pointer]:
+                - /url: "#7-reporting-requirements"
+            - listitem [ref=e433]:
+              - link "8. Compliance Testing" [ref=e434] [cursor=pointer]:
+                - /url: "#8-compliance-testing"
+              - list [ref=e435]:
+                - listitem [ref=e436]:
+                  - link "8.1 Test Suite Requirements" [ref=e437] [cursor=pointer]:
+                    - /url: "#81-test-suite-requirements"
+                - listitem [ref=e438]:
+                  - link "8.2 Compliance Checklist" [ref=e439] [cursor=pointer]:
+                    - /url: "#82-compliance-checklist"
+            - listitem [ref=e440]:
+              - link "9. Daily AI Credits Guardrail" [ref=e441] [cursor=pointer]:
+                - /url: "#9-daily-ai-credits-guardrail"
+              - list [ref=e442]:
+                - listitem [ref=e443]:
+                  - link "9.1 Purpose" [ref=e444] [cursor=pointer]:
+                    - /url: "#91-purpose"
+                - listitem [ref=e445]:
+                  - link "9.2 Guardrail Configuration Field" [ref=e446] [cursor=pointer]:
+                    - /url: "#92-guardrail-configuration-field"
+                - listitem [ref=e447]:
+                  - link "9.3 Normative Resolution Order" [ref=e448] [cursor=pointer]:
+                    - /url: "#93-normative-resolution-order"
+                - listitem [ref=e449]:
+                  - link "9.4 Emitted Expression Form" [ref=e450] [cursor=pointer]:
+                    - /url: "#94-emitted-expression-form"
+                - listitem [ref=e451]:
+                  - link "9.5 Disable Sentinel" [ref=e452] [cursor=pointer]:
+                    - /url: "#95-disable-sentinel"
+                - listitem [ref=e453]:
+                  - link "9.6 Value Validation" [ref=e454] [cursor=pointer]:
+                    - /url: "#96-value-validation"
+                - listitem [ref=e455]:
+                  - link "9.7 Compliance Tests" [ref=e456] [cursor=pointer]:
+                    - /url: "#97-compliance-tests"
+                - listitem [ref=e457]:
+                  - link "9.8 Guardrail Bypass Conditions" [ref=e458] [cursor=pointer]:
+                    - /url: "#98-guardrail-bypass-conditions"
+            - listitem [ref=e459]:
+              - link "10. Per-Run AI Credits Budget" [ref=e460] [cursor=pointer]:
+                - /url: "#10-per-run-ai-credits-budget"
+              - list [ref=e461]:
+                - listitem [ref=e462]:
+                  - link "10.1 Purpose" [ref=e463] [cursor=pointer]:
+                    - /url: "#101-purpose"
+                - listitem [ref=e464]:
+                  - link "10.2 Budget Configuration Field" [ref=e465] [cursor=pointer]:
+                    - /url: "#102-budget-configuration-field"
+                - listitem [ref=e466]:
+                  - link "10.3 Normative Resolution Order" [ref=e467] [cursor=pointer]:
+                    - /url: "#103-normative-resolution-order"
+                - listitem [ref=e468]:
+                  - link "10.4 Runtime Resolution Mechanism" [ref=e469] [cursor=pointer]:
+                    - /url: "#104-runtime-resolution-mechanism"
+                - listitem [ref=e470]:
+                  - link "10.5 Disable Sentinel" [ref=e471] [cursor=pointer]:
+                    - /url: "#105-disable-sentinel"
+                - listitem [ref=e472]:
+                  - link "10.6 Value Validation" [ref=e473] [cursor=pointer]:
+                    - /url: "#106-value-validation"
+                - listitem [ref=e474]:
+                  - link "10.7 Compliance Tests" [ref=e475] [cursor=pointer]:
+                    - /url: "#107-compliance-tests"
+            - listitem [ref=e476]:
+              - link "Appendices" [ref=e477] [cursor=pointer]:
+                - /url: "#appendices"
+              - list [ref=e478]:
+                - listitem [ref=e479]:
+                  - 'link "Appendix A: Worked Example" [ref=e480] [cursor=pointer]':
+                    - /url: "#appendix-a-worked-example"
+                - listitem [ref=e481]:
+                  - 'link "Appendix B: Error Conditions" [ref=e482] [cursor=pointer]':
+                    - /url: "#appendix-b-error-conditions"
+                - listitem [ref=e483]:
+                  - 'link "Appendix C: Security and Integrity Considerations" [ref=e484] [cursor=pointer]':
+                    - /url: "#appendix-c-security-and-integrity-considerations"
+            - listitem [ref=e485]:
+              - link "References" [ref=e486] [cursor=pointer]:
+                - /url: "#references"
+              - list [ref=e487]:
+                - listitem [ref=e488]:
+                  - link "Normative References" [ref=e489] [cursor=pointer]:
+                    - /url: "#normative-references"
+                - listitem [ref=e490]:
+                  - link "Informative References" [ref=e491] [cursor=pointer]:
+                    - /url: "#informative-references"
+            - listitem [ref=e492]:
+              - link "Change Log" [ref=e493] [cursor=pointer]:
+                - /url: "#change-log"
+              - list [ref=e494]:
+                - listitem [ref=e495]:
+                  - link "Version 1.4.0 (2026-06-09)" [ref=e496] [cursor=pointer]:
+                    - /url: "#version-140-2026-06-09"
+                - listitem [ref=e497]:
+                  - link "Version 1.3.0 (2026-06-09)" [ref=e498] [cursor=pointer]:
+                    - /url: "#version-130-2026-06-09"
+                - listitem [ref=e499]:
+                  - link "Version 1.2.0 (2026-06-09)" [ref=e500] [cursor=pointer]:
+                    - /url: "#version-120-2026-06-09"
+                - listitem [ref=e501]:
+                  - link "Version 1.1.0 (2026-06-09)" [ref=e502] [cursor=pointer]:
+                    - /url: "#version-110-2026-06-09"
+                - listitem [ref=e503]:
+                  - link "Version 1.0.0 (Draft)" [ref=e504] [cursor=pointer]:
+                    - /url: "#version-100-draft"
+      - main [ref=e506]:
+        - heading "AI Credits Specification" [level=1] [ref=e509]
+        - generic [ref=e511]:
+          - generic [ref=e512]:
+            - generic [ref=e513]:
+              - heading "AI Credits Specification" [level=1] [ref=e514]
+              - link "Section titled “AI Credits Specification”" [ref=e515] [cursor=pointer]:
+                - /url: "#ai-credits-specification"
+                - img [ref=e517]
+                - generic [ref=e519]: Section titled “AI Credits Specification”
+            - paragraph [ref=e520]:
+              - strong [ref=e521]: Version
+              - text: ": 1.4.0"
+              - strong [ref=e522]: Status
+              - text: ": Draft"
+              - strong [ref=e523]: Publication Date
+              - text: ": 2026-06-09"
+              - strong [ref=e524]: Editor
+              - text: ": GitHub Agentic Workflows Team"
+              - strong [ref=e525]: This Version
+              - text: ":"
+              - link "ai-credits-specification" [ref=e526] [cursor=pointer]:
+                - /url: /gh-aw/specs/ai-credits-specification/
+              - strong [ref=e527]: Latest Published Version
+              - text: ": This document"
+            - separator [ref=e528]
+            - generic [ref=e529]:
+              - heading "Abstract" [level=2] [ref=e530]
+              - link "Section titled “Abstract”" [ref=e531] [cursor=pointer]:
+                - /url: "#abstract"
+                - img [ref=e533]
+                - generic [ref=e535]: Section titled “Abstract”
+            - paragraph [ref=e536]:
+              - text: This specification defines AI Credits (AIC) as the normative inference-cost metric for GitHub Agentic Workflows (gh-aw). It specifies the required calculation model from token usage and provider pricing, the canonical
+              - code [ref=e537]: models.json
+              - text: catalog format used to store per-model pricing inputs, and the required external references for GitHub Copilot model and billing alignment.
+            - generic [ref=e538]:
+              - heading "Status of This Document" [level=2] [ref=e539]
+              - link "Section titled “Status of This Document”" [ref=e540] [cursor=pointer]:
+                - /url: "#status-of-this-document"
+                - img [ref=e542]
+                - generic [ref=e544]: Section titled “Status of This Document”
+            - paragraph [ref=e545]: This section describes the status of this document at the time of publication. This is a draft specification and may be updated, replaced, or made obsolete by other documents at any time.
+            - paragraph [ref=e546]: This document is governed by the GitHub Agentic Workflows project specifications process.
+            - generic [ref=e547]:
+              - heading "Table of Contents" [level=2] [ref=e548]
+              - link "Section titled “Table of Contents”" [ref=e549] [cursor=pointer]:
+                - /url: "#table-of-contents"
+                - img [ref=e551]
+                - generic [ref=e553]: Section titled “Table of Contents”
+            - list [ref=e554]:
+              - listitem [ref=e555]:
+                - link "Introduction" [ref=e556] [cursor=pointer]:
+                  - /url: "#1-introduction"
+              - listitem [ref=e557]:
+                - link "Conformance" [ref=e558] [cursor=pointer]:
+                  - /url: "#2-conformance"
+              - listitem [ref=e559]:
+                - link "AI Credits Accounting Model" [ref=e560] [cursor=pointer]:
+                  - /url: "#3-ai-credits-accounting-model"
+              - listitem [ref=e561]:
+                - link "Pricing Catalog Format (models.json)" [ref=e562] [cursor=pointer]:
+                  - /url: "#4-pricing-catalog-format-modelsjson"
+                  - text: Pricing Catalog Format (
+                  - code [ref=e563]: models.json
+                  - text: )
+              - listitem [ref=e564]:
+                - link "Catalog Provisioning and Synchronization" [ref=e565] [cursor=pointer]:
+                  - /url: "#5-catalog-provisioning-and-synchronization"
+              - listitem [ref=e566]:
+                - link "Copilot Billing Reference Requirements" [ref=e567] [cursor=pointer]:
+                  - /url: "#6-copilot-billing-reference-requirements"
+              - listitem [ref=e568]:
+                - link "Reporting Requirements" [ref=e569] [cursor=pointer]:
+                  - /url: "#7-reporting-requirements"
+              - listitem [ref=e570]:
+                - link "Compliance Testing" [ref=e571] [cursor=pointer]:
+                  - /url: "#8-compliance-testing"
+              - listitem [ref=e572]:
+                - link "Daily AI Credits Guardrail" [ref=e573] [cursor=pointer]:
+                  - /url: "#9-daily-ai-credits-guardrail"
+              - listitem [ref=e574]:
+                - link "Per-Run AI Credits Budget" [ref=e575] [cursor=pointer]:
+                  - /url: "#10-per-run-ai-credits-budget"
+              - listitem [ref=e576]:
+                - link "Appendices" [ref=e577] [cursor=pointer]:
+                  - /url: "#appendices"
+              - listitem [ref=e578]:
+                - link "References" [ref=e579] [cursor=pointer]:
+                  - /url: "#references"
+              - listitem [ref=e580]:
+                - link "Change Log" [ref=e581] [cursor=pointer]:
+                  - /url: "#change-log"
+            - separator [ref=e582]
+            - generic [ref=e583]:
+              - heading "1. Introduction" [level=2] [ref=e584]
+              - link "Section titled “1. Introduction”" [ref=e585] [cursor=pointer]:
+                - /url: "#1-introduction"
+                - img [ref=e587]
+                - generic [ref=e589]: Section titled “1. Introduction”
+            - generic [ref=e590]:
+              - heading "1.1 Purpose" [level=3] [ref=e591]
+              - link "Section titled “1.1 Purpose”" [ref=e592] [cursor=pointer]:
+                - /url: "#11-purpose"
+                - img [ref=e594]
+                - generic [ref=e596]: Section titled “1.1 Purpose”
+            - paragraph [ref=e597]: AIC provides a single monetary-normalized metric for inference cost across supported model providers. This specification defines how conforming implementations compute AIC, how pricing data is represented, and how Copilot-specific pricing alignment is governed.
+            - generic [ref=e598]:
+              - heading "1.2 Scope" [level=3] [ref=e599]
+              - link "Section titled “1.2 Scope”" [ref=e600] [cursor=pointer]:
+                - /url: "#12-scope"
+                - img [ref=e602]
+                - generic [ref=e604]: Section titled “1.2 Scope”
+            - paragraph [ref=e605]: "This specification covers:"
+            - list [ref=e606]:
+              - listitem [ref=e607]: The normative AIC unit definition and conversion rules.
+              - listitem [ref=e608]: The per-invocation and aggregated AIC calculation formulas.
+              - listitem [ref=e609]:
+                - text: Required
+                - code [ref=e610]: models.json
+                - text: data structure and field semantics.
+              - listitem [ref=e611]: Requirements for how pricing catalog data is provided and mirrored in gh-aw.
+              - listitem [ref=e612]: Required references to GitHub Copilot model and billing documentation.
+            - paragraph [ref=e613]: "This specification does NOT cover:"
+            - list [ref=e614]:
+              - listitem [ref=e615]: GitHub Actions minutes billing.
+              - listitem [ref=e616]: ET (Effective Tokens) normalization rules.
+              - listitem [ref=e617]: Provider-side billing reconciliation and invoice dispute procedures.
+            - generic [ref=e618]:
+              - heading "1.3 Design Goals" [level=3] [ref=e619]
+              - link "Section titled “1.3 Design Goals”" [ref=e620] [cursor=pointer]:
+                - /url: "#13-design-goals"
+                - img [ref=e622]
+                - generic [ref=e624]: Section titled “1.3 Design Goals”
+            - paragraph [ref=e625]: "The specification is designed to:"
+            - list [ref=e626]:
+              - listitem [ref=e627]: Provide a testable and deterministic calculation contract.
+              - listitem [ref=e628]: Keep pricing inputs explicit and auditable through structured catalog files.
+              - listitem [ref=e629]: Support model-name drift through normalized lookup and prefix fallback matching.
+              - listitem [ref=e630]: Maintain compatibility between CLI and setup runtime pricing catalogs.
+            - separator [ref=e631]
+            - generic [ref=e632]:
+              - heading "2. Conformance" [level=2] [ref=e633]
+              - link "Section titled “2. Conformance”" [ref=e634] [cursor=pointer]:
+                - /url: "#2-conformance"
+                - img [ref=e636]
+                - generic [ref=e638]: Section titled “2. Conformance”
+            - generic [ref=e639]:
+              - heading "2.1 Conformance Classes" [level=3] [ref=e640]
+              - link "Section titled “2.1 Conformance Classes”" [ref=e641] [cursor=pointer]:
+                - /url: "#21-conformance-classes"
+                - img [ref=e643]
+                - generic [ref=e645]: Section titled “2.1 Conformance Classes”
+            - paragraph [ref=e646]:
+              - strong [ref=e647]: Conforming implementation
+              - text: ": Satisfies all MUST/SHALL requirements in Sections 3 through 8."
+            - paragraph [ref=e648]:
+              - strong [ref=e649]: Partially conforming implementation
+              - text: ": Computes core AIC from token usage and model pricing (Section 3) but omits one or more optional reporting or synchronization requirements."
+            - generic [ref=e650]:
+              - heading "2.2 Requirements Notation" [level=3] [ref=e651]
+              - link "Section titled “2.2 Requirements Notation”" [ref=e652] [cursor=pointer]:
+                - /url: "#22-requirements-notation"
+                - img [ref=e654]
+                - generic [ref=e656]: Section titled “2.2 Requirements Notation”
+            - paragraph [ref=e657]:
+              - text: The key words “MUST”, “MUST NOT”, “REQUIRED”, “SHALL”, “SHALL NOT”, “SHOULD”, “SHOULD NOT”, “RECOMMENDED”, “NOT RECOMMENDED”, “MAY”, and “OPTIONAL” in this document are to be interpreted as described in
+              - link "RFC 2119" [ref=e658] [cursor=pointer]:
+                - /url: https://www.ietf.org/rfc/rfc2119.txt
+              - text: .
+            - generic [ref=e659]:
+              - heading "2.3 Compliance Levels" [level=3] [ref=e660]
+              - link "Section titled “2.3 Compliance Levels”" [ref=e661] [cursor=pointer]:
+                - /url: "#23-compliance-levels"
+                - img [ref=e663]
+                - generic [ref=e665]: Section titled “2.3 Compliance Levels”
+            - list [ref=e666]:
+              - listitem [ref=e667]:
+                - strong [ref=e668]: Level 1 – Calculation
+                - text: ": Implements AIC formulas and provider token handling (Section 3)."
+              - listitem [ref=e669]:
+                - strong [ref=e670]: Level 2 – Catalog
+                - text: ": Implements required"
+                - code [ref=e671]: models.json
+                - text: structure and lookup semantics (Section 4).
+              - listitem [ref=e672]:
+                - strong [ref=e673]: Level 3 – Operational
+                - text: ": Implements catalog provisioning, Copilot reference alignment, and reporting requirements (Sections 5–7)."
+            - separator [ref=e674]
+            - generic [ref=e675]:
+              - heading "3. AI Credits Accounting Model" [level=2] [ref=e676]
+              - link "Section titled “3. AI Credits Accounting Model”" [ref=e677] [cursor=pointer]:
+                - /url: "#3-ai-credits-accounting-model"
+                - img [ref=e679]
+                - generic [ref=e681]: Section titled “3. AI Credits Accounting Model”
+            - generic [ref=e682]:
+              - heading "3.1 Unit Definition" [level=3] [ref=e683]
+              - link "Section titled “3.1 Unit Definition”" [ref=e684] [cursor=pointer]:
+                - /url: "#31-unit-definition"
+                - img [ref=e686]
+                - generic [ref=e688]: Section titled “3.1 Unit Definition”
+            - paragraph [ref=e689]: "A conforming implementation MUST define:"
+            - list [ref=e690]:
+              - listitem [ref=e691]:
+                - code [ref=e692]: 1 AIC = 0.01 USD
+              - listitem [ref=e693]:
+                - code [ref=e694]: AIC = USD / 0.01
+            - generic [ref=e695]:
+              - heading "3.2 Token Classes" [level=3] [ref=e696]
+              - link "Section titled “3.2 Token Classes”" [ref=e697] [cursor=pointer]:
+                - /url: "#32-token-classes"
+                - img [ref=e699]
+                - generic [ref=e701]: Section titled “3.2 Token Classes”
+            - paragraph [ref=e702]: "Implementations MUST support the following token classes for cost calculation when available:"
+            - list [ref=e703]:
+              - listitem [ref=e704]: Input tokens
+              - listitem [ref=e705]: Output tokens
+              - listitem [ref=e706]: Cache read tokens
+              - listitem [ref=e707]: Cache write tokens
+              - listitem [ref=e708]: Reasoning tokens
+            - generic [ref=e709]:
+              - heading "3.3 Per-Invocation Cost Formula" [level=3] [ref=e710]
+              - link "Section titled “3.3 Per-Invocation Cost Formula”" [ref=e711] [cursor=pointer]:
+                - /url: "#33-per-invocation-cost-formula"
+                - img [ref=e713]
+                - generic [ref=e715]: Section titled “3.3 Per-Invocation Cost Formula”
+            - paragraph [ref=e716]: "For a single invocation, implementations MUST compute USD as:"
+            - figure [ref=e718]:
+              - code [ref=e720]:
+                - generic [ref=e722]: cost_usd =
+                - generic [ref=e724]: (input_tokens × input_price_per_token) +
+                - generic [ref=e727]: (output_tokens × output_price_per_token) +
+                - generic [ref=e730]: (cache_read_tokens × cache_read_price_per_token) +
+                - generic [ref=e733]: (cache_write_tokens × cache_write_price_per_token) +
+                - generic [ref=e736]: (reasoning_tokens × reasoning_price_per_token)
+              - button "Copy to clipboard" [ref=e739] [cursor=pointer]
+            - paragraph [ref=e741]: "A conforming implementation MUST derive AIC as:"
+            - figure [ref=e743]:
+              - code [ref=e745]:
+                - generic [ref=e747]: aic = cost_usd / 0.01
+              - button "Copy to clipboard" [ref=e749] [cursor=pointer]
+            - generic [ref=e751]:
+              - heading "3.4 Price Fallback Rules" [level=3] [ref=e752]
+              - link "Section titled “3.4 Price Fallback Rules”" [ref=e753] [cursor=pointer]:
+                - /url: "#34-price-fallback-rules"
+                - img [ref=e755]
+                - generic [ref=e757]: Section titled “3.4 Price Fallback Rules”
+            - paragraph [ref=e758]: "If a model entry omits optional price fields, implementations MUST apply the following fallback behavior:"
+            - list [ref=e759]:
+              - listitem [ref=e760]:
+                - code [ref=e761]: cache_read_price_per_token
+                - text: defaults to
+                - code [ref=e762]: input_price_per_token
+              - listitem [ref=e763]:
+                - code [ref=e764]: cache_write_price_per_token
+                - text: defaults to
+                - code [ref=e765]: input_price_per_token
+              - listitem [ref=e766]:
+                - code [ref=e767]: reasoning_price_per_token
+                - text: defaults to
+                - code [ref=e768]: output_price_per_token
+            - generic [ref=e769]:
+              - heading "3.5 Provider-Specific Input Handling" [level=3] [ref=e770]
+              - link "Section titled “3.5 Provider-Specific Input Handling”" [ref=e771] [cursor=pointer]:
+                - /url: "#35-provider-specific-input-handling"
+                - img [ref=e773]
+                - generic [ref=e775]: Section titled “3.5 Provider-Specific Input Handling”
+            - paragraph [ref=e776]:
+              - text: For providers that include cache-read tokens in total input tokens, implementations MUST subtract
+              - code [ref=e777]: cache_read_tokens
+              - text: from
+              - code [ref=e778]: input_tokens
+              - text: before applying input price and MUST NOT double-charge cache-read usage.
+            - generic [ref=e779]:
+              - heading "3.6 Aggregation" [level=3] [ref=e780]
+              - link "Section titled “3.6 Aggregation”" [ref=e781] [cursor=pointer]:
+                - /url: "#36-aggregation"
+                - img [ref=e783]
+                - generic [ref=e785]: Section titled “3.6 Aggregation”
+            - paragraph [ref=e786]: For grouped runs (for example, episodes), implementations MUST aggregate AIC by summing per-invocation AIC values.
+            - separator [ref=e787]
+            - generic [ref=e788]:
+              - heading "4. Pricing Catalog Format (models.json)" [level=2] [ref=e789]:
+                - text: 4. Pricing Catalog Format (
+                - code [ref=e790]: models.json
+                - text: )
+              - link "Section titled “4. Pricing Catalog Format (models.json)”" [ref=e791] [cursor=pointer]:
+                - /url: "#4-pricing-catalog-format-modelsjson"
+                - img [ref=e793]
+                - generic [ref=e795]: Section titled “4. Pricing Catalog Format (models.json)”
+            - generic [ref=e796]:
+              - heading "4.1 Top-Level Structure" [level=3] [ref=e797]
+              - link "Section titled “4.1 Top-Level Structure”" [ref=e798] [cursor=pointer]:
+                - /url: "#41-top-level-structure"
+                - img [ref=e800]
+                - generic [ref=e802]: Section titled “4.1 Top-Level Structure”
+            - paragraph [ref=e803]: "A conforming catalog MUST be valid JSON with this structure:"
+            - figure [ref=e805]:
+              - code [ref=e807]:
+                - generic [ref=e809]: "{"
+                - generic [ref=e811]: "\"providers\": {"
+                - generic [ref=e813]: "\"provider-name\": {"
+                - generic [ref=e815]: "\"models\": {"
+                - generic [ref=e817]: "\"model-id\": {"
+                - generic [ref=e819]: "\"cost\": {"
+                - generic [ref=e821]: "\"input\": \"...\","
+                - generic [ref=e823]: "\"output\": \"...\","
+                - generic [ref=e825]: "\"cache_read\": \"...\","
+                - generic [ref=e827]: "\"cache_write\": \"...\","
+                - generic [ref=e829]: "\"reasoning\": \"...\""
+                - generic [ref=e831]: "}"
+                - generic [ref=e834]: "}"
+                - generic [ref=e837]: "}"
+                - generic [ref=e840]: "}"
+                - generic [ref=e843]: "}"
+                - generic [ref=e846]: "}"
+              - button "Copy to clipboard" [ref=e848] [cursor=pointer]
+            - generic [ref=e850]:
+              - heading "4.2 Required and Optional Fields" [level=3] [ref=e851]
+              - link "Section titled “4.2 Required and Optional Fields”" [ref=e852] [cursor=pointer]:
+                - /url: "#42-required-and-optional-fields"
+                - img [ref=e854]
+                - generic [ref=e856]: Section titled “4.2 Required and Optional Fields”
+            - paragraph [ref=e857]: "For each model:"
+            - list [ref=e858]:
+              - listitem [ref=e859]:
+                - code [ref=e860]: cost.input
+                - text: MUST be present.
+              - listitem [ref=e861]:
+                - code [ref=e862]: cost.output
+                - text: MUST be present.
+              - listitem [ref=e863]:
+                - code [ref=e864]: cost.cache_read
+                - text: MAY be present.
+              - listitem [ref=e865]:
+                - code [ref=e866]: cost.cache_write
+                - text: MAY be present.
+              - listitem [ref=e867]:
+                - code [ref=e868]: cost.reasoning
+                - text: MAY be present.
+            - paragraph [ref=e869]: Cost values MUST be decimal numbers encoded as strings and interpreted as USD per token.
+            - generic [ref=e870]:
+              - heading "4.3 Provider Keys" [level=3] [ref=e871]
+              - link "Section titled “4.3 Provider Keys”" [ref=e872] [cursor=pointer]:
+                - /url: "#43-provider-keys"
+                - img [ref=e874]
+                - generic [ref=e876]: Section titled “4.3 Provider Keys”
+            - paragraph [ref=e877]:
+              - text: Provider keys MUST be lowercase identifiers. For Copilot-backed pricing, the canonical provider key MUST be
+              - code [ref=e878]: github-copilot
+              - text: .
+            - generic [ref=e879]:
+              - heading "4.4 Model Lookup Normalization" [level=3] [ref=e880]
+              - link "Section titled “4.4 Model Lookup Normalization”" [ref=e881] [cursor=pointer]:
+                - /url: "#44-model-lookup-normalization"
+                - img [ref=e883]
+                - generic [ref=e885]: Section titled “4.4 Model Lookup Normalization”
+            - paragraph [ref=e886]:
+              - text: A conforming implementation MUST normalize provider and model identifiers for lookup by trimming whitespace and applying case-insensitive comparison. An implementation SHOULD support compatibility matching between punctuation variants (for example,
+              - code [ref=e887]: .
+              - text: and
+              - code [ref=e888]: _
+              - text: compared to
+              - code [ref=e889]: "-"
+              - text: ) and provider-scoped prefix fallback.
+            - paragraph [ref=e890]:
+              - text: A conforming implementation MUST recognize the following provider name aliases and normalize them to
+              - code [ref=e891]: github-copilot
+              - text: "before catalog lookup:"
+            - table [ref=e893]:
+              - rowgroup [ref=e894]:
+                - row "Input value Normalized to" [ref=e895]:
+                  - columnheader "Input value" [ref=e896]
+                  - columnheader "Normalized to" [ref=e897]
+              - rowgroup [ref=e898]:
+                - row "github github-copilot" [ref=e899]:
+                  - cell "github" [ref=e900]:
+                    - code [ref=e901]: github
+                  - cell "github-copilot" [ref=e902]:
+                    - code [ref=e903]: github-copilot
+                - row "copilot github-copilot" [ref=e904]:
+                  - cell "copilot" [ref=e905]:
+                    - code [ref=e906]: copilot
+                  - cell "github-copilot" [ref=e907]:
+                    - code [ref=e908]: github-copilot
+                - row "github_models github-copilot" [ref=e909]:
+                  - cell "github_models" [ref=e910]:
+                    - code [ref=e911]: github_models
+                  - cell "github-copilot" [ref=e912]:
+                    - code [ref=e913]: github-copilot
+            - paragraph [ref=e914]:
+              - text: The
+              - code [ref=e915]: github_models
+              - text: alias is written by the AWF proxy for Copilot engine runs and MUST be recognized so that AIC is computed and emitted for all Copilot-backed engines.
+            - separator [ref=e916]
+            - generic [ref=e917]:
+              - heading "5. Catalog Provisioning and Synchronization" [level=2] [ref=e918]
+              - link "Section titled “5. Catalog Provisioning and Synchronization”" [ref=e919] [cursor=pointer]:
+                - /url: "#5-catalog-provisioning-and-synchronization"
+                - img [ref=e921]
+                - generic [ref=e923]: Section titled “5. Catalog Provisioning and Synchronization”
+            - generic [ref=e924]:
+              - heading "5.1 Embedded Runtime Catalogs" [level=3] [ref=e925]
+              - link "Section titled “5.1 Embedded Runtime Catalogs”" [ref=e926] [cursor=pointer]:
+                - /url: "#51-embedded-runtime-catalogs"
+                - img [ref=e928]
+                - generic [ref=e930]: Section titled “5.1 Embedded Runtime Catalogs”
+            - paragraph [ref=e931]: "gh-aw implementations MUST provide synchronized pricing catalogs at:"
+            - list [ref=e932]:
+              - listitem [ref=e933]:
+                - code [ref=e934]: pkg/cli/data/models.json
+              - listitem [ref=e935]:
+                - code [ref=e936]: actions/setup/js/models.json
+            - paragraph [ref=e937]: These files SHALL represent the same pricing dataset.
+            - generic [ref=e938]:
+              - heading "5.2 Source and Refresh Expectations" [level=3] [ref=e939]
+              - link "Section titled “5.2 Source and Refresh Expectations”" [ref=e940] [cursor=pointer]:
+                - /url: "#52-source-and-refresh-expectations"
+                - img [ref=e942]
+                - generic [ref=e944]: Section titled “5.2 Source and Refresh Expectations”
+            - paragraph [ref=e945]: Catalog refresh processes SHOULD use normalized upstream model inventories and SHOULD validate Copilot entries against authoritative GitHub Copilot model and billing documentation.
+            - generic [ref=e946]:
+              - heading "5.3 Change Control" [level=3] [ref=e947]
+              - link "Section titled “5.3 Change Control”" [ref=e948] [cursor=pointer]:
+                - /url: "#53-change-control"
+                - img [ref=e950]
+                - generic [ref=e952]: Section titled “5.3 Change Control”
+            - paragraph [ref=e953]: Catalog updates MUST preserve JSON validity and MUST maintain backward-safe handling for historical model IDs that remain in the catalog but are absent from current live inventories.
+            - separator [ref=e954]
+            - generic [ref=e955]:
+              - heading "6. Copilot Billing Reference Requirements" [level=2] [ref=e956]
+              - link "Section titled “6. Copilot Billing Reference Requirements”" [ref=e957] [cursor=pointer]:
+                - /url: "#6-copilot-billing-reference-requirements"
+                - img [ref=e959]
+                - generic [ref=e961]: Section titled “6. Copilot Billing Reference Requirements”
+            - paragraph [ref=e962]: "Implementations and documentation that describe Copilot AIC behavior MUST reference:"
+            - list [ref=e963]:
+              - listitem [ref=e964]:
+                - text: "GitHub Copilot models documentation:"
+                - link "https://docs.github.com/en/copilot/concepts/about-github-copilot-models" [ref=e965] [cursor=pointer]:
+                  - /url: https://docs.github.com/en/copilot/concepts/about-github-copilot-models
+              - listitem [ref=e966]:
+                - text: "GitHub Copilot models and pricing reference:"
+                - link "https://docs.github.com/en/copilot/reference/copilot-billing/models-and-pricing" [ref=e967] [cursor=pointer]:
+                  - /url: https://docs.github.com/en/copilot/reference/copilot-billing/models-and-pricing
+              - listitem [ref=e968]:
+                - text: "GitHub Copilot plan and billing documentation:"
+                - link "https://docs.github.com/en/copilot/about-github-copilot/subscription-plans-for-github-copilot" [ref=e969] [cursor=pointer]:
+                  - /url: https://docs.github.com/en/copilot/about-github-copilot/subscription-plans-for-github-copilot
+            - paragraph [ref=e970]: These references SHOULD be treated as the external billing-alignment sources for Copilot model pricing validation.
+            - separator [ref=e971]
+            - generic [ref=e972]:
+              - heading "7. Reporting Requirements" [level=2] [ref=e973]
+              - link "Section titled “7. Reporting Requirements”" [ref=e974] [cursor=pointer]:
+                - /url: "#7-reporting-requirements"
+                - img [ref=e976]
+                - generic [ref=e978]: Section titled “7. Reporting Requirements”
+            - paragraph [ref=e979]: A conforming implementation MUST expose AIC in runtime reporting outputs where cost metrics are emitted.
+            - paragraph [ref=e980]: "Implementations SHOULD provide:"
+            - list [ref=e981]:
+              - listitem [ref=e982]: Per-run AIC values.
+              - listitem [ref=e983]: Aggregated AIC values for grouped executions.
+              - listitem [ref=e984]: Structured output fields suitable for machine parsing.
+            - separator [ref=e985]
+            - generic [ref=e986]:
+              - heading "8. Compliance Testing" [level=2] [ref=e987]
+              - link "Section titled “8. Compliance Testing”" [ref=e988] [cursor=pointer]:
+                - /url: "#8-compliance-testing"
+                - img [ref=e990]
+                - generic [ref=e992]: Section titled “8. Compliance Testing”
+            - generic [ref=e993]:
+              - heading "8.1 Test Suite Requirements" [level=3] [ref=e994]
+              - link "Section titled “8.1 Test Suite Requirements”" [ref=e995] [cursor=pointer]:
+                - /url: "#81-test-suite-requirements"
+                - img [ref=e997]
+                - generic [ref=e999]: Section titled “8.1 Test Suite Requirements”
+            - paragraph [ref=e1000]: "A conformance test suite MUST include at least the following test cases:"
+            - list [ref=e1001]:
+              - listitem [ref=e1002]:
+                - strong [ref=e1003]: T-AIC-001
+                - text: ": Verify"
+                - code [ref=e1004]: 1 AIC = 0.01 USD
+                - text: conversion.
+              - listitem [ref=e1005]:
+                - strong [ref=e1006]: T-AIC-002
+                - text: ": Verify per-invocation AIC computation using all token classes."
+              - listitem [ref=e1007]:
+                - strong [ref=e1008]: T-AIC-003
+                - text: ": Verify cache-read subtraction behavior for providers that include cache-read tokens in input totals."
+              - listitem [ref=e1009]:
+                - strong [ref=e1010]: T-AIC-004
+                - text: ": Verify fallback pricing when optional cost fields are omitted."
+              - listitem [ref=e1011]:
+                - strong [ref=e1012]: T-AIC-005
+                - text: ": Verify"
+                - code [ref=e1013]: models.json
+                - text: rejects missing required fields (
+                - code [ref=e1014]: input
+                - text: ","
+                - code [ref=e1015]: output
+                - text: ).
+              - listitem [ref=e1016]:
+                - strong [ref=e1017]: T-AIC-006
+                - text: ": Verify provider key normalization and"
+                - code [ref=e1018]: github
+                - text: ","
+                - code [ref=e1019]: copilot
+                - text: ", and"
+                - code [ref=e1020]: github_models
+                - text: to
+                - code [ref=e1021]: github-copilot
+                - text: mapping behavior.
+              - listitem [ref=e1022]:
+                - strong [ref=e1023]: T-AIC-007
+                - text: ": Verify catalog mirror consistency between CLI and setup runtime paths."
+              - listitem [ref=e1024]:
+                - strong [ref=e1025]: T-AIC-008
+                - text: ": Verify reporting outputs include per-run AIC values."
+            - generic [ref=e1026]:
+              - heading "8.2 Compliance Checklist" [level=3] [ref=e1027]
+              - link "Section titled “8.2 Compliance Checklist”" [ref=e1028] [cursor=pointer]:
+                - /url: "#82-compliance-checklist"
+                - img [ref=e1030]
+                - generic [ref=e1032]: Section titled “8.2 Compliance Checklist”
+            - table [ref=e1034]:
+              - rowgroup [ref=e1035]:
+                - row "Requirement Test ID Level Status" [ref=e1036]:
+                  - columnheader "Requirement" [ref=e1037]
+                  - columnheader "Test ID" [ref=e1038]
+                  - columnheader "Level" [ref=e1039]
+                  - columnheader "Status" [ref=e1040]
+              - rowgroup [ref=e1041]:
+                - row "Unit conversion (1 AIC = 0.01 USD) T-AIC-001 1 Required" [ref=e1042]:
+                  - cell "Unit conversion (1 AIC = 0.01 USD)" [ref=e1043]:
+                    - text: Unit conversion (
+                    - code [ref=e1044]: 1 AIC = 0.01 USD
+                    - text: )
+                  - cell "T-AIC-001" [ref=e1045]
+                  - cell "1" [ref=e1046]
+                  - cell "Required" [ref=e1047]
+                - row "Full token-class formula T-AIC-002 1 Required" [ref=e1048]:
+                  - cell "Full token-class formula" [ref=e1049]
+                  - cell "T-AIC-002" [ref=e1050]
+                  - cell "1" [ref=e1051]
+                  - cell "Required" [ref=e1052]
+                - row "Cache-read non-double-charge behavior T-AIC-003 1 Required" [ref=e1053]:
+                  - cell "Cache-read non-double-charge behavior" [ref=e1054]
+                  - cell "T-AIC-003" [ref=e1055]
+                  - cell "1" [ref=e1056]
+                  - cell "Required" [ref=e1057]
+                - row "Optional price fallback behavior T-AIC-004 1 Required" [ref=e1058]:
+                  - cell "Optional price fallback behavior" [ref=e1059]
+                  - cell "T-AIC-004" [ref=e1060]
+                  - cell "1" [ref=e1061]
+                  - cell "Required" [ref=e1062]
+                - row "Catalog schema conformance T-AIC-005 2 Required" [ref=e1063]:
+                  - cell "Catalog schema conformance" [ref=e1064]
+                  - cell "T-AIC-005" [ref=e1065]
+                  - cell "2" [ref=e1066]
+                  - cell "Required" [ref=e1067]
+                - row "Provider/model normalization behavior T-AIC-006 2 Required" [ref=e1068]:
+                  - cell "Provider/model normalization behavior" [ref=e1069]
+                  - cell "T-AIC-006" [ref=e1070]
+                  - cell "2" [ref=e1071]
+                  - cell "Required" [ref=e1072]
+                - row "Mirrored catalog consistency T-AIC-007 3 Required" [ref=e1073]:
+                  - cell "Mirrored catalog consistency" [ref=e1074]
+                  - cell "T-AIC-007" [ref=e1075]
+                  - cell "3" [ref=e1076]
+                  - cell "Required" [ref=e1077]
+                - row "AIC reporting visibility T-AIC-008 3 Required" [ref=e1078]:
+                  - cell "AIC reporting visibility" [ref=e1079]
+                  - cell "T-AIC-008" [ref=e1080]
+                  - cell "3" [ref=e1081]
+                  - cell "Required" [ref=e1082]
+            - separator [ref=e1083]
+            - generic [ref=e1084]:
+              - heading "9. Daily AI Credits Guardrail" [level=2] [ref=e1085]
+              - link "Section titled “9. Daily AI Credits Guardrail”" [ref=e1086] [cursor=pointer]:
+                - /url: "#9-daily-ai-credits-guardrail"
+                - img [ref=e1088]
+                - generic [ref=e1090]: Section titled “9. Daily AI Credits Guardrail”
+            - generic [ref=e1091]:
+              - heading "9.1 Purpose" [level=3] [ref=e1092]
+              - link "Section titled “9.1 Purpose”" [ref=e1093] [cursor=pointer]:
+                - /url: "#91-purpose"
+                - img [ref=e1095]
+                - generic [ref=e1097]: Section titled “9.1 Purpose”
+            - paragraph [ref=e1098]: The daily AI Credits guardrail is a per-workflow cumulative budget limit evaluated at action runtime. It prevents a single workflow from consuming excessive AI Credits across all runs in a rolling 24-hour window. This section specifies the normative resolution order for the guardrail threshold and the mechanism by which the runtime default is resolved.
+            - generic [ref=e1099]:
+              - heading "9.2 Guardrail Configuration Field" [level=3] [ref=e1100]
+              - link "Section titled “9.2 Guardrail Configuration Field”" [ref=e1101] [cursor=pointer]:
+                - /url: "#92-guardrail-configuration-field"
+                - img [ref=e1103]
+                - generic [ref=e1105]: Section titled “9.2 Guardrail Configuration Field”
+            - paragraph [ref=e1106]:
+              - text: The guardrail threshold is expressed through the
+              - code [ref=e1107]: max-daily-ai-credits
+              - text: frontmatter field in the workflow YAML source. When set, a conforming compiler MUST emit the resolved threshold as the
+              - code [ref=e1108]: GH_AW_MAX_DAILY_AI_CREDITS
+              - text: environment variable in the compiled workflow YAML. The daily guardrail check step MUST gate its execution on this variable being non-empty.
+            - generic [ref=e1109]:
+              - heading "9.3 Normative Resolution Order" [level=3] [ref=e1110]
+              - link "Section titled “9.3 Normative Resolution Order”" [ref=e1111] [cursor=pointer]:
+                - /url: "#93-normative-resolution-order"
+                - img [ref=e1113]
+                - generic [ref=e1115]: Section titled “9.3 Normative Resolution Order”
+            - paragraph [ref=e1116]: "A conforming implementation MUST resolve the effective daily AI Credits threshold using the following precedence (highest to lowest):"
+            - list [ref=e1117]:
+              - listitem [ref=e1118]:
+                - paragraph [ref=e1119]:
+                  - strong [ref=e1120]: Frontmatter value
+                  - text: (
+                  - code [ref=e1121]: max-daily-ai-credits
+                  - text: "): Resolved at compile time. Numeric values MUST be normalized to integer strings; suffix notation ("
+                  - code [ref=e1122]: K
+                  - text: ","
+                  - code [ref=e1123]: M
+                  - text: ) MUST be expanded (e.g.,
+                  - code [ref=e1124]: 100M
+                  - text: →
+                  - code [ref=e1125]: "100000000"
+                  - text: ). When present, the resolved value MUST be emitted literally as the
+                  - code [ref=e1126]: GH_AW_MAX_DAILY_AI_CREDITS
+                  - text: value.
+              - listitem [ref=e1127]:
+                - paragraph [ref=e1128]:
+                  - strong [ref=e1129]: Imported workflow configuration
+                  - text: (
+                  - code [ref=e1130]: max-daily-ai-credits
+                  - text: "from imported shared workflows): Resolved at compile time using a first-wins accumulation across all imported workflows. A conforming implementation MUST apply the first usable"
+                  - code [ref=e1131]: max-daily-ai-credits
+                  - text: value found across imports when no frontmatter value is present on the main workflow. Imported values undergo the same normalization and validation rules as frontmatter values.
+              - listitem [ref=e1132]:
+                - paragraph [ref=e1133]:
+                  - strong [ref=e1134]: Runtime organization variable
+                  - text: (
+                  - code [ref=e1135]: vars.GH_AW_DEFAULT_MAX_DAILY_AI_CREDITS
+                  - text: "): A GitHub Actions"
+                  - code [ref=e1136]: vars.*
+                  - text: expression resolved at action runtime by the GitHub Actions runner. A conforming implementation MUST NOT read this variable at compile time via the process environment; it MUST instead be embedded in the compiled YAML as a GitHub Actions expression evaluated by the runner.
+              - listitem [ref=e1137]:
+                - paragraph [ref=e1138]:
+                  - strong [ref=e1139]: Built-in constant default
+                  - text: (
+                  - code [ref=e1140]: "5000"
+                  - text: "): The fallback literal embedded in the GitHub Actions expression when the organization variable is unset. The value"
+                  - code [ref=e1141]: "5000"
+                  - text: AIC represents the normative built-in default for the daily guardrail threshold.
+            - paragraph [ref=e1142]:
+              - text: A conforming implementation MUST NOT resolve any of these values from repository-local configuration files (e.g.,
+              - code [ref=e1143]: aw.json
+              - text: ).
+            - generic [ref=e1144]:
+              - heading "9.4 Emitted Expression Form" [level=3] [ref=e1145]
+              - link "Section titled “9.4 Emitted Expression Form”" [ref=e1146] [cursor=pointer]:
+                - /url: "#94-emitted-expression-form"
+                - img [ref=e1148]
+                - generic [ref=e1150]: Section titled “9.4 Emitted Expression Form”
+            - paragraph [ref=e1151]:
+              - text: When neither a frontmatter value nor an imported workflow configuration value is present, a conforming implementation MUST emit the following GitHub Actions expression as the
+              - code [ref=e1152]: GH_AW_MAX_DAILY_AI_CREDITS
+              - text: "environment variable value in the compiled workflow:"
+            - figure [ref=e1154]:
+              - code [ref=e1156]:
+                - generic [ref=e1158]: "${{ vars.GH_AW_DEFAULT_MAX_DAILY_AI_CREDITS || '5000' }}"
+              - button "Copy to clipboard" [ref=e1160] [cursor=pointer]
+            - paragraph [ref=e1162]:
+              - text: This expression MUST be emitted verbatim (not pre-evaluated) so that the GitHub Actions runner resolves the organization variable at workflow execution time. The
+              - code [ref=e1163]: "'5000'"
+              - text: fallback ensures the guardrail is active by default when the organization variable is not configured.
+            - generic [ref=e1164]:
+              - heading "9.5 Disable Sentinel" [level=3] [ref=e1165]
+              - link "Section titled “9.5 Disable Sentinel”" [ref=e1166] [cursor=pointer]:
+                - /url: "#95-disable-sentinel"
+                - img [ref=e1168]
+                - generic [ref=e1170]: Section titled “9.5 Disable Sentinel”
+            - paragraph [ref=e1171]:
+              - text: A
+              - code [ref=e1172]: max-daily-ai-credits
+              - text: frontmatter value of
+              - code [ref=e1173]: "-1"
+              - text: "MUST disable the daily guardrail. When this sentinel is present:"
+            - list [ref=e1174]:
+              - listitem [ref=e1175]:
+                - text: A conforming implementation MUST NOT emit
+                - code [ref=e1176]: GH_AW_MAX_DAILY_AI_CREDITS
+                - text: into the compiled workflow.
+              - listitem [ref=e1177]:
+                - text: The daily guardrail check step MUST be skipped at runtime (its
+                - code [ref=e1178]: "if:"
+                - text: condition evaluates to false).
+            - generic [ref=e1179]:
+              - heading "9.6 Value Validation" [level=3] [ref=e1180]
+              - link "Section titled “9.6 Value Validation”" [ref=e1181] [cursor=pointer]:
+                - /url: "#96-value-validation"
+                - img [ref=e1183]
+                - generic [ref=e1185]: Section titled “9.6 Value Validation”
+            - paragraph [ref=e1186]: "A conforming implementation MUST enforce the following at compile time:"
+            - list [ref=e1187]:
+              - listitem [ref=e1188]: Accept positive integers and positive numeric strings.
+              - listitem [ref=e1189]:
+                - text: Accept the suffix notation
+                - code [ref=e1190]: K
+                - text: and
+                - code [ref=e1191]: M
+                - text: (case-insensitive) as multipliers (×1,000 and ×1,000,000 respectively).
+              - listitem [ref=e1192]:
+                - text: Accept
+                - code [ref=e1193]: "-1"
+                - text: as the explicit disable sentinel.
+              - listitem [ref=e1194]: Accept GitHub Actions expression strings (verbatim, passed through for runtime evaluation).
+              - listitem [ref=e1195]:
+                - text: Reject integer values below
+                - code [ref=e1196]: "-1"
+                - text: with a compile-time validation error.
+              - listitem [ref=e1197]: Reject non-numeric, non-expression values.
+            - generic [ref=e1198]:
+              - heading "9.7 Compliance Tests" [level=3] [ref=e1199]
+              - link "Section titled “9.7 Compliance Tests”" [ref=e1200] [cursor=pointer]:
+                - /url: "#97-compliance-tests"
+                - img [ref=e1202]
+                - generic [ref=e1204]: Section titled “9.7 Compliance Tests”
+            - table [ref=e1206]:
+              - rowgroup [ref=e1207]:
+                - row "Test ID Description Requirement" [ref=e1208]:
+                  - columnheader "Test ID" [ref=e1209]
+                  - columnheader "Description" [ref=e1210]
+                  - columnheader "Requirement" [ref=e1211]
+              - rowgroup [ref=e1212]:
+                - row "T-AIC-DG-001 Frontmatter value emitted literally; no expression wrapper §9.3 (1)" [ref=e1213]:
+                  - cell "T-AIC-DG-001" [ref=e1214]
+                  - cell "Frontmatter value emitted literally; no expression wrapper" [ref=e1215]
+                  - cell "§9.3 (1)" [ref=e1216]
+                - 'row "T-AIC-DG-002 No frontmatter, no imports: emitted expression is ${{ vars.GH_AW_DEFAULT_MAX_DAILY_AI_CREDITS || ''5000'' }} §9.4" [ref=e1217]':
+                  - cell "T-AIC-DG-002" [ref=e1218]
+                  - 'cell "No frontmatter, no imports: emitted expression is ${{ vars.GH_AW_DEFAULT_MAX_DAILY_AI_CREDITS || ''5000'' }}" [ref=e1219]':
+                    - text: "No frontmatter, no imports: emitted expression is"
+                    - code [ref=e1220]: "${{ vars.GH_AW_DEFAULT_MAX_DAILY_AI_CREDITS || '5000' }}"
+                  - cell "§9.4" [ref=e1221]
+                - row "T-AIC-DG-003 Frontmatter -1 disables guardrail; no env var emitted §9.5" [ref=e1222]:
+                  - cell "T-AIC-DG-003" [ref=e1223]
+                  - cell "Frontmatter -1 disables guardrail; no env var emitted" [ref=e1224]:
+                    - text: Frontmatter
+                    - code [ref=e1225]: "-1"
+                    - text: disables guardrail; no env var emitted
+                  - cell "§9.5" [ref=e1226]
+                - row "T-AIC-DG-004 K/M suffix values expanded in emitted literal §9.6" [ref=e1227]:
+                  - cell "T-AIC-DG-004" [ref=e1228]
+                  - cell "K/M suffix values expanded in emitted literal" [ref=e1229]:
+                    - code [ref=e1230]: K
+                    - text: /
+                    - code [ref=e1231]: M
+                    - text: suffix values expanded in emitted literal
+                  - cell "§9.6" [ref=e1232]
+                - row "T-AIC-DG-005 Values below -1 rejected at compile time §9.6" [ref=e1233]:
+                  - cell "T-AIC-DG-005" [ref=e1234]
+                  - cell "Values below -1 rejected at compile time" [ref=e1235]:
+                    - text: Values below
+                    - code [ref=e1236]: "-1"
+                    - text: rejected at compile time
+                  - cell "§9.6" [ref=e1237]
+                - row "T-AIC-DG-006 Runtime variable resolved by GitHub Actions runner, not compiler process §9.3 (3)" [ref=e1238]:
+                  - cell "T-AIC-DG-006" [ref=e1239]
+                  - cell "Runtime variable resolved by GitHub Actions runner, not compiler process" [ref=e1240]
+                  - cell "§9.3 (3)" [ref=e1241]
+                - row "T-AIC-DG-007 Imported workflow max-daily-ai-credits used when no frontmatter value; frontmatter takes precedence over imports §9.3 (2)" [ref=e1242]:
+                  - cell "T-AIC-DG-007" [ref=e1243]
+                  - cell "Imported workflow max-daily-ai-credits used when no frontmatter value; frontmatter takes precedence over imports" [ref=e1244]:
+                    - text: Imported workflow
+                    - code [ref=e1245]: max-daily-ai-credits
+                    - text: used when no frontmatter value; frontmatter takes precedence over imports
+                  - cell "§9.3 (2)" [ref=e1246]
+                - row "T-AIC-DG-008 workflow_call event → guardrail skipped §9.8 (1)" [ref=e1247]:
+                  - cell "T-AIC-DG-008" [ref=e1248]
+                  - cell "workflow_call event → guardrail skipped" [ref=e1249]:
+                    - code [ref=e1250]: workflow_call
+                    - text: event → guardrail skipped
+                  - cell "§9.8 (1)" [ref=e1251]
+                - row "T-AIC-DG-009 repository_dispatch event → guardrail skipped §9.8 (1)" [ref=e1252]:
+                  - cell "T-AIC-DG-009" [ref=e1253]
+                  - cell "repository_dispatch event → guardrail skipped" [ref=e1254]:
+                    - code [ref=e1255]: repository_dispatch
+                    - text: event → guardrail skipped
+                  - cell "§9.8 (1)" [ref=e1256]
+                - row "T-AIC-DG-010 workflow_dispatch + absent/empty GH_AW_WORKFLOW_DISPATCH_AW_CONTEXT → guardrail skipped §9.8 (2)" [ref=e1257]:
+                  - cell "T-AIC-DG-010" [ref=e1258]
+                  - cell "workflow_dispatch + absent/empty GH_AW_WORKFLOW_DISPATCH_AW_CONTEXT → guardrail skipped" [ref=e1259]:
+                    - code [ref=e1260]: workflow_dispatch
+                    - text: + absent/empty
+                    - code [ref=e1261]: GH_AW_WORKFLOW_DISPATCH_AW_CONTEXT
+                    - text: → guardrail skipped
+                  - cell "§9.8 (2)" [ref=e1262]
+                - row "T-AIC-DG-011 workflow_dispatch + aw_context.event_type in slash-command types → guardrail skipped §9.8 (3)" [ref=e1263]:
+                  - cell "T-AIC-DG-011" [ref=e1264]
+                  - cell "workflow_dispatch + aw_context.event_type in slash-command types → guardrail skipped" [ref=e1265]:
+                    - code [ref=e1266]: workflow_dispatch
+                    - text: +
+                    - code [ref=e1267]: aw_context.event_type
+                    - text: in slash-command types → guardrail skipped
+                  - cell "§9.8 (3)" [ref=e1268]
+                - row "T-AIC-DG-012 workflow_dispatch + non-empty aw_context.trigger_label → guardrail skipped §9.8 (3)" [ref=e1269]:
+                  - cell "T-AIC-DG-012" [ref=e1270]
+                  - cell "workflow_dispatch + non-empty aw_context.trigger_label → guardrail skipped" [ref=e1271]:
+                    - code [ref=e1272]: workflow_dispatch
+                    - text: + non-empty
+                    - code [ref=e1273]: aw_context.trigger_label
+                    - text: → guardrail skipped
+                  - cell "§9.8 (3)" [ref=e1274]
+                - row "T-AIC-DG-013 GH_AW_HAS_SLASH_COMMAND=true + matching event → guardrail skipped §9.8 (4)" [ref=e1275]:
+                  - cell "T-AIC-DG-013" [ref=e1276]
+                  - cell "GH_AW_HAS_SLASH_COMMAND=true + matching event → guardrail skipped" [ref=e1277]:
+                    - code [ref=e1278]: GH_AW_HAS_SLASH_COMMAND=true
+                    - text: + matching event → guardrail skipped
+                  - cell "§9.8 (4)" [ref=e1279]
+                - row "T-AIC-DG-014 GH_AW_HAS_SLASH_COMMAND=true + non-matching event → guardrail enforced §9.8 (4)" [ref=e1280]:
+                  - cell "T-AIC-DG-014" [ref=e1281]
+                  - cell "GH_AW_HAS_SLASH_COMMAND=true + non-matching event → guardrail enforced" [ref=e1282]:
+                    - code [ref=e1283]: GH_AW_HAS_SLASH_COMMAND=true
+                    - text: + non-matching event → guardrail enforced
+                  - cell "§9.8 (4)" [ref=e1284]
+                - row "T-AIC-DG-015 GH_AW_HAS_LABEL_COMMAND=true + matching event → guardrail skipped §9.8 (5)" [ref=e1285]:
+                  - cell "T-AIC-DG-015" [ref=e1286]
+                  - cell "GH_AW_HAS_LABEL_COMMAND=true + matching event → guardrail skipped" [ref=e1287]:
+                    - code [ref=e1288]: GH_AW_HAS_LABEL_COMMAND=true
+                    - text: + matching event → guardrail skipped
+                  - cell "§9.8 (5)" [ref=e1289]
+                - row "T-AIC-DG-016 GH_AW_HAS_LABEL_COMMAND=true + non-matching event → guardrail enforced §9.8 (5)" [ref=e1290]:
+                  - cell "T-AIC-DG-016" [ref=e1291]
+                  - cell "GH_AW_HAS_LABEL_COMMAND=true + non-matching event → guardrail enforced" [ref=e1292]:
+                    - code [ref=e1293]: GH_AW_HAS_LABEL_COMMAND=true
+                    - text: + non-matching event → guardrail enforced
+                  - cell "§9.8 (5)" [ref=e1294]
+            - generic [ref=e1295]:
+              - heading "9.8 Guardrail Bypass Conditions" [level=3] [ref=e1296]
+              - link "Section titled “9.8 Guardrail Bypass Conditions”" [ref=e1297] [cursor=pointer]:
+                - /url: "#98-guardrail-bypass-conditions"
+                - img [ref=e1299]
+                - generic [ref=e1301]: Section titled “9.8 Guardrail Bypass Conditions”
+            - paragraph [ref=e1302]: The runtime MUST skip the daily AI Credits guardrail check under the conditions specified in this section. These conditions represent user-initiated or command-driven invocations where throttling would block intentional user actions rather than automated background activity.
+            - paragraph [ref=e1303]: "The following environment variables govern bypass evaluation at runtime:"
+            - table [ref=e1305]:
+              - rowgroup [ref=e1306]:
+                - row "Variable Source Purpose" [ref=e1307]:
+                  - columnheader "Variable" [ref=e1308]
+                  - columnheader "Source" [ref=e1309]
+                  - columnheader "Purpose" [ref=e1310]
+              - rowgroup [ref=e1311]:
+                - row "GITHUB_EVENT_NAME GitHub Actions runner The GitHub event that triggered the current workflow run" [ref=e1312]:
+                  - cell "GITHUB_EVENT_NAME" [ref=e1313]:
+                    - code [ref=e1314]: GITHUB_EVENT_NAME
+                  - cell "GitHub Actions runner" [ref=e1315]
+                  - cell "The GitHub event that triggered the current workflow run" [ref=e1316]
+                - row "GH_AW_WORKFLOW_DISPATCH_AW_CONTEXT Centralized dispatch router JSON payload present when the workflow was routed via workflow_dispatch; absent for direct manual triggers" [ref=e1317]:
+                  - cell "GH_AW_WORKFLOW_DISPATCH_AW_CONTEXT" [ref=e1318]:
+                    - code [ref=e1319]: GH_AW_WORKFLOW_DISPATCH_AW_CONTEXT
+                  - cell "Centralized dispatch router" [ref=e1320]
+                  - cell "JSON payload present when the workflow was routed via workflow_dispatch; absent for direct manual triggers" [ref=e1321]:
+                    - text: JSON payload present when the workflow was routed via
+                    - code [ref=e1322]: workflow_dispatch
+                    - text: ; absent for direct manual triggers
+                - row "GH_AW_HAS_SLASH_COMMAND gh-aw compiler Set to \"true\" when the compiled workflow includes a non-centralized slash command trigger" [ref=e1323]:
+                  - cell "GH_AW_HAS_SLASH_COMMAND" [ref=e1324]:
+                    - code [ref=e1325]: GH_AW_HAS_SLASH_COMMAND
+                  - cell "gh-aw compiler" [ref=e1326]
+                  - cell "Set to \"true\" when the compiled workflow includes a non-centralized slash command trigger" [ref=e1327]:
+                    - text: Set to
+                    - code [ref=e1328]: "\"true\""
+                    - text: when the compiled workflow includes a non-centralized slash command trigger
+                - row "GH_AW_HAS_LABEL_COMMAND gh-aw compiler Set to \"true\" when the compiled workflow includes a non-centralized label command trigger" [ref=e1329]:
+                  - cell "GH_AW_HAS_LABEL_COMMAND" [ref=e1330]:
+                    - code [ref=e1331]: GH_AW_HAS_LABEL_COMMAND
+                  - cell "gh-aw compiler" [ref=e1332]
+                  - cell "Set to \"true\" when the compiled workflow includes a non-centralized label command trigger" [ref=e1333]:
+                    - text: Set to
+                    - code [ref=e1334]: "\"true\""
+                    - text: when the compiled workflow includes a non-centralized label command trigger
+            - paragraph [ref=e1335]:
+              - strong [ref=e1336]: Condition 1 — Centralized or routed invocations.
+              - text: When
+              - code [ref=e1337]: GITHUB_EVENT_NAME
+              - text: is
+              - code [ref=e1338]: workflow_call
+              - text: or
+              - code [ref=e1339]: repository_dispatch
+              - text: ", the runtime SHALL skip the guardrail. These events indicate the workflow was invoked as a reusable sub-workflow or via programmatic repository dispatch; the initiating workflow is responsible for its own daily budget enforcement."
+            - paragraph [ref=e1340]:
+              - strong [ref=e1341]:
+                - text: Condition 2 — Manual
+                - code [ref=e1342]: workflow_dispatch
+                - text: without routing context.
+              - text: When
+              - code [ref=e1343]: GITHUB_EVENT_NAME
+              - text: is
+              - code [ref=e1344]: workflow_dispatch
+              - text: and
+              - code [ref=e1345]: GH_AW_WORKFLOW_DISPATCH_AW_CONTEXT
+              - text: is absent or empty, the runtime SHALL skip the guardrail. This condition identifies a human who explicitly triggered the workflow from the GitHub UI or GitHub CLI; blocking such a run would defeat the purpose of a manual invocation.
+            - paragraph [ref=e1346]:
+              - strong [ref=e1347]: Condition 3 — Dispatch-routed command invocations.
+              - text: When
+              - code [ref=e1348]: GITHUB_EVENT_NAME
+              - text: is
+              - code [ref=e1349]: workflow_dispatch
+              - text: and
+              - code [ref=e1350]: GH_AW_WORKFLOW_DISPATCH_AW_CONTEXT
+              - text: contains a valid JSON payload that identifies a command-driven run — specifically, when
+              - code [ref=e1351]: aw_context.event_type
+              - text: is one of
+              - code [ref=e1352]: issue_comment
+              - text: ","
+              - code [ref=e1353]: pull_request_review_comment
+              - text: ", or"
+              - code [ref=e1354]: discussion_comment
+              - text: ", or when"
+              - code [ref=e1355]: aw_context.trigger_label
+              - text: is a non-empty string — the runtime SHALL skip the guardrail. These are slash or label command runs routed through the centralized dispatch mechanism.
+            - blockquote [ref=e1356]:
+              - paragraph [ref=e1357]:
+                - text: "[!NOTE] When"
+                - code [ref=e1358]: GH_AW_WORKFLOW_DISPATCH_AW_CONTEXT
+                - text: is present but contains malformed JSON, the runtime MUST skip the guardrail as a safe fallback, treating the run as a manual dispatch (Condition 2 semantics).
+            - paragraph [ref=e1359]:
+              - strong [ref=e1360]: Condition 4 — Non-centralized slash-command events.
+              - text: When
+              - code [ref=e1361]: GH_AW_HAS_SLASH_COMMAND
+              - text: is
+              - code [ref=e1362]: "\"true\""
+              - text: and
+              - code [ref=e1363]: GITHUB_EVENT_NAME
+              - text: is one of
+              - code [ref=e1364]: issue_comment
+              - text: ","
+              - code [ref=e1365]: pull_request_review_comment
+              - text: ","
+              - code [ref=e1366]: discussion_comment
+              - text: ","
+              - code [ref=e1367]: issues
+              - text: ","
+              - code [ref=e1368]: pull_request
+              - text: ", or"
+              - code [ref=e1369]: discussion
+              - text: ", the runtime SHALL skip the guardrail. This condition covers slash-command triggers compiled directly into the workflow rather than routed through the centralized dispatcher."
+            - paragraph [ref=e1370]:
+              - strong [ref=e1371]: Condition 5 — Non-centralized label-command events.
+              - text: When
+              - code [ref=e1372]: GH_AW_HAS_LABEL_COMMAND
+              - text: is
+              - code [ref=e1373]: "\"true\""
+              - text: and
+              - code [ref=e1374]: GITHUB_EVENT_NAME
+              - text: is one of
+              - code [ref=e1375]: issues
+              - text: ","
+              - code [ref=e1376]: pull_request
+              - text: ", or"
+              - code [ref=e1377]: discussion
+              - text: ", the runtime SHALL skip the guardrail. This condition covers label-command triggers compiled directly into the workflow."
+            - paragraph [ref=e1378]: A conforming implementation MUST evaluate bypass conditions before checking the daily AIC total. When any bypass condition is satisfied, the implementation MUST NOT read or compare the daily AIC usage data for the current run.
+            - separator [ref=e1379]
+            - generic [ref=e1380]:
+              - heading "10. Per-Run AI Credits Budget" [level=2] [ref=e1381]
+              - link "Section titled “10. Per-Run AI Credits Budget”" [ref=e1382] [cursor=pointer]:
+                - /url: "#10-per-run-ai-credits-budget"
+                - img [ref=e1384]
+                - generic [ref=e1386]: Section titled “10. Per-Run AI Credits Budget”
+            - generic [ref=e1387]:
+              - heading "10.1 Purpose" [level=3] [ref=e1388]
+              - link "Section titled “10.1 Purpose”" [ref=e1389] [cursor=pointer]:
+                - /url: "#101-purpose"
+                - img [ref=e1391]
+                - generic [ref=e1393]: Section titled “10.1 Purpose”
+            - paragraph [ref=e1394]: The per-run AI Credits budget is a per-invocation credit limit applied by the AWF firewall to each individual workflow run. It prevents a single run from consuming excessive AI Credits regardless of daily aggregate usage. This section specifies the normative resolution order for the budget threshold and the mechanism by which the runtime default is resolved.
+            - generic [ref=e1395]:
+              - heading "10.2 Budget Configuration Field" [level=3] [ref=e1396]
+              - link "Section titled “10.2 Budget Configuration Field”" [ref=e1397] [cursor=pointer]:
+                - /url: "#102-budget-configuration-field"
+                - img [ref=e1399]
+                - generic [ref=e1401]: Section titled “10.2 Budget Configuration Field”
+            - paragraph [ref=e1402]:
+              - text: The budget threshold is expressed through the
+              - code [ref=e1403]: max-ai-credits
+              - text: frontmatter field in the workflow YAML source. When set, a conforming compiler MUST bake the resolved integer threshold directly into the AWF firewall configuration JSON emitted by the compiled workflow. When not set, a conforming implementation MUST resolve the threshold at action runtime using the mechanism specified in §10.4.
+            - generic [ref=e1404]:
+              - heading "10.3 Normative Resolution Order" [level=3] [ref=e1405]
+              - link "Section titled “10.3 Normative Resolution Order”" [ref=e1406] [cursor=pointer]:
+                - /url: "#103-normative-resolution-order"
+                - img [ref=e1408]
+                - generic [ref=e1410]: Section titled “10.3 Normative Resolution Order”
+            - paragraph [ref=e1411]: "A conforming implementation MUST resolve the effective per-run AI Credits budget using the following precedence (highest to lowest):"
+            - list [ref=e1412]:
+              - listitem [ref=e1413]:
+                - paragraph [ref=e1414]:
+                  - strong [ref=e1415]: Frontmatter value
+                  - text: (
+                  - code [ref=e1416]: max-ai-credits
+                  - text: "): Resolved at compile time. Numeric values MUST be normalized to integers; suffix notation ("
+                  - code [ref=e1417]: K
+                  - text: ","
+                  - code [ref=e1418]: M
+                  - text: ) MUST be expanded (e.g.,
+                  - code [ref=e1419]: 1M
+                  - text: →
+                  - code [ref=e1420]: "1000000"
+                  - text: ). When present, the resolved integer MUST be baked into the AWF firewall config JSON at compile time.
+              - listitem [ref=e1421]:
+                - paragraph [ref=e1422]:
+                  - strong [ref=e1423]: Imported workflow configuration
+                  - text: (
+                  - code [ref=e1424]: max-ai-credits
+                  - text: "from imported shared workflows): Resolved at compile time using a first-wins accumulation across all imported workflows. A conforming implementation MUST apply the first usable"
+                  - code [ref=e1425]: max-ai-credits
+                  - text: value found across imports when no frontmatter value is present on the main workflow. Imported values undergo the same normalization rules as frontmatter values.
+              - listitem [ref=e1426]:
+                - paragraph [ref=e1427]:
+                  - strong [ref=e1428]: Runtime organization variable
+                  - text: (
+                  - code [ref=e1429]: vars.GH_AW_DEFAULT_MAX_AI_CREDITS
+                  - text: "): A GitHub Actions"
+                  - code [ref=e1430]: vars.*
+                  - text: expression resolved at action runtime by the GitHub Actions runner. A conforming implementation MUST NOT read this variable at compile time via the process environment; it MUST instead embed a GitHub Actions expression evaluated by the runner at execution time.
+              - listitem [ref=e1431]:
+                - paragraph [ref=e1432]:
+                  - strong [ref=e1433]: Built-in constant default
+                  - text: (
+                  - code [ref=e1434]: "1000"
+                  - text: "): The fallback literal embedded in the GitHub Actions expression when the organization variable is unset. The value"
+                  - code [ref=e1435]: "1000"
+                  - text: AIC represents the normative built-in default for the per-run budget.
+            - paragraph [ref=e1436]:
+              - text: A conforming implementation MUST NOT resolve any of these values from repository-local configuration files (e.g.,
+              - code [ref=e1437]: aw.json
+              - text: ).
+            - generic [ref=e1438]:
+              - heading "10.4 Runtime Resolution Mechanism" [level=3] [ref=e1439]
+              - link "Section titled “10.4 Runtime Resolution Mechanism”" [ref=e1440] [cursor=pointer]:
+                - /url: "#104-runtime-resolution-mechanism"
+                - img [ref=e1442]
+                - generic [ref=e1444]: Section titled “10.4 Runtime Resolution Mechanism”
+            - paragraph [ref=e1445]: "When neither a frontmatter value nor an imported workflow configuration value is present, a conforming implementation MUST emit a runtime patch step that applies the following GitHub Actions expression to the AWF firewall configuration JSON:"
+            - figure [ref=e1447]:
+              - code [ref=e1449]:
+                - generic [ref=e1451]: "${{ vars.GH_AW_DEFAULT_MAX_AI_CREDITS || '1000' }}"
+              - button "Copy to clipboard" [ref=e1453] [cursor=pointer]
+            - paragraph [ref=e1455]:
+              - text: This expression MUST be embedded in the compiled YAML (not pre-evaluated at compile time) so that the GitHub Actions runner resolves the organization variable at workflow execution time. The
+              - code [ref=e1456]: "'1000'"
+              - text: fallback ensures the budget is active by default when the organization variable is not configured.
+            - generic [ref=e1457]:
+              - heading "10.5 Disable Sentinel" [level=3] [ref=e1458]
+              - link "Section titled “10.5 Disable Sentinel”" [ref=e1459] [cursor=pointer]:
+                - /url: "#105-disable-sentinel"
+                - img [ref=e1461]
+                - generic [ref=e1463]: Section titled “10.5 Disable Sentinel”
+            - paragraph [ref=e1464]:
+              - text: A
+              - code [ref=e1465]: max-ai-credits
+              - text: frontmatter value of
+              - code [ref=e1466]: "-1"
+              - text: MUST disable the per-run budget. When this sentinel is present at runtime (via the organization variable resolving to
+              - code [ref=e1467]: "-1"
+              - text: ), a conforming implementation MUST disable AWF budget steering and omit the
+              - code [ref=e1468]: maxAiCredits
+              - text: field from the firewall configuration.
+            - generic [ref=e1469]:
+              - heading "10.6 Value Validation" [level=3] [ref=e1470]
+              - link "Section titled “10.6 Value Validation”" [ref=e1471] [cursor=pointer]:
+                - /url: "#106-value-validation"
+                - img [ref=e1473]
+                - generic [ref=e1475]: Section titled “10.6 Value Validation”
+            - paragraph [ref=e1476]: "A conforming implementation MUST enforce the following at compile time when a frontmatter value is present:"
+            - list [ref=e1477]:
+              - listitem [ref=e1478]: Accept positive integers and positive numeric strings.
+              - listitem [ref=e1479]:
+                - text: Accept the suffix notation
+                - code [ref=e1480]: K
+                - text: and
+                - code [ref=e1481]: M
+                - text: (case-insensitive) as multipliers (×1,000 and ×1,000,000 respectively).
+              - listitem [ref=e1482]:
+                - text: Accept
+                - code [ref=e1483]: "-1"
+                - text: as the explicit disable sentinel.
+              - listitem [ref=e1484]:
+                - text: Reject integer values below
+                - code [ref=e1485]: "-1"
+                - text: with a compile-time validation error.
+              - listitem [ref=e1486]: Reject non-numeric values.
+            - generic [ref=e1487]:
+              - heading "10.7 Compliance Tests" [level=3] [ref=e1488]
+              - link "Section titled “10.7 Compliance Tests”" [ref=e1489] [cursor=pointer]:
+                - /url: "#107-compliance-tests"
+                - img [ref=e1491]
+                - generic [ref=e1493]: Section titled “10.7 Compliance Tests”
+            - table [ref=e1495]:
+              - rowgroup [ref=e1496]:
+                - row "Test ID Description Requirement" [ref=e1497]:
+                  - columnheader "Test ID" [ref=e1498]
+                  - columnheader "Description" [ref=e1499]
+                  - columnheader "Requirement" [ref=e1500]
+              - rowgroup [ref=e1501]:
+                - row "T-AIC-PR-001 Frontmatter value baked into AWF config JSON at compile time §10.3 (1)" [ref=e1502]:
+                  - cell "T-AIC-PR-001" [ref=e1503]
+                  - cell "Frontmatter value baked into AWF config JSON at compile time" [ref=e1504]
+                  - cell "§10.3 (1)" [ref=e1505]
+                - 'row "T-AIC-PR-002 No frontmatter, no imports: emitted expression is ${{ vars.GH_AW_DEFAULT_MAX_AI_CREDITS || ''1000'' }} §10.4" [ref=e1506]':
+                  - cell "T-AIC-PR-002" [ref=e1507]
+                  - 'cell "No frontmatter, no imports: emitted expression is ${{ vars.GH_AW_DEFAULT_MAX_AI_CREDITS || ''1000'' }}" [ref=e1508]':
+                    - text: "No frontmatter, no imports: emitted expression is"
+                    - code [ref=e1509]: "${{ vars.GH_AW_DEFAULT_MAX_AI_CREDITS || '1000' }}"
+                  - cell "§10.4" [ref=e1510]
+                - row "T-AIC-PR-003 Org variable -1 disables budget steering at runtime §10.5" [ref=e1511]:
+                  - cell "T-AIC-PR-003" [ref=e1512]
+                  - cell "Org variable -1 disables budget steering at runtime" [ref=e1513]:
+                    - text: Org variable
+                    - code [ref=e1514]: "-1"
+                    - text: disables budget steering at runtime
+                  - cell "§10.5" [ref=e1515]
+                - row "T-AIC-PR-004 K/M suffix values expanded in compile-time literal §10.6" [ref=e1516]:
+                  - cell "T-AIC-PR-004" [ref=e1517]
+                  - cell "K/M suffix values expanded in compile-time literal" [ref=e1518]:
+                    - code [ref=e1519]: K
+                    - text: /
+                    - code [ref=e1520]: M
+                    - text: suffix values expanded in compile-time literal
+                  - cell "§10.6" [ref=e1521]
+                - row "T-AIC-PR-005 Values below -1 rejected at compile time §10.6" [ref=e1522]:
+                  - cell "T-AIC-PR-005" [ref=e1523]
+                  - cell "Values below -1 rejected at compile time" [ref=e1524]:
+                    - text: Values below
+                    - code [ref=e1525]: "-1"
+                    - text: rejected at compile time
+                  - cell "§10.6" [ref=e1526]
+                - row "T-AIC-PR-006 Runtime variable resolved by GitHub Actions runner, not compiler process §10.3 (3)" [ref=e1527]:
+                  - cell "T-AIC-PR-006" [ref=e1528]
+                  - cell "Runtime variable resolved by GitHub Actions runner, not compiler process" [ref=e1529]
+                  - cell "§10.3 (3)" [ref=e1530]
+                - row "T-AIC-PR-007 Imported workflow max-ai-credits used when no frontmatter value; frontmatter takes precedence over imports §10.3 (2)" [ref=e1531]:
+                  - cell "T-AIC-PR-007" [ref=e1532]
+                  - cell "Imported workflow max-ai-credits used when no frontmatter value; frontmatter takes precedence over imports" [ref=e1533]:
+                    - text: Imported workflow
+                    - code [ref=e1534]: max-ai-credits
+                    - text: used when no frontmatter value; frontmatter takes precedence over imports
+                  - cell "§10.3 (2)" [ref=e1535]
+            - separator [ref=e1536]
+            - generic [ref=e1537]:
+              - heading "Appendices" [level=2] [ref=e1538]
+              - link "Section titled “Appendices”" [ref=e1539] [cursor=pointer]:
+                - /url: "#appendices"
+                - img [ref=e1541]
+                - generic [ref=e1543]: Section titled “Appendices”
+            - generic [ref=e1544]:
+              - 'heading "Appendix A: Worked Example" [level=3] [ref=e1545]'
+              - 'link "Section titled “Appendix A: Worked Example”" [ref=e1546] [cursor=pointer]':
+                - /url: "#appendix-a-worked-example"
+                - img [ref=e1548]
+                - generic [ref=e1550]: "Section titled “Appendix A: Worked Example”"
+            - paragraph [ref=e1551]: This example assumes the provider bundles cache-read tokens in the reported input total, so §3.5 applies.
+            - paragraph [ref=e1552]: "Given:"
+            - list [ref=e1553]:
+              - listitem [ref=e1554]: "Input (raw): 1000 tokens at $0.000003/token"
+              - listitem [ref=e1555]: "Output: 200 tokens at $0.000015/token"
+              - listitem [ref=e1556]: "Cache read: 400 tokens at $0.0000003/token"
+              - listitem [ref=e1557]: "Cache write: 50 tokens at $0.00000375/token"
+              - listitem [ref=e1558]: "Reasoning: 25 tokens at $0.000015/token"
+            - paragraph [ref=e1559]:
+              - text: "Step 1 — Apply §3.5: net input = 1000 − 400 ="
+              - strong [ref=e1560]: 600 tokens
+            - paragraph [ref=e1561]: "Step 2 — Per-class cost:"
+            - figure [ref=e1563]:
+              - code [ref=e1565]:
+                - generic [ref=e1567]: "input: 600 × 0.000003 = 0.0018000"
+                - generic [ref=e1569]: "output: 200 × 0.000015 = 0.0030000"
+                - generic [ref=e1571]: "cache_read: 400 × 0.0000003 = 0.0001200"
+                - generic [ref=e1573]: "cache_write: 50 × 0.00000375 = 0.0001875"
+                - generic [ref=e1575]: "reasoning: 25 × 0.000015 = 0.0003750"
+              - button "Copy to clipboard" [ref=e1577] [cursor=pointer]
+            - paragraph [ref=e1579]: "Result:"
+            - figure [ref=e1581]:
+              - code [ref=e1583]:
+                - generic [ref=e1585]: cost_usd = 0.0054825
+                - generic [ref=e1587]: aic = 0.54825
+              - button "Copy to clipboard" [ref=e1589] [cursor=pointer]
+            - generic [ref=e1591]:
+              - 'heading "Appendix B: Error Conditions" [level=3] [ref=e1592]'
+              - 'link "Section titled “Appendix B: Error Conditions”" [ref=e1593] [cursor=pointer]':
+                - /url: "#appendix-b-error-conditions"
+                - img [ref=e1595]
+                - generic [ref=e1597]: "Section titled “Appendix B: Error Conditions”"
+            - paragraph [ref=e1598]: "Conforming implementations SHOULD surface explicit validation errors for:"
+            - list [ref=e1599]:
+              - listitem [ref=e1600]:
+                - text: Invalid
+                - code [ref=e1601]: models.json
+                - text: structure.
+              - listitem [ref=e1602]: Non-numeric cost values.
+              - listitem [ref=e1603]: Missing required model cost fields.
+              - listitem [ref=e1604]: Unknown provider/model pairs with no fallback match.
+            - generic [ref=e1605]:
+              - 'heading "Appendix C: Security and Integrity Considerations" [level=3] [ref=e1606]'
+              - 'link "Section titled “Appendix C: Security and Integrity Considerations”" [ref=e1607] [cursor=pointer]':
+                - /url: "#appendix-c-security-and-integrity-considerations"
+                - img [ref=e1609]
+                - generic [ref=e1611]: "Section titled “Appendix C: Security and Integrity Considerations”"
+            - paragraph [ref=e1612]: "Pricing catalogs are configuration inputs. Implementations SHOULD:"
+            - list [ref=e1613]:
+              - listitem [ref=e1614]: Treat catalog updates as controlled changes.
+              - listitem [ref=e1615]: Validate and review catalog source provenance.
+              - listitem [ref=e1616]: Avoid silently mutating cost values at runtime.
+            - separator [ref=e1617]
+            - generic [ref=e1618]:
+              - heading "References" [level=2] [ref=e1619]
+              - link "Section titled “References”" [ref=e1620] [cursor=pointer]:
+                - /url: "#references"
+                - img [ref=e1622]
+                - generic [ref=e1624]: Section titled “References”
+            - generic [ref=e1625]:
+              - heading "Normative References" [level=3] [ref=e1626]
+              - link "Section titled “Normative References”" [ref=e1627] [cursor=pointer]:
+                - /url: "#normative-references"
+                - img [ref=e1629]
+                - generic [ref=e1631]: Section titled “Normative References”
+            - list [ref=e1632]:
+              - listitem [ref=e1633]:
+                - strong [ref=e1634]: "[RFC 2119]"
+                - text: Key words for use in RFCs to Indicate Requirement Levels.
+                - link "https://www.ietf.org/rfc/rfc2119.txt" [ref=e1635] [cursor=pointer]:
+                  - /url: https://www.ietf.org/rfc/rfc2119.txt
+            - generic [ref=e1636]:
+              - heading "Informative References" [level=3] [ref=e1637]
+              - link "Section titled “Informative References”" [ref=e1638] [cursor=pointer]:
+                - /url: "#informative-references"
+                - img [ref=e1640]
+                - generic [ref=e1642]: Section titled “Informative References”
+            - list [ref=e1643]:
+              - listitem [ref=e1644]:
+                - strong [ref=e1645]: "[GH-AW-COST]"
+                - text: Cost Management reference.
+                - link "https://github.github.com/gh-aw/reference/cost-management/" [ref=e1646] [cursor=pointer]:
+                  - /url: https://github.github.com/gh-aw/reference/cost-management/
+              - listitem [ref=e1647]:
+                - strong [ref=e1648]: "[GH-COPILOT-MODELS]"
+                - text: About GitHub Copilot models.
+                - link "https://docs.github.com/en/copilot/concepts/about-github-copilot-models" [ref=e1649] [cursor=pointer]:
+                  - /url: https://docs.github.com/en/copilot/concepts/about-github-copilot-models
+              - listitem [ref=e1650]:
+                - strong [ref=e1651]: "[GH-COPILOT-BILLING-MODELS]"
+                - text: GitHub Copilot models and pricing.
+                - link "https://docs.github.com/en/copilot/reference/copilot-billing/models-and-pricing" [ref=e1652] [cursor=pointer]:
+                  - /url: https://docs.github.com/en/copilot/reference/copilot-billing/models-and-pricing
+              - listitem [ref=e1653]:
+                - strong [ref=e1654]: "[GH-COPILOT-BILLING-PLANS]"
+                - text: Subscription plans for GitHub Copilot.
+                - link "https://docs.github.com/en/copilot/about-github-copilot/subscription-plans-for-github-copilot" [ref=e1655] [cursor=pointer]:
+                  - /url: https://docs.github.com/en/copilot/about-github-copilot/subscription-plans-for-github-copilot
+              - listitem [ref=e1656]:
+                - strong [ref=e1657]: "[MODELS-DEV]"
+                - text: models.dev API index.
+                - link "https://models.dev/api.json" [ref=e1658] [cursor=pointer]:
+                  - /url: https://models.dev/api.json
+            - separator [ref=e1659]
+            - generic [ref=e1660]:
+              - heading "Change Log" [level=2] [ref=e1661]
+              - link "Section titled “Change Log”" [ref=e1662] [cursor=pointer]:
+                - /url: "#change-log"
+                - img [ref=e1664]
+                - generic [ref=e1666]: Section titled “Change Log”
+            - generic [ref=e1667]:
+              - heading "Version 1.4.0 (2026-06-09)" [level=3] [ref=e1668]
+              - link "Section titled “Version 1.4.0 (2026-06-09)”" [ref=e1669] [cursor=pointer]:
+                - /url: "#version-140-2026-06-09"
+                - img [ref=e1671]
+                - generic [ref=e1673]: Section titled “Version 1.4.0 (2026-06-09)”
+            - list [ref=e1674]:
+              - listitem [ref=e1675]:
+                - strong [ref=e1676]: Added
+                - text: ": §9.8 — Guardrail Bypass Conditions. Specifies the five normative runtime conditions under which a conforming implementation MUST skip the daily AI Credits guardrail: (1)"
+                - code [ref=e1677]: workflow_call
+                - text: or
+                - code [ref=e1678]: repository_dispatch
+                - text: events; (2) manual
+                - code [ref=e1679]: workflow_dispatch
+                - text: without routing context; (3) dispatch-routed slash or label command invocations; (4) non-centralized slash-command events with
+                - code [ref=e1680]: GH_AW_HAS_SLASH_COMMAND=true
+                - text: ; (5) non-centralized label-command events with
+                - code [ref=e1681]: GH_AW_HAS_LABEL_COMMAND=true
+                - text: .
+              - listitem [ref=e1682]:
+                - strong [ref=e1683]: Updated
+                - text: ": §9.7 — Added compliance tests T-AIC-DG-008 through T-AIC-DG-016 covering each bypass condition and its negative case."
+              - listitem [ref=e1684]:
+                - strong [ref=e1685]: Updated
+                - text: ": Version and publication metadata to 1.4.0."
+            - generic [ref=e1686]:
+              - heading "Version 1.3.0 (2026-06-09)" [level=3] [ref=e1687]
+              - link "Section titled “Version 1.3.0 (2026-06-09)”" [ref=e1688] [cursor=pointer]:
+                - /url: "#version-130-2026-06-09"
+                - img [ref=e1690]
+                - generic [ref=e1692]: Section titled “Version 1.3.0 (2026-06-09)”
+            - list [ref=e1693]:
+              - listitem [ref=e1694]:
+                - strong [ref=e1695]: Updated
+                - text: ": §9.3 — Expanded the Daily AI Credits Guardrail resolution order from three levels to four. Added “Imported workflow configuration” as the second priority (between frontmatter and the runtime org variable), documenting that a conforming implementation MUST apply the first usable"
+                - code [ref=e1696]: max-daily-ai-credits
+                - text: value found across imported shared workflows when no frontmatter value is present on the main workflow.
+              - listitem [ref=e1697]:
+                - strong [ref=e1698]: Updated
+                - text: ": §9.4 — Clarified that the runtime expression is emitted only when neither frontmatter nor imported config provides a value."
+              - listitem [ref=e1699]:
+                - strong [ref=e1700]: Updated
+                - text: ": §9.7 — Added compliance test T-AIC-DG-007 asserting imported workflow"
+                - code [ref=e1701]: max-daily-ai-credits
+                - text: resolution.
+              - listitem [ref=e1702]:
+                - strong [ref=e1703]: Updated
+                - text: ": §10.3 — Expanded the Per-Run AI Credits Budget resolution order from three levels to four. Added “Imported workflow configuration” as the second priority, documenting that a conforming implementation MUST apply the first usable"
+                - code [ref=e1704]: max-ai-credits
+                - text: value found across imported shared workflows when no frontmatter value is present.
+              - listitem [ref=e1705]:
+                - strong [ref=e1706]: Updated
+                - text: ": §10.4 — Clarified that the runtime patch step is emitted only when neither frontmatter nor imported config provides a value."
+              - listitem [ref=e1707]:
+                - strong [ref=e1708]: Updated
+                - text: ": §10.7 — Added compliance test T-AIC-PR-007 asserting imported workflow"
+                - code [ref=e1709]: max-ai-credits
+                - text: resolution.
+              - listitem [ref=e1710]:
+                - strong [ref=e1711]: Updated
+                - text: ": Version and publication metadata to 1.3.0."
+            - generic [ref=e1712]:
+              - heading "Version 1.2.0 (2026-06-09)" [level=3] [ref=e1713]
+              - link "Section titled “Version 1.2.0 (2026-06-09)”" [ref=e1714] [cursor=pointer]:
+                - /url: "#version-120-2026-06-09"
+                - img [ref=e1716]
+                - generic [ref=e1718]: Section titled “Version 1.2.0 (2026-06-09)”
+            - list [ref=e1719]:
+              - listitem [ref=e1720]:
+                - strong [ref=e1721]: Added
+                - text: ": Section 10 — Per-Run AI Credits Budget. Specifies the normative three-level resolution order (frontmatter →"
+                - code [ref=e1722]: vars.GH_AW_DEFAULT_MAX_AI_CREDITS
+                - text: at runtime → built-in constant
+                - code [ref=e1723]: "1000"
+                - text: ) and the required runtime patch mechanism emitted by conforming compilers when no frontmatter value is set.
+              - listitem [ref=e1724]:
+                - strong [ref=e1725]: Added
+                - text: ": §10.7 compliance test matrix (T-AIC-PR-001 through T-AIC-PR-006)."
+              - listitem [ref=e1726]:
+                - strong [ref=e1727]: Updated
+                - text: ": Table of contents and publication metadata to 1.2.0."
+            - generic [ref=e1728]:
+              - heading "Version 1.1.0 (2026-06-09)" [level=3] [ref=e1729]
+              - link "Section titled “Version 1.1.0 (2026-06-09)”" [ref=e1730] [cursor=pointer]:
+                - /url: "#version-110-2026-06-09"
+                - img [ref=e1732]
+                - generic [ref=e1734]: Section titled “Version 1.1.0 (2026-06-09)”
+            - list [ref=e1735]:
+              - listitem [ref=e1736]:
+                - strong [ref=e1737]: Added
+                - text: ": Section 9 — Daily AI Credits Guardrail. Specifies the normative three-level resolution order (frontmatter →"
+                - code [ref=e1738]: vars.GH_AW_DEFAULT_MAX_DAILY_AI_CREDITS
+                - text: at runtime → built-in constant
+                - code [ref=e1739]: "5000"
+                - text: ) and the required GitHub Actions expression form emitted by conforming compilers.
+              - listitem [ref=e1740]:
+                - strong [ref=e1741]: Added
+                - text: ": §9.7 compliance test matrix (T-AIC-DG-001 through T-AIC-DG-006)."
+              - listitem [ref=e1742]:
+                - strong [ref=e1743]: Updated
+                - text: ": Table of contents and publication metadata to 1.1.0."
+            - generic [ref=e1744]:
+              - heading "Version 1.0.0 (Draft)" [level=3] [ref=e1745]
+              - link "Section titled “Version 1.0.0 (Draft)”" [ref=e1746] [cursor=pointer]:
+                - /url: "#version-100-draft"
+                - img [ref=e1748]
+                - generic [ref=e1750]: Section titled “Version 1.0.0 (Draft)”
+            - list [ref=e1751]:
+              - listitem [ref=e1752]: Added initial AI Credits (AIC) normative definition and formulas.
+              - listitem [ref=e1753]:
+                - text: Added canonical
+                - code [ref=e1754]: models.json
+                - text: format and synchronization requirements.
+              - listitem [ref=e1755]: Added Copilot billing reference requirements and compliance test matrix.
+            - separator [ref=e1756]
+            - paragraph [ref=e1757]: Copyright 2026 GitHub. All rights reserved.
+          - generic [ref=e1759]:
+            - link "Previous Safe Outputs MCP Gateway Specification" [ref=e1760] [cursor=pointer]:
+              - /url: /gh-aw/specs/safe-outputs-specification/
+              - img [ref=e1761]
+              - generic [ref=e1763]:
+                - text: Previous
+                - text: Safe Outputs MCP Gateway Specification
+            - link "Next Copilot SDK Driver Specification" [ref=e1764] [cursor=pointer]:
+              - /url: /gh-aw/specs/copilot-sdk-driver-specification/
+              - img [ref=e1765]
+              - generic [ref=e1767]:
+                - text: Next
+                - text: Copilot SDK Driver Specification
+          - generic [ref=e1768]:
+            - link "Community Feedback" [ref=e1770] [cursor=pointer]:
+              - /url: https://github.com/orgs/community/discussions/186451
+            - generic [ref=e1771]:
+              - link "llms.txt" [ref=e1772] [cursor=pointer]:
+                - /url: https://github.github.com/gh-aw/llms.txt
+              - generic [ref=e1773]: ·
+              - link "llms-full.txt" [ref=e1774] [cursor=pointer]:
+                - /url: https://github.github.com/gh-aw/llms-full.txt
+              - generic [ref=e1775]: ·
+              - link "Create Workflow" [ref=e1776] [cursor=pointer]:
+                - /url: https://raw.githubusercontent.com/github/gh-aw/main/create.md
+              - generic [ref=e1777]: ·
+              - link "Install" [ref=e1778] [cursor=pointer]:
+                - /url: https://raw.githubusercontent.com/github/gh-aw/main/install.md
+              - generic [ref=e1779]: ·
+              - link "Reference" [ref=e1780] [cursor=pointer]:
+                - /url: https://raw.githubusercontent.com/github/gh-aw/main/.github/aw/github-agentic-workflows.md
+            - paragraph [ref=e1781]:
+              - generic [ref=e1782]:
+                - text: Made with
+                - img [ref=e1784]
+                - text: by
+                - link "GitHub Next" [ref=e1786] [cursor=pointer]:
+                  - /url: https://githubnext.com/
+                - text: "&"
+                - link "Microsoft Research" [ref=e1787] [cursor=pointer]:
+                  - /url: https://www.microsoft.com/en-us/research/
+              - generic [ref=e1788]: •
+              - generic [ref=e1789]:
+                - link "Terms" [ref=e1790] [cursor=pointer]:
+                  - /url: https://docs.github.com/en/site-policy/github-terms/github-terms-of-service
+                - generic [ref=e1791]: ·
+                - link "Privacy" [ref=e1792] [cursor=pointer]:
+                  - /url: https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement
+                - generic [ref=e1793]: ·
+                - link "Security" [ref=e1794] [cursor=pointer]:
+                  - /url: https://github.com/security

@@ -1,6 +1,6 @@
 ---
 name: implement-tasks
-description: Implement tasks from a groomed plan one at a time (or all at once with --all). Reads each task file for full context, implements, runs CI, marks done in tasks.md, and commits. Use after /groom-plan when the plan is ready to be built.
+description: Implement the next task from a groomed plan, then stop and wait. Reads the task file for full context, implements, runs CI, marks done in tasks.md, and commits. Use after /groom-plan when the plan is ready to be built.
 disable-model-invocation: true
 ---
 
@@ -11,9 +11,7 @@ Implement one or more tasks from a groomed plan, in dependency order.
 ## Invocation
 
 ```
-/implement-tasks {name}          ← next uncompleted task only
-/implement-tasks {name} --all    ← all uncompleted tasks in sequence
-/implement-tasks {name} {n}      ← specific task number
+/implement-tasks {name}
 ```
 
 If no name is given, list the available plans and ask which one.
@@ -26,13 +24,9 @@ Read `.plans/{name}/tasks.md` to understand overall progress and dependency orde
 
 ### 2. Determine which task(s) to implement
 
-**Default (no flag):** Pick the next uncompleted task whose dependencies are all complete. If there's no such task (all done, or blocked), tell the user why and stop.
+Pick the next uncompleted task in order. If there's no such task (all done, or blocked), tell the user why and stop.
 
-**`--all`:** Build the full list of implementable tasks in dependency order. Proceed through them sequentially — complete one fully (implement + CI + commit) before starting the next.
-
-**Specific number (`{n}`):** Implement that task. If its dependencies aren't complete, warn the user and ask for confirmation before proceeding.
-
-### 3. For each task
+### 3. Implement the task
 
 #### 3a. Read the task file
 
@@ -86,13 +80,9 @@ git commit -m "{type}: {imperative description of what was implemented}"
 
 Use conventional commit types: `feat`, `fix`, `refactor`, `test`, `chore`. The message should describe what was built, not reference the task number.
 
-### 4. After the last task (or after `--all` completes)
+#### 3f. Stop
 
-Report:
-- Which tasks were completed
-- Any tasks that remain and why (blocked, skipped, failed)
-- Whether the full test suite is green
-- Suggest next steps (open a PR, run `/review-plan` on the next plan, etc.)
+Always stop here. Report the completed task, how many tasks remain, and wait for the user to invoke again. Do not begin the next task under any circumstances.
 
 ## Notes
 

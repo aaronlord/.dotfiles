@@ -3,5 +3,8 @@ for file in `find ~/.dotfiles/includes`; do
 done
 
 unset file
+
 export DOCKER_CLIENT_TIMEOUT=180
 export COMPOSE_HTTP_TIMEOUT=180
+
+command -v direnv > /dev/null && eval "$(direnv hook bash)"
