@@ -17,7 +17,12 @@ import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { homedir } from "node:os";
 import { isAbsolute, join, relative, resolve, sep } from "node:path";
-import { Box, Text, truncateToWidth, visibleWidth } from "@earendil-works/pi-tui";
+import {
+  Box,
+  Text,
+  truncateToWidth,
+  visibleWidth,
+} from "@earendil-works/pi-tui";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -67,7 +72,12 @@ function tsToDateKey(ts: string | number): string {
 // Cache operations
 // ---------------------------------------------------------------------------
 
-function addToCache(dateKey: string, model: string, tokens: number, cost: number): void {
+function addToCache(
+  dateKey: string,
+  model: string,
+  tokens: number,
+  cost: number,
+): void {
   let day = statsCache.get(dateKey);
   if (!day) {
     day = { totalTokens: 0, costUsd: 0, byModel: {} };
@@ -80,8 +90,13 @@ function addToCache(dateKey: string, model: string, tokens: number, cost: number
   day.byModel[model].costUsd += cost;
 }
 
-function periodStats(fromKey: string): { tokens: number; costUsd: number; aic: number } {
-  let tokens = 0, costUsd = 0;
+function periodStats(fromKey: string): {
+  tokens: number;
+  costUsd: number;
+  aic: number;
+} {
+  let tokens = 0,
+    costUsd = 0;
   for (const [date, day] of statsCache) {
     if (date >= fromKey) {
       tokens += day.totalTokens;
@@ -195,7 +210,11 @@ function fmtCwd(cwd: string): string {
 
 function fmtDate(dateKey: string): string {
   const d = new Date(dateKey + "T12:00:00Z");
-  return d.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" });
+  return d.toLocaleDateString("en-GB", {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -225,7 +244,6 @@ interface UsageReport {
 // ---------------------------------------------------------------------------
 
 export default function (pi: ExtensionAPI) {
-
   // -------------------------------------------------------------------------
   // Coloured /usage message renderer
   // -------------------------------------------------------------------------
@@ -258,10 +276,15 @@ export default function (pi: ExtensionAPI) {
     // Shorten model names to fit in LABEL_W - 2 chars (leaves room for "↳ ")
     function shortModel(model: string): string {
       const name = model.split("/").pop() ?? model;
-      const stripped = name.replace(/^(claude|gpt|gemini|llama|mistral|qwen)-/, "");
+      const stripped = name.replace(
+        /^(claude|gpt|gemini|llama|mistral|qwen)-/,
+        "",
+      );
       const candidate = stripped.length > 0 ? stripped : name;
       const maxLen = LABEL_W - 2;
-      return candidate.length <= maxLen ? candidate : candidate.slice(0, maxLen);
+      return candidate.length <= maxLen
+        ? candidate
+        : candidate.slice(0, maxLen);
     }
 
     function aicCol(aic: number): string {
@@ -287,8 +310,8 @@ export default function (pi: ExtensionAPI) {
     // Title
     lines.push(
       theme.fg("accent", "═══") +
-      theme.fg("muted", " AI Credits Usage — last 7 days ") +
-      theme.fg("accent", "═══")
+        theme.fg("muted", " AI Credits Usage — last 7 days ") +
+        theme.fg("accent", "═══"),
     );
     lines.push("");
 
@@ -304,19 +327,19 @@ export default function (pi: ExtensionAPI) {
         : "";
 
       lines.push(
-        `  ${datePart}  ${coloredBar(row.aic, row.isMax)}  ${aicCol(row.aic)}  ${tokCol(row.tokens)}  ${costCol(row.costUsd)}${todayMarker}`
+        `  ${datePart}  ${coloredBar(row.aic, row.isMax)}  ${aicCol(row.aic)}  ${tokCol(row.tokens)}  ${costCol(row.costUsd)}${todayMarker}`,
       );
 
       // Per-model sub-rows — same column positions, label replaced by "↳ model"
       const models = Object.entries(row.byModel).sort(
-        ([, a], [, b]) => b.costUsd - a.costUsd
+        ([, a], [, b]) => b.costUsd - a.costUsd,
       );
       if (models.length > 1) {
         for (const [model, stats] of models) {
           const modelAic = stats.costUsd / 0.01;
           const subLabel = ("↳ " + shortModel(model)).padEnd(LABEL_W);
           lines.push(
-            `  ${theme.fg("dim", subLabel)}  ${subBar(modelAic)}  ${aicCol(modelAic)}`
+            `  ${theme.fg("dim", subLabel)}  ${subBar(modelAic)}  ${aicCol(modelAic)}`,
           );
         }
       }
@@ -332,13 +355,13 @@ export default function (pi: ExtensionAPI) {
       ["All time", allTime],
     ] as const) {
       lines.push(
-        `  ${theme.fg("muted", label.padEnd(LABEL_W))}  ${" ".repeat(BAR_W)}  ${aicCol(stats.aic)}  ${tokCol(stats.tokens)}  ${costCol(stats.costUsd)}`
+        `  ${theme.fg("muted", label.padEnd(LABEL_W))}  ${" ".repeat(BAR_W)}  ${aicCol(stats.aic)}  ${tokCol(stats.tokens)}  ${costCol(stats.costUsd)}`,
       );
     }
 
     lines.push("");
     lines.push(
-      theme.fg("dim", "  1 AIC = $0.01 USD  (GitHub AIC spec v1.4.0)")
+      theme.fg("dim", "  1 AIC = $0.01 USD  (GitHub AIC spec v1.4.0)"),
     );
 
     const box = new Box(1, 1);
@@ -375,7 +398,10 @@ export default function (pi: ExtensionAPI) {
           let latestCacheHitRate: number | undefined;
 
           for (const entry of ctx.sessionManager.getEntries()) {
-            if (entry.type === "message" && entry.message.role === "assistant") {
+            if (
+              entry.type === "message" &&
+              entry.message.role === "assistant"
+            ) {
               const m = entry.message as AssistantMessage;
               totalInput += m.usage.input;
               totalOutput += m.usage.output;
@@ -396,18 +422,12 @@ export default function (pi: ExtensionAPI) {
           const contextWindow =
             contextUsage?.contextWindow ?? ctx.model?.contextWindow ?? 0;
           const pctVal = contextUsage?.percent ?? 0;
-          const pctStr = contextUsage?.percent != null ? pctVal.toFixed(1) : "?";
+          const pctStr =
+            contextUsage?.percent != null ? pctVal.toFixed(1) : "?";
           const ctxDisplay =
             pctStr === "?"
               ? `?/${fmtTok(contextWindow)}`
-              : `${pctStr}%/${fmtTok(contextWindow)}`;
-
-          // --- CWD line ---
-          let pwd = fmtCwd(ctx.sessionManager.getCwd());
-          const branch = footerData.getGitBranch();
-          if (branch) pwd = `${pwd} (${branch})`;
-          const sessionName = ctx.sessionManager.getSessionName();
-          if (sessionName) pwd = `${pwd} • ${sessionName}`;
+              : `${pctStr}% (${fmtTok(contextWindow)})`;
 
           // --- Historical AIC (from cache) ---
           const today = periodStats(todayKey());
@@ -416,52 +436,63 @@ export default function (pi: ExtensionAPI) {
           // --- Build left stats parts ---
           const parts: string[] = [];
 
-          if (totalInput)
-            parts.push(theme.fg("syntaxFunction", `↑${fmtTok(totalInput)}`));
-          if (totalOutput)
-            parts.push(theme.fg("success", `↓${fmtTok(totalOutput)}`));
-          if (totalCacheRead)
-            parts.push(theme.fg("borderAccent", `R${fmtTok(totalCacheRead)}`));
-          if (totalCacheWrite)
-            parts.push(theme.fg("warning", `W${fmtTok(totalCacheWrite)}`));
-          if (
-            (totalCacheRead > 0 || totalCacheWrite > 0) &&
-            latestCacheHitRate !== undefined
-          ) {
+          // Context % with colour thresholds
+          const ctxColor =
+            pctVal > 90 ? "error" : pctVal > 70 ? "warning" : "accent";
+          parts.push(theme.fg(ctxColor, ctxDisplay));
+
+          parts.push(theme.fg("muted", "/"));
+
+          parts.push(
+            theme.fg("syntaxFunction", `↑${fmtTok(totalInput)}`) +
+              theme.fg("dim", " ") +
+              theme.fg("syntaxFunction", `↓${fmtTok(totalOutput)}`),
+          );
+
+          if (totalCacheRead > 0 || totalCacheWrite > 0) {
+            parts.push(theme.fg("muted", "/"));
+
+            const cacheRead = theme.fg("success", fmtTok(totalCacheRead));
+            const cacheWrite = theme.fg("success", fmtTok(totalCacheWrite));
+            const cacheHit =
+              latestCacheHitRate == null
+                ? ""
+                : theme.fg("bashMode", ` (${latestCacheHitRate.toFixed(1)}%)`);
             parts.push(
-              theme.fg("bashMode", `CH${latestCacheHitRate.toFixed(1)}%`)
+              `${cacheRead}${theme.fg("dim", " ")}${cacheWrite}${cacheHit}`,
             );
           }
 
-          // Session cost
-          const usingSubscription = ctx.model
-            ? ctx.modelRegistry.isUsingOAuth(ctx.model)
-            : false;
-          if (totalCost || usingSubscription) {
+          // Token and cost for today and week
+          if (totalCost > 0 || today.tokens > 0 || week.tokens > 0) {
+            parts.push(theme.fg("dim", "│"));
+
+            // Session cost
+            const usingSubscription = ctx.model
+              ? ctx.modelRegistry.isUsingOAuth(ctx.model)
+              : false;
+
+            parts.push(
+              theme.fg("syntaxFunction", `${fmtTok(totalInput + totalOutput)}`),
+            );
             parts.push(
               theme.fg(
                 "syntaxNumber",
-                `$${totalCost.toFixed(3)}${usingSubscription ? " (sub)" : ""}`
-              )
+                `$${totalCost.toFixed(3)}${usingSubscription ? " (sub)" : ""}`,
+              ),
             );
-          }
 
-          // Historical AIC separator + session + today + week
-          if (totalCost > 0 || today.aic > 0 || week.aic > 0) {
-            parts.push(theme.fg("dim", "│"));
-            parts.push(theme.fg("success", `s:${fmtAic(totalCost / 0.01)}`));
-            parts.push(theme.fg("borderAccent", `d:${fmtAic(today.aic)}`));
-            parts.push(theme.fg("accent", `w:${fmtAic(week.aic)}`));
-            parts.push(theme.fg("dim", "AIC"));
+            // today tokens / cost
+            parts.push(theme.fg("muted", "/"));
+            parts.push(theme.fg("syntaxFunction", `${fmtTok(today.tokens)}`));
+            parts.push(
+              theme.fg("syntaxNumber", `$${today.costUsd.toFixed(3)}`),
+            );
+            // week tokens/cost
+            parts.push(theme.fg("muted", "/"));
+            parts.push(theme.fg("syntaxFunction", `${fmtTok(week.tokens)}`));
+            parts.push(theme.fg("syntaxNumber", `$${week.costUsd.toFixed(3)}`));
           }
-
-          // Context % with colour thresholds, behind its own pipe
-          parts.push(theme.fg("dim", "│"));
-          let ctxStyled: string;
-          if (pctVal > 90) ctxStyled = theme.fg("error", ctxDisplay);
-          else if (pctVal > 70) ctxStyled = theme.fg("warning", ctxDisplay);
-          else ctxStyled = theme.fg("muted", ctxDisplay);
-          parts.push(ctxStyled);
 
           const statsLeft = parts.join(" ");
 
@@ -470,28 +501,36 @@ export default function (pi: ExtensionAPI) {
           const thinkingLevel = pi.getThinkingLevel();
 
           // Thinking level colour matches Pi's built-in theme tokens
-          const thinkingColor =
-            !ctx.model?.reasoning ? null
-            : thinkingLevel === "minimal" ? "thinkingMinimal"
-            : thinkingLevel === "low"     ? "thinkingLow"
-            : thinkingLevel === "medium"  ? "thinkingMedium"
-            : thinkingLevel === "high"    ? "thinkingHigh"
-            : thinkingLevel === "xhigh"   ? "thinkingXhigh"
-            : "thinkingOff"; // "off" or unset
+          const thinkingColor = !ctx.model?.reasoning
+            ? null
+            : thinkingLevel === "minimal"
+              ? "thinkingMinimal"
+              : thinkingLevel === "low"
+                ? "thinkingLow"
+                : thinkingLevel === "medium"
+                  ? "thinkingMedium"
+                  : thinkingLevel === "high"
+                    ? "thinkingHigh"
+                    : thinkingLevel === "xhigh"
+                      ? "thinkingXhigh"
+                      : "thinkingOff"; // "off" or unset
 
           const thinkingLabel =
-            thinkingColor === null ? ""
-            : theme.fg("dim", " \u2022 ") +
-              theme.fg(thinkingColor, thinkingLevel === "off" || !thinkingLevel ? "thinking off" : thinkingLevel);
+            thinkingColor === null
+              ? ""
+              : theme.fg("dim", " \u2022 ") +
+                theme.fg(
+                  thinkingColor,
+                  thinkingLevel === "off" || !thinkingLevel
+                    ? "thinking off"
+                    : thinkingLevel,
+                );
 
           // Build right side without provider first
-          let rightStyled = theme.fg("syntaxType", modelName) + thinkingLabel;
+          let rightStyled = theme.fg("accent", modelName) + thinkingLabel;
 
           // Optionally prepend provider when multiple providers available
-          if (
-            footerData.getAvailableProviderCount() > 1 &&
-            ctx.model
-          ) {
+          if (footerData.getAvailableProviderCount() > 1 && ctx.model) {
             const withProv =
               theme.fg("dim", `(${ctx.model.provider}) `) + rightStyled;
             if (visibleWidth(statsLeft) + 2 + visibleWidth(withProv) <= width) {
@@ -504,8 +543,7 @@ export default function (pi: ExtensionAPI) {
           const rw = visibleWidth(rightStyled);
           let statsLine: string;
           if (lw + 2 + rw <= width) {
-            statsLine =
-              statsLeft + " ".repeat(width - lw - rw) + rightStyled;
+            statsLine = statsLeft + " ".repeat(width - lw - rw) + rightStyled;
           } else {
             const avail = width - lw - 2;
             if (avail > 0) {
@@ -519,28 +557,17 @@ export default function (pi: ExtensionAPI) {
             }
           }
 
-          // --- CWD line (pwd in accent colour up to first space, rest muted) ---
-          const spaceIdx = pwd.indexOf(" ");
-          const pwdStyled =
-            spaceIdx > 0
-              ? theme.fg("accent", pwd.slice(0, spaceIdx)) +
-                theme.fg("muted", pwd.slice(spaceIdx))
-              : theme.fg("accent", pwd);
-          const pwdLine = truncateToWidth(
-            pwdStyled,
-            width,
-            theme.fg("dim", "...")
-          );
-
           // --- Extension status lines ---
-          const lines = [pwdLine, statsLine];
+          const lines = [statsLine];
           const extStatuses = footerData.getExtensionStatuses();
           if (extStatuses.size > 0) {
             const statusLine = [...extStatuses.entries()]
               .sort(([a], [b]) => a.localeCompare(b))
               .map(([, t]) => t.replace(/[\r\n\t]/g, " ").trim())
               .join(" ");
-            lines.push(truncateToWidth(statusLine, width, theme.fg("dim", "...")));
+            lines.push(
+              truncateToWidth(statusLine, width, theme.fg("dim", "...")),
+            );
           }
 
           return lines;
@@ -553,7 +580,7 @@ export default function (pi: ExtensionAPI) {
   // On turn end: add current turn to cache
   // -------------------------------------------------------------------------
 
-  pi.on("turn_end", async (event, _ctx) => {
+  pi.on("turn_end", async (event, ctx) => {
     if (event.message.role !== "assistant") return;
     const m = event.message as AssistantMessage & { model?: string };
     const cost = m.usage?.cost?.total;
@@ -564,7 +591,10 @@ export default function (pi: ExtensionAPI) {
     const u = m.usage as typeof m.usage & { totalTokens?: number };
     const tokens =
       u.totalTokens ??
-      (u.input ?? 0) + (u.output ?? 0) + (u.cacheRead ?? 0) + (u.cacheWrite ?? 0);
+      (u.input ?? 0) +
+        (u.output ?? 0) +
+        (u.cacheRead ?? 0) +
+        (u.cacheWrite ?? 0);
 
     addToCache(dateKey, model, tokens, cost);
   });

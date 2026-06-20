@@ -1,7 +1,7 @@
 {
   "lastChangelogVersion": "0.79.8",
-  "defaultProvider": "github-copilot",
-  "defaultModel": "claude-sonnet-4.6",
+  "defaultProvider": "openrouter",
+  "defaultModel": "openai/gpt-oss-120b",
   "defaultThinkingLevel": "medium",
   "packages": [],
   "theme": "cool-magenta"
