@@ -87,16 +87,19 @@ for d in agents extensions skills prompts themes; do
   line "$src -> $dst"
 done
 
-for f in settings.json; do
-  src="$dir/pi/$f"
-  dst="$HOME/.pi/agent/$f"
-  if [[ -e "$dst" && ! -L "$dst" ]]; then
-    mv "$dst" "${dst}.bak"
-    warn "Backed up existing $dst to ${dst}.bak"
-  fi
-  ln -sfn "$src" "$dst"
-  line "$src -> $dst"
-done
+# settings.json is host-owned — pi writes runtime state into it (last model,
+# changelog version), so seed it from the tracked example instead of symlinking.
+settings_dst="$HOME/.pi/agent/settings.json"
+if [[ -L "$settings_dst" ]]; then
+  rm "$settings_dst"
+  warn "Removed legacy settings.json symlink from an older install"
+fi
+if [[ -e "$settings_dst" ]]; then
+  line "$settings_dst exists — leaving as-is"
+else
+  cp "$dir/pi/settings.example.json" "$settings_dst"
+  line "$dir/pi/settings.example.json -> $settings_dst (copied)"
+fi
 
 line "$dir/AGENTS.md -> $HOME/AGENTS.md"
 if [[ -e "$HOME/AGENTS.md" && ! -L "$HOME/AGENTS.md" ]]; then

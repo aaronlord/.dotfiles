@@ -1,5 +1,4 @@
 {
-  "lastChangelogVersion": "0.79.8",
   "defaultProvider": "openrouter",
   "defaultModel": "anthropic/claude-haiku-4.5",
   "defaultThinkingLevel": "medium",
