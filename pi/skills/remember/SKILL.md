@@ -1,10 +1,10 @@
 ---
-name: learn
-description: Teach the agent something — a rule, a style preference, or a lesson from a mistake made this session. Persists the learning to the right AGENTS.md and logs it to ~/.dotfiles/ai/lessons/. Use when the user says "/learn", "learn from this", "remember this", or wants to correct agent behaviour going forward.
+name: remember
+description: Teach the agent something — a rule, a style preference, or a lesson from a mistake made this session. Persists the learning to the right AGENTS.md and logs it to ~/.dotfiles/ai/lessons/. Use when the user says "/remember", "learn from this", "remember this", or wants to correct agent behaviour going forward.
 argument-hint: "What should the agent learn? (optional — can be vague like 'from this session' or specific like 'always use static arrow functions')"
 ---
 
-# learn
+# remember
 
 The user wants to teach you something. Your job is to understand the lesson, draft a concise rule and a richer journal entry, confirm everything with the user, and write it to the right place.
 
@@ -14,10 +14,10 @@ When this skill is invoked, immediately begin the workflow below. Do not ask the
 
 ### 1. Understand the lesson
 
-The user may invoke `/learn` with:
+The user may invoke `/remember` with:
 - **No argument** — ask them: *"What would you like me to learn?"*
-- **A vague argument** like `/learn from the mistakes you made with those tests` or `/learn from this session` — look back at the conversation, identify what went wrong or what was discussed, and **propose** what you think the lesson is. Ask the user to confirm or refine it.
-- **A specific argument** like `/learn how to write static arrow functions based on what I just told you` — treat that as the lesson directly, but clarify any ambiguity before proceeding.
+- **A vague argument** like `/remember from the mistakes you made with those tests` or `/remember from this session` — look back at the conversation, identify what went wrong or what was discussed, and **propose** what you think the lesson is. Ask the user to confirm or refine it.
+- **A specific argument** like `/remember how to write static arrow functions based on what I just told you` — treat that as the lesson directly, but clarify any ambiguity before proceeding.
 
 Always make sure you can state the lesson as a clear, actionable rule before moving on.
 
@@ -107,4 +107,4 @@ Tell the user exactly what was written and where:
 
 - Never overwrite or restructure existing AGENTS.md content — only append
 - The lesson journal is a long-term log; never edit or delete existing entries
-- If the user says `/learn from this session`, look at the whole conversation for multiple lessons — walk through them one at a time, each as a separate `/learn` run
+- If the user says `/remember from this session`, look at the whole conversation for multiple lessons — walk through them one at a time, each as a separate `/remember` run

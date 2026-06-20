@@ -83,7 +83,7 @@ for d in agents extensions skills prompts themes; do
     mv "$dst" "${dst}.bak"
     warn "Backed up existing $dst to ${dst}.bak"
   fi
-  ln -sf "$src" "$dst"
+  ln -sfn "$src" "$dst"
   line "$src -> $dst"
 done
 
@@ -94,7 +94,7 @@ for f in settings.json; do
     mv "$dst" "${dst}.bak"
     warn "Backed up existing $dst to ${dst}.bak"
   fi
-  ln -sf "$src" "$dst"
+  ln -sfn "$src" "$dst"
   line "$src -> $dst"
 done
 
@@ -103,7 +103,22 @@ if [[ -e "$HOME/AGENTS.md" && ! -L "$HOME/AGENTS.md" ]]; then
   mv "$HOME/AGENTS.md" "$HOME/AGENTS.md.bak"
   warn "Backed up existing ~/AGENTS.md"
 fi
-ln -sf "$dir/AGENTS.md" "$HOME/AGENTS.md"
+ln -sfn "$dir/AGENTS.md" "$HOME/AGENTS.md"
+
+info "Linking skills into Claude Code"
+
+mkdir -p "$HOME/.claude/skills"
+
+for skill in "$dir"/pi/skills/*/; do
+  name="$(basename "$skill")"
+  dst="$HOME/.claude/skills/$name"
+  if [[ -e "$dst" && ! -L "$dst" ]]; then
+    mv "$dst" "${dst}.bak"
+    warn "Backed up existing $dst to ${dst}.bak"
+  fi
+  ln -sfn "${skill%/}" "$dst"
+  line "${skill%/} -> $dst"
+done
 
 info "Saucy"
 line "source $HOME/.bashrc"

@@ -31,7 +31,9 @@ Before drafting anything, explore the codebase to understand:
 - What already exists that the feature might touch or extend
 - Any prior art (similar features, related migrations, existing interfaces)
 
-Reference what you find in both documents.
+Read the project's `CONTEXT.md` (the domain glossary) and `docs/adr/` if they exist, so the plan uses the project's ubiquitous language and respects prior decisions. Reference what you find in both documents.
+
+If planning surfaces a new domain term that needs pinning down, or a hard-to-reverse decision worth recording, use the `domain-modeling` skill to capture it — don't bury glossary or decision material inside the PRD/ARD.
 
 ### 4. Create the scaffold
 

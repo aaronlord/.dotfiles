@@ -44,7 +44,16 @@ Rules:
 - Don't move to the next question until the current one is resolved
 - Don't stop early — exhaust every meaningful open question before concluding
 
-### 5. Update the documents in place
+### 5. Capture durable artifacts as you grill
+
+A grill that only updates the plan files loses its insights the moment the plan is archived. As terms get sharpened and decisions get made, use the `domain-modeling` skill to write them somewhere durable:
+
+- Resolved or sharpened **domain terms** → the project glossary (`CONTEXT.md`)
+- **Hard-to-reverse, surprising, real-trade-off** decisions → an ADR in `docs/adr/`
+
+Capture these inline during the interview, not in a batch at the end. Apply `domain-modeling`'s ADR bar — most decisions don't warrant one.
+
+### 6. Update the plan documents in place
 
 Once the interview is complete, rewrite both `prd.md` and `ard.md` to reflect the shared understanding:
 
@@ -56,10 +65,11 @@ Once the interview is complete, rewrite both `prd.md` and `ard.md` to reflect th
 
 Write the updated documents back to `.plans/{name}/prd.md` and `.plans/{name}/ard.md`.
 
-### 6. Wrap up
+### 7. Wrap up
 
 Tell the user:
 
 - What changed in each document
+- Any glossary terms or ADRs captured (with paths)
 - Any questions that remain open (and why)
 - Next step: run `/groom-plan {name}` to break the ARD into tasks

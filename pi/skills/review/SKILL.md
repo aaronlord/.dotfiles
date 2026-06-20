@@ -3,7 +3,7 @@ name: review
 description: Review the changes since a fixed point (commit, branch, tag, or merge-base) along four axes — Standards (does the code follow this repo's documented coding standards?), Spec (does the code match the originating PRD / issue / spec?), Security (does the diff introduce vulnerabilities or insecure patterns?), and Performance (does the diff introduce performance regressions or inefficiencies?). Runs all four reviews in parallel sub-agents and reports them side by side. Use when the user wants to review a branch, WIP changes, or asks to "review since X".
 ---
 
-Three-axis review of the diff between `HEAD` and a fixed point the user supplies:
+Four-axis review of the diff between `HEAD` and a fixed point the user supplies:
 
 - **Standards** — does the code conform to this repo's documented coding standards?
 - **Spec** — does the code faithfully implement the originating PRD / issue / spec?
@@ -41,9 +41,9 @@ Look for any files in the repo that document how code should be written:
 - `CODING_STANDARDS.md`, `CONTRIBUTING.md`, or equivalent
 - ADRs under `docs/` that establish conventions
 
-### 4. Spawn all three sub-agents in parallel
+### 4. Spawn all four sub-agents in parallel
 
-Send a single message with three `Agent` tool calls. Use the `general-purpose` subagent for all three.
+Send a single message with four `Agent` tool calls. Use the `general-purpose` subagent for all four.
 
 **Standards sub-agent prompt** — include:
 

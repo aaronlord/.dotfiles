@@ -43,11 +43,29 @@ Write the code. Hold yourself to these non-negotiable standards:
 - Interface segregation: depend on narrow interfaces, not fat ones
 - Dependency inversion: depend on abstractions, inject concretions
 
-**Well tested**
-- Use TDD where natural seams exist
-- Tests assert observable behaviour through the public interface, not implementation details
-- Cover happy paths, edge cases, and failure modes
-- Run the relevant test file(s) after each logical unit of change
+**Test-driven — one tracer bullet at a time**
+
+Build the task as **vertical slices**: one test → one piece of implementation → repeat.
+
+```
+RED→GREEN: test1 → impl1
+RED→GREEN: test2 → impl2
+...
+```
+
+- **Never write all the tests first, then all the code.** That horizontal slicing produces tests of _imagined_ behaviour — they test the shape of things, pass when behaviour breaks, and fail when it doesn't. Write the next test only once the previous slice is green.
+- Write only enough code to pass the current test. Don't anticipate future tests.
+- **Never refactor while red.** Get to green first, then look for duplication to extract and complexity to hide behind a smaller interface.
+
+Per-cycle checklist:
+```
+[ ] Test describes behaviour, not implementation
+[ ] Test uses the public interface only — would survive an internal refactor
+[ ] Code is minimal for this test; no speculative features
+[ ] Tests assert observable behaviour, covering happy path, edge cases, failure modes
+```
+
+Design new code as **deep modules** — a lot of behaviour behind a small interface — so the interface is the test surface. If you find yourself wanting to test _past_ the interface, the module is the wrong shape.
 
 **Idiomatic**
 - Match the conventions of the surrounding codebase — naming, layering, patterns, file structure
