@@ -1,7 +1,7 @@
 {
   "lastChangelogVersion": "0.79.8",
   "defaultProvider": "openrouter",
-  "defaultModel": "openai/gpt-oss-120b",
+  "defaultModel": "anthropic/claude-haiku-4.5",
   "defaultThinkingLevel": "medium",
   "packages": [],
   "theme": "cool-magenta"

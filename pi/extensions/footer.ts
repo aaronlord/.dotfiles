@@ -1,15 +1,10 @@
 /**
- * gh-usage — GitHub Copilot AI Credits tracker for Pi
+ * footer — Enhanced Pi footer with token & cost stats
  *
- * - Replaces Pi's footer row with an enhanced version that includes
- *   today's and this week's AIC (AI Credits) inline.
- * - Registers /usage for a 7-day drill-down with horizontal bar charts.
- *
- * AIC formula (per GitHub AIC spec v1.4.0):
- *   1 AIC = $0.01 USD   →   aic = cost_usd / 0.01
+ * - Replaces Pi's footer row with session token + cost breakdown.
+ * - Shows today's and this week's stats.
  *
  * Data source: Pi's session JSONL files at ~/.pi/agent/sessions/
- * All historical sessions are backfilled on startup. No separate DB needed.
  */
 
 import type { AssistantMessage } from "@earendil-works/pi-ai";
@@ -18,11 +13,10 @@ import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { homedir } from "node:os";
 import { isAbsolute, join, relative, resolve, sep } from "node:path";
 import {
-  Box,
-  Text,
   truncateToWidth,
   visibleWidth,
 } from "@earendil-works/pi-tui";
+import "./usage";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -189,12 +183,6 @@ function fmtTok(n: number): string {
   return `${Math.round(n / 1_000_000)}M`;
 }
 
-function fmtAic(aic: number): string {
-  if (aic < 10) return aic.toFixed(2);
-  if (aic < 100) return aic.toFixed(1);
-  return Math.round(aic).toString();
-}
-
 function fmtCwd(cwd: string): string {
   const home = process.env.HOME || process.env.USERPROFILE;
   if (!home) return cwd;
@@ -218,157 +206,10 @@ function fmtDate(dateKey: string): string {
 }
 
 // ---------------------------------------------------------------------------
-// Usage report data shape (passed via sendMessage details)
-// ---------------------------------------------------------------------------
-
-interface UsageRow {
-  dateKey: string;
-  tokens: number;
-  costUsd: number;
-  aic: number;
-  isToday: boolean;
-  isMax: boolean;
-  byModel: Record<string, { tokens: number; costUsd: number }>;
-}
-
-interface UsageReport {
-  rows: UsageRow[];
-  maxAic: number;
-  week: { tokens: number; costUsd: number; aic: number };
-  month: { tokens: number; costUsd: number; aic: number };
-  allTime: { tokens: number; costUsd: number; aic: number };
-}
-
-// ---------------------------------------------------------------------------
 // Extension entry point
 // ---------------------------------------------------------------------------
 
 export default function (pi: ExtensionAPI) {
-  // -------------------------------------------------------------------------
-  // Coloured /usage message renderer
-  // -------------------------------------------------------------------------
-
-  pi.registerMessageRenderer("gh-usage", (message, _options, theme) => {
-    const report = message.details as UsageReport;
-    const { rows, maxAic, week, month, allTime } = report;
-    const BAR_W = 20;
-    const LABEL_W = 14;
-
-    function coloredBar(aic: number, isMax: boolean): string {
-      if (maxAic === 0) return theme.fg("dim", "░".repeat(BAR_W));
-      const filled = Math.round((aic / maxAic) * BAR_W);
-      const fillColor = isMax ? "accent" : aic > 0 ? "borderAccent" : "dim";
-      return (
-        theme.fg(fillColor, "█".repeat(filled)) +
-        theme.fg("dim", "░".repeat(BAR_W - filled))
-      );
-    }
-
-    function subBar(aic: number): string {
-      if (maxAic === 0) return theme.fg("dim", "░".repeat(BAR_W));
-      const filled = Math.round((aic / maxAic) * BAR_W);
-      return (
-        theme.fg("syntaxFunction", "▪".repeat(filled)) +
-        theme.fg("dim", "░".repeat(BAR_W - filled))
-      );
-    }
-
-    // Shorten model names to fit in LABEL_W - 2 chars (leaves room for "↳ ")
-    function shortModel(model: string): string {
-      const name = model.split("/").pop() ?? model;
-      const stripped = name.replace(
-        /^(claude|gpt|gemini|llama|mistral|qwen)-/,
-        "",
-      );
-      const candidate = stripped.length > 0 ? stripped : name;
-      const maxLen = LABEL_W - 2;
-      return candidate.length <= maxLen
-        ? candidate
-        : candidate.slice(0, maxLen);
-    }
-
-    function aicCol(aic: number): string {
-      return (
-        theme.fg("borderAccent", fmtAic(aic).padStart(7)) +
-        theme.fg("dim", " AIC")
-      );
-    }
-
-    function tokCol(tokens: number): string {
-      return (
-        theme.fg("success", fmtTok(tokens).padStart(7)) +
-        theme.fg("dim", " tok")
-      );
-    }
-
-    function costCol(costUsd: number): string {
-      return theme.fg("syntaxNumber", `$${costUsd.toFixed(3)}`.padStart(8));
-    }
-
-    const lines: string[] = [];
-
-    // Title
-    lines.push(
-      theme.fg("accent", "═══") +
-        theme.fg("muted", " AI Credits Usage — last 7 days ") +
-        theme.fg("accent", "═══"),
-    );
-    lines.push("");
-
-    // Per-day rows
-    for (const row of rows) {
-      const label = fmtDate(row.dateKey).padEnd(LABEL_W);
-      const datePart = row.isToday
-        ? theme.fg("accent", label)
-        : theme.fg("muted", label);
-
-      const todayMarker = row.isToday
-        ? "  " + theme.fg("accent", "◀ today")
-        : "";
-
-      lines.push(
-        `  ${datePart}  ${coloredBar(row.aic, row.isMax)}  ${aicCol(row.aic)}  ${tokCol(row.tokens)}  ${costCol(row.costUsd)}${todayMarker}`,
-      );
-
-      // Per-model sub-rows — same column positions, label replaced by "↳ model"
-      const models = Object.entries(row.byModel).sort(
-        ([, a], [, b]) => b.costUsd - a.costUsd,
-      );
-      if (models.length > 1) {
-        for (const [model, stats] of models) {
-          const modelAic = stats.costUsd / 0.01;
-          const subLabel = ("↳ " + shortModel(model)).padEnd(LABEL_W);
-          lines.push(
-            `  ${theme.fg("dim", subLabel)}  ${subBar(modelAic)}  ${aicCol(modelAic)}`,
-          );
-        }
-      }
-    }
-
-    // Totals
-    lines.push("");
-    lines.push(theme.fg("dim", "─".repeat(62)));
-
-    for (const [label, stats] of [
-      ["This week", week],
-      ["This month", month],
-      ["All time", allTime],
-    ] as const) {
-      lines.push(
-        `  ${theme.fg("muted", label.padEnd(LABEL_W))}  ${" ".repeat(BAR_W)}  ${aicCol(stats.aic)}  ${tokCol(stats.tokens)}  ${costCol(stats.costUsd)}`,
-      );
-    }
-
-    lines.push("");
-    lines.push(
-      theme.fg("dim", "  1 AIC = $0.01 USD  (GitHub AIC spec v1.4.0)"),
-    );
-
-    const box = new Box(1, 1);
-    box.addChild(new Text(lines.join("\n"), 0, 0));
-    return box;
-  });
-
   // -------------------------------------------------------------------------
   // On session start: clear cache and reload all historical data
   // -------------------------------------------------------------------------
@@ -429,7 +270,7 @@ export default function (pi: ExtensionAPI) {
               ? `?/${fmtTok(contextWindow)}`
               : `${pctStr}% (${fmtTok(contextWindow)})`;
 
-          // --- Historical AIC (from cache) ---
+          // --- Historical stats (from cache) ---
           const today = periodStats(todayKey());
           const week = periodStats(weekStartKey());
 
@@ -483,15 +324,19 @@ export default function (pi: ExtensionAPI) {
             );
 
             // today tokens / cost
-            parts.push(theme.fg("muted", "/"));
-            parts.push(theme.fg("syntaxFunction", `${fmtTok(today.tokens)}`));
-            parts.push(
-              theme.fg("syntaxNumber", `$${today.costUsd.toFixed(3)}`),
-            );
+            if (today.tokens > 0) {
+              parts.push(theme.fg("muted", "/"));
+              parts.push(theme.fg("syntaxFunction", `${fmtTok(today.tokens)}`));
+              parts.push(
+                theme.fg("syntaxNumber", `$${today.costUsd.toFixed(3)}`),
+              );
+            }
             // week tokens/cost
-            parts.push(theme.fg("muted", "/"));
-            parts.push(theme.fg("syntaxFunction", `${fmtTok(week.tokens)}`));
-            parts.push(theme.fg("syntaxNumber", `$${week.costUsd.toFixed(3)}`));
+            if (week.tokens > 0 && (today.tokens === 0 || week.tokens > today.tokens)) {
+              parts.push(theme.fg("muted", "/"));
+              parts.push(theme.fg("syntaxFunction", `${fmtTok(week.tokens)}`));
+              parts.push(theme.fg("syntaxNumber", `$${week.costUsd.toFixed(3)}`));
+            }
           }
 
           const statsLeft = parts.join(" ");
@@ -576,74 +421,4 @@ export default function (pi: ExtensionAPI) {
     });
   });
 
-  // -------------------------------------------------------------------------
-  // On turn end: add current turn to cache
-  // -------------------------------------------------------------------------
-
-  pi.on("turn_end", async (event, ctx) => {
-    if (event.message.role !== "assistant") return;
-    const m = event.message as AssistantMessage & { model?: string };
-    const cost = m.usage?.cost?.total;
-    if (cost == null) return;
-
-    const dateKey = todayKey();
-    const model = m.model ?? ctx.model?.id ?? "unknown";
-    const u = m.usage as typeof m.usage & { totalTokens?: number };
-    const tokens =
-      u.totalTokens ??
-      (u.input ?? 0) +
-        (u.output ?? 0) +
-        (u.cacheRead ?? 0) +
-        (u.cacheWrite ?? 0);
-
-    addToCache(dateKey, model, tokens, cost);
-  });
-
-  // -------------------------------------------------------------------------
-  // /usage command — 7-day table with horizontal bar chart
-  // -------------------------------------------------------------------------
-
-  pi.registerCommand("usage", {
-    description: "Show AI credits usage by day (last 7 days)",
-    handler: async (_args, _ctx) => {
-      const today = todayKey();
-      const days: string[] = [];
-      for (let i = 6; i >= 0; i--) {
-        const d = new Date();
-        d.setDate(d.getDate() - i);
-        days.push(d.toISOString().slice(0, 10));
-      }
-
-      const rows: UsageRow[] = days.map((dateKey) => {
-        const day = statsCache.get(dateKey);
-        return {
-          dateKey,
-          tokens: day?.totalTokens ?? 0,
-          costUsd: day?.costUsd ?? 0,
-          aic: day ? day.costUsd / 0.01 : 0,
-          isToday: dateKey === today,
-          isMax: false,
-          byModel: day?.byModel ?? {},
-        };
-      });
-
-      const maxAic = Math.max(...rows.map((r) => r.aic), 0.001);
-      for (const r of rows) r.isMax = r.aic === maxAic && r.aic > 0;
-
-      const report: UsageReport = {
-        rows,
-        maxAic,
-        week: periodStats(weekStartKey()),
-        month: periodStats(monthStartKey()),
-        allTime: periodStats("2000-01-01"),
-      };
-
-      pi.sendMessage({
-        customType: "gh-usage",
-        content: "AI Credits Usage Report",
-        display: true,
-        details: report,
-      });
-    },
-  });
 }
