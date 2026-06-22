@@ -92,12 +92,14 @@ git commit -m "fix: <short imperative description of what was fixed>"
 ```
 
 Rules for the commit message:
+
 - Prefix is always `fix:` (lowercase)
 - Body is optional but use it when the fix needs more context
 - One commit per distinct issue or tightly coupled group of issues
 - Message describes **what** was fixed, not the reviewer's comment verbatim
 
 Example messages:
+
 - `fix: remove unused import in auth middleware`
 - `fix: rename variable to clarify intent`
 - `fix: handle null case in user lookup`
@@ -106,6 +108,7 @@ Example messages:
 ### 7. Wrap up
 
 After all comments are addressed, summarise what was done:
+
 - List each commit with its message
 - Note any comments that were intentionally skipped and why
 - Suggest pushing: `git push`

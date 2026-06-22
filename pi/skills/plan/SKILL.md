@@ -1,6 +1,6 @@
 ---
 name: plan
-description: Scaffold a new plan — explore the codebase, infer a feature name from the prompt, then draft both a PRD and ARD in .plans/{name}/. Stop after drafting so the user can review before running /review-plan.
+description: Create rough draft of PRD and ARD from user prompt with only high-level codebase context. Avoid deep exploration.
 disable-model-invocation: true
 ---
 
@@ -22,18 +22,24 @@ Derive a short, lowercase kebab-case name from the prompt (e.g. `"sync students 
 
 If `.plans/{name}/` already exists, tell the user and offer to open the existing ARD instead of overwriting. Stop here if they say yes.
 
-### 3. Explore the codebase
+### 3. Minimal codebase exploration (high-level only)
 
-Before drafting anything, explore the codebase to understand:
+This skill should not do deep codebase exploration. The goal is a rough first draft with gaps — not a complete analysis. Stop after one or two quick lookups.
 
-- Which modules are relevant (list `app/` or equivalent)
-- Any existing patterns, conventions, or ADRs that apply
-- What already exists that the feature might touch or extend
-- Any prior art (similar features, related migrations, existing interfaces)
+Exploration boundaries:
+- Read `CONTEXT.md` if it exists (one look, move on if missing).
+- Read `docs/adr/` only if your project uses it for architectural decisions.
+- List top-level app modules or directories once to understand shape.
+- If a specific module is relevant, list it once at top level only. Do not drill into subdirectories.
+- Do not read source files, scan controllers, inspect schemas, or make API inferences.
+- Total exploration: 2–3 bash commands max.
 
-Read the project's `CONTEXT.md` (the domain glossary) and `docs/adr/` if they exist, so the plan uses the project's ubiquitous language and respects prior decisions. Reference what you find in both documents.
+Leave blanks instead of inferring:
+- If you don't know whether a feature goes in Module X or Y, write both as alternatives in the ARD and ask the user.
+- If you don't know the exact command/handler names or schema shape, write placeholders (`{UserPasswordCommand}`, `{password_reset_table}`, etc.) and leave them as open questions.
+- If prior art is not immediately obvious, skip it.
 
-If planning surfaces a new domain term that needs pinning down, or a hard-to-reverse decision worth recording, use the `domain-modeling` skill to capture it — don't bury glossary or decision material inside the PRD/ARD.
+If planning surfaces a new domain term that needs pinning down or a hard-to-reverse decision worth recording, use the `domain-modeling` skill rather than burying that material inside PRD/ARD.
 
 ### 4. Create the scaffold
 
@@ -45,20 +51,19 @@ If planning surfaces a new domain term that needs pinning down, or a hard-to-rev
   tasks/                ← empty for now, created by /groom-plan
 ```
 
-### 4a. Write context.md
+### 4a. Write context.md (concise)
 
-Before drafting the documents, write `.plans/{name}/context.md` with everything you discovered during exploration. This file is the single source of codebase context for all downstream skills (`/review-plan`, `/groom-plan`, `/implement-tasks`) — they will read it instead of re-exploring.
+Write `.plans/{name}/context.md` with just enough high-level context for downstream skills to understand the domain and where the new feature will live. Keep concise:
 
-Include as much detail as the agent judges necessary to make re-exploration unnecessary:
-- For simple references, a file path and a one-line note is enough
-- For important modules with non-obvious patterns or conventions, include more detail (key classes, interfaces, naming patterns, layering decisions)
-- Cover: relevant modules, existing patterns, ADRs, prior art, anything the feature will touch or extend
+- Short list of relevant modules and one-line notes.
+- Any ADRs or glossary entries that matter.
+- Surface important conventions only if they affect design (naming patterns, layering, major interfaces).
 
-Format: use headings and bullet lists. Be practical — the goal is that a downstream skill reading only this file has everything it needs.
+Goal: downstream skills should not need to re-explore, but they can perform deeper exploration later if needed.
 
 ### 5. Draft the PRD
 
-Use the template below. Populate it from the user's prompt and your codebase exploration. Be concrete — reference real module names, actors, and domain terms from the project.
+Use the template below. Populate it from the user's prompt and the high-level context. Be concrete where possible — reference real module names, actors, and domain terms from project when they are obvious.
 
 <prd-template>
 # PRD: {Feature Name}
@@ -90,7 +95,7 @@ Any open product questions, dependencies on other teams, or links to external co
 
 ### 6. Draft the ARD
 
-Use the template below. This is the engineering document — be specific about modules, layers, and design decisions. Reference the wonde.md style: rough sketches, command/handler names, job structures, open questions are all fine. The goal is to capture your current thinking clearly enough for a productive /review-plan session.
+Use the template below. This is the engineering document — be specific about modules, layers, and design decisions, but only to the degree supported by the high-level context. Rough sketches, command/handler names, job structures, open questions are fine.
 
 <ard-template>
 # ARD: {Feature Name}
@@ -99,7 +104,7 @@ _Status: draft_
 
 ## Design Notes
 
-High-level notes on how this will work. Think out loud — include alternatives you're considering, constraints you've identified, and anything that shapes the approach.
+High-level notes on how this will work. Include alternatives you're considering, constraints you've identified, and anything that shapes the approach.
 
 ## Code Structure
 

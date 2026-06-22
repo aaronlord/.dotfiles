@@ -1,5 +1,5 @@
 ---
-name: groom-plan
+name: plan-to-tasks
 description: Break a reviewed ARD into an ordered list of independently-implementable tasks. Creates tasks.md (index) and tasks/{n}-task-name.md (individual task files with full context). Use after /review-plan when the plan is ready to be broken down for implementation.
 disable-model-invocation: true
 ---
@@ -33,7 +33,7 @@ Read `.plans/{name}/context.md`. This was written during `/plan` and contains al
 
 ### 3. Derive tasks as vertical slices
 
-Break the work into **tracer bullet** tasks. Each task should be a thin vertical slice that:
+Break the work into **tracer bullet** tasks — minimal, end-to-end slices through the system that validate architecture and dependencies before building full scope. Each task should be a thin vertical slice that:
 
 - Is independently implementable and reviewable
 - Has a clear, verifiable outcome
@@ -54,6 +54,7 @@ Present the proposed task list as a numbered list. For each task show:
 - **Depends on**: which earlier tasks must complete first (if any)
 
 Ask the user:
+
 - Does the granularity feel right?
 - Are the dependency relationships correct?
 - Should any tasks be merged or split?
@@ -76,6 +77,7 @@ _Status: todo_
 Run the full CI pipeline and fix any failures. This is the final gate before the feature branch is ready for review.
 
 **Backend (PHP):**
+
 ```bash
 ./vendor/bin/pint           # format
 ./vendor/bin/phpstan analyse --memory-limit=1G
@@ -83,6 +85,7 @@ Run the full CI pipeline and fix any failures. This is the final gate before the
 ```
 
 **Frontend (JS/TS):**
+
 ```bash
 pnpm run format
 pnpm run types:check
@@ -157,12 +160,12 @@ Create or overwrite `.plans/{name}/tasks.md`:
 <tasks-index-template>
 # Tasks: {Feature Name}
 
-| # | Task | Status | Depends on |
-|---|------|--------|------------|
-| 1 | [Task title](tasks/001-task-name.md) | todo | — |
-| 2 | [Task title](tasks/002-task-name.md) | todo | 1 |
-| 3 | [Task title](tasks/003-task-name.md) | todo | 1, 2 |
-| 4 | [Ensure CI passes](tasks/004-ensure-ci-passes.md) | todo | all |
+| #   | Task                                              | Status | Depends on |
+| --- | ------------------------------------------------- | ------ | ---------- |
+| 1   | [Task title](tasks/001-task-name.md)              | todo   | —          |
+| 2   | [Task title](tasks/002-task-name.md)              | todo   | 1          |
+| 3   | [Task title](tasks/003-task-name.md)              | todo   | 1, 2       |
+| 4   | [Ensure CI passes](tasks/004-ensure-ci-passes.md) | todo   | all        |
 
 ## Progress
 
