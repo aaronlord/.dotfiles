@@ -5,7 +5,7 @@ argument-hint: "What will the next session be used for?"
 disable-model-invocation: true
 ---
 
-Write a handoff document summarising the current conversation so a fresh agent can continue the work. Save to the temporary directory of the user's OS — not the current workspace.
+Write a handoff document summarising the current conversation so a fresh agent can continue the work. Save to `.plans/handoffs/{YYYY-MM-DD-HH-MM}-handoff.md` in the current workspace. If `.plans/handoffs/` doesn't exist, create it.
 
 Include a "suggested skills" section in the document, which suggests skills the next agent should invoke.
 

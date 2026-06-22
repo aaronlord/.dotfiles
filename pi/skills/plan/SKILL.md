@@ -28,7 +28,7 @@ This skill should not do deep codebase exploration. The goal is a rough first dr
 
 Exploration boundaries:
 - Read `CONTEXT.md` if it exists (one look, move on if missing).
-- Read `docs/adr/` only if your project uses it for architectural decisions.
+- Read `docs/adr/` only if it exists.
 - List top-level app modules or directories once to understand shape.
 - If a specific module is relevant, list it once at top level only. Do not drill into subdirectories.
 - Do not read source files, scan controllers, inspect schemas, or make API inferences.

@@ -72,4 +72,4 @@ Tell the user:
 - What changed in each document
 - Any glossary terms or ADRs captured (with paths)
 - Any questions that remain open (and why)
-- Next step: run `/groom-plan {name}` to break the ARD into tasks
+- Next step: run `/plan-to-tasks {name}` to break the ARD into tasks

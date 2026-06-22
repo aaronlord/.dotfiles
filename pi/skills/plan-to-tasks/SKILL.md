@@ -4,7 +4,7 @@ description: Break a reviewed ARD into an ordered list of independently-implemen
 disable-model-invocation: true
 ---
 
-# /groom-plan
+# /plan-to-tasks
 
 Break a reviewed ARD into an ordered, dependency-aware list of tasks ready for implementation.
 
