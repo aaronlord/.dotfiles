@@ -1,6 +1,6 @@
 ---
 name: review
-description: Review the changes since a fixed point (commit, branch, tag, or merge-base) along four axes — Standards (does the code follow this repo's documented coding standards?), Spec (does the code match the originating PRD / issue / spec?), Security (does the diff introduce vulnerabilities or insecure patterns?), and Performance (does the diff introduce performance regressions or inefficiencies?). Runs all four reviews in parallel sub-agents and reports them side by side. Use when the user wants to review a branch, WIP changes, or asks to "review since X".
+description: Review the changes since a fixed point (commit, branch, tag, or merge-base) along five axes — Standards, Spec, Security, Performance, and Docs. Runs all five reviews in parallel sub-agents and reports them side by side. Use when the user wants to review a branch, WIP changes, or asks to "review since X".
 ---
 
 Four-axis review of the diff between `HEAD` and a fixed point the user supplies:
@@ -9,8 +9,9 @@ Four-axis review of the diff between `HEAD` and a fixed point the user supplies:
 - **Spec** — does the code faithfully implement the originating PRD / issue / spec?
 - **Security** — does the diff introduce vulnerabilities, insecure patterns, or attack surface?
 - **Performance** — does the diff introduce regressions, inefficiencies, or scalability concerns?
+- **Docs** — does the diff introduce a new pattern, convention, or decision not reflected in any doc?
 
-All four axes run as **parallel sub-agents** so they don't pollute each other's context, then this skill aggregates their findings.
+All five axes run as **parallel sub-agents** so they don't pollute each other's context, then this skill aggregates their findings.
 
 ## Process
 
@@ -41,9 +42,9 @@ Look for any files in the repo that document how code should be written:
 - `CODING_STANDARDS.md`, `CONTRIBUTING.md`, or equivalent
 - ADRs under `docs/` that establish conventions
 
-### 4. Spawn all four sub-agents in parallel
+### 4. Spawn all five sub-agents in parallel
 
-Send a single message with four `Agent` tool calls. Use the `general-purpose` subagent for all four.
+Send a single message with five `Agent` tool calls. Use the `general-purpose` subagent for all five.
 
 **Standards sub-agent prompt** — include:
 
@@ -69,18 +70,27 @@ If the spec is missing, skip the Spec sub-agent and note this in the final repor
 - The full diff command and commit list.
 - The brief: "Review the diff for performance regressions and inefficiencies. Look broadly for any code that is unnecessarily slow, wasteful, or unlikely to scale — don't limit yourself to a checklist. Common patterns to watch for include (but are not limited to): N+1 queries, missing indexes, unbounded loops or recursion, unnecessary computation in hot paths, missing caching where applicable, large payload sizes, blocking I/O, and memory leaks. For each finding: quote the relevant code, explain the performance impact, and suggest a fix. Distinguish confirmed regressions from theoretical concerns. Under 400 words."
 
+Add the Docs sub-agent prompt after the Performance one:
+
+**Docs sub-agent prompt** — include:
+
+- The full diff command and commit list.
+- The list of doc files found in step 3 (`AGENTS.md`, `CONTEXT.md`, `docs/decisions/`, `docs/**`).
+- The brief: "Review the diff for documentation drift. Look for: new patterns or conventions introduced without a corresponding update to AGENTS.md; new domain terms used in code but absent from CONTEXT.md; architectural decisions made in the diff that aren't recorded in docs/decisions/; existing docs that now contradict what the code does. For each finding: quote the relevant code, name the doc that should be updated, and describe the missing or contradicting content in one sentence. Do NOT rewrite the docs — flag only. End each finding with: → run /update-docs to fix. Under 300 words."
+
 ### 5. Aggregate
 
-Present the four reports under `## Standards`, `## Spec`, `## Security`, and `## Performance` headings, verbatim or lightly cleaned. Do **not** merge or rerank findings — the four axes are deliberately separate (see _Why four axes_).
+Present the five reports under `## Standards`, `## Spec`, `## Security`, `## Performance`, and `## Docs` headings, verbatim or lightly cleaned. Do **not** merge or rerank findings — the five axes are deliberately separate (see _Why five axes_).
 
 End with a one-line summary: total findings per axis, and the worst issue within each axis (if any). Don't pick a single winner across axes — that's the reranking the separation exists to prevent.
 
-## Why four axes
+## Why five axes
 
 A change can pass some axes and fail others:
 
 - Code that follows every standard and matches the spec but introduces a SQL injection → **Standards pass, Spec pass, Security fail.**
 - Code that is secure and idiomatic but implements the wrong thing → **Standards pass, Security pass, Spec fail.**
 - Code that is correct and secure but hammers the database with N+1 queries → **Standards pass, Spec pass, Security pass, Performance fail.**
+- Code that is correct, secure, and fast but introduces a new pattern with no doc update → **Standards pass, Spec pass, Security pass, Performance pass, Docs fail.**
 
 Reporting them separately stops one axis from masking another.

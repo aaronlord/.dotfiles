@@ -14,10 +14,13 @@ When this skill is invoked, immediately begin the workflow below. Do not ask the
 
 ### 1. Understand the lesson
 
-The user may invoke `/remember` with:
-- **No argument** — ask them: *"What would you like me to learn?"*
-- **A vague argument** like `/remember from the mistakes you made with those tests` or `/remember from this session` — look back at the conversation, identify what went wrong or what was discussed, and **propose** what you think the lesson is. Ask the user to confirm or refine it.
-- **A specific argument** like `/remember how to write static arrow functions based on what I just told you` — treat that as the lesson directly, but clarify any ambiguity before proceeding.
+Check whether the skill was invoked with an argument (text after the trigger word):
+
+- **No argument at all** — only then ask: *"What would you like me to learn?"* Wait for the answer before continuing.
+- **Vague argument** (e.g. `/remember from the mistakes you made with those tests`, `/remember from this session`) — do NOT ask what to learn. Instead, look back at the conversation, identify what went wrong or what was discussed, **propose** the lesson yourself, and ask the user to confirm or refine that specific proposal.
+- **Specific argument** (e.g. `/remember always use named exports, never default exports`) — do NOT ask what to learn. Treat the argument as the lesson directly. State it back as an actionable rule and move on to step 2.
+
+**Never ask "What would you like me to learn?" if the user already supplied an argument.**
 
 Always make sure you can state the lesson as a clear, actionable rule before moving on.
 
