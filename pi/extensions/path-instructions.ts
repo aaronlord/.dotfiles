@@ -120,10 +120,19 @@ export default function (pi: ExtensionAPI) {
     const filePath = (event.input as { path?: string }).path;
     if (!filePath) return;
 
+    const newlyMatched: PathInstruction[] = [];
+
     for (const instruction of instructions) {
       if (injectedThisSession.has(instruction.source)) continue;
       if (!matchesAnyGlob(filePath, instruction.patterns)) continue;
+      newlyMatched.push(instruction);
+    }
 
+    if (newlyMatched.length === 0) return;
+
+    // Mark all matched instructions as injected before blocking, so a
+    // re-attempt of the same file goes straight through.
+    for (const instruction of newlyMatched) {
       injectedThisSession.add(instruction.source);
 
       pi.sendMessage(
@@ -139,5 +148,17 @@ export default function (pi: ExtensionAPI) {
         { deliverAs: "steer" },
       );
     }
+
+    // Block this tool call so the instructions are in context before the
+    // file is written. The steer messages above are delivered before the
+    // next LLM turn, at which point the agent re-attempts the write.
+    return {
+      block: true,
+      reason:
+        `Path instructions injected for ${newlyMatched.map((i) => i.source).join(", ")}. ` +
+        "Please review the instructions above and re-attempt the " +
+        (event.toolName === "write" ? "write" : "edit") +
+        ".",
+    };
   });
 }

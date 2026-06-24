@@ -9,14 +9,6 @@ description: Use when you need to resolve an in-progress git merge/rebase confli
 
 3. **Resolve each hunk.** Preserve both intents where possible. Where incompatible, pick the one matching the merge's stated goal and note the trade-off. Do **not** invent new behaviour. Always resolve; never `--abort`.
 
-4. Run the project's **automated checks** and fix anything the merge broke. For PHP projects that usually means:
-
-   ```bash
-   ./vendor/bin/pint                        # format
-   ./vendor/bin/phpstan analyse --memory-limit=1G
-   ./vendor/bin/pest --ci --parallel --compact
-   ```
-
-   For JS/TS, run the project's typecheck, lint, and tests. If the project has a `.bin/magnus` wrapper, use that instead. Discover the real commands before assuming.
+4. Run the project's **automated checks** and fix anything the merge broke — formatter, type-checker/static analysis, and tests. Discover the actual commands from the project's `AGENTS.md`, `package.json`, `Makefile`, or equivalent before assuming.
 
 5. **Finish the merge/rebase.** Stage everything and commit. If rebasing, continue the rebase process until all commits are rebased.

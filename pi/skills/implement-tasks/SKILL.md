@@ -14,7 +14,9 @@ Implement one or more tasks from a groomed plan, in dependency order.
 /implement-tasks {name}
 ```
 
-If no name is given, list the available plans and ask which one.
+If no name is given:
+1. Run `ls .plans/` and output the list of available plans to the user.
+2. Ask the user which plan to work on. Do not proceed until they answer.
 
 ## Process
 
@@ -22,17 +24,29 @@ If no name is given, list the available plans and ask which one.
 
 Read `.plans/{name}/tasks.md` to understand overall progress and dependency order.
 
-### 2. Determine which task(s) to implement
+### 2. Check the working branch
+
+Run `git branch --show-current`. If you are on the default branch (e.g. `main` or `master`), **stop and ask the user** which branch to use or whether to create one. Do not assume a branch name. Do not create a branch without explicit confirmation.
+
+### 3. Determine which task(s) to implement
 
 Pick the next uncompleted task in order. If there's no such task (all done, or blocked), tell the user why and stop.
 
-### 3. Implement the task
+### 4. Implement the task
 
-#### 3a. Read the task file
+#### 4a. Read the task file and project instructions
 
 Load `.plans/{name}/tasks/{nnn}-task-name.md` in full. Read `.plans/{name}/ard.md` for broader design context. Read `.plans/{name}/context.md` for codebase context — do not re-explore the codebase. Only open additional source files called out in the task's **Notes** or **Relevant ARD Sections**.
 
-#### 3b. Implement
+Read all `AGENTS.md` files in scope — root and any path-level files covering the directories you will touch. Do this before writing any code. These are non-negotiable constraints, not suggestions. If an `AGENTS.md` rule contradicts your defaults, the rule wins.
+
+If the task file contains an `## Instruction Files` section, read every file listed there before touching any code. These are non-negotiable constraints — treat them with the same weight as `AGENTS.md`. Do not skip them, do not skim them.
+
+Also check `.github/instructions/` for any `*.instructions.md` files whose `applyTo:` glob matches the files you are about to write or edit that are not already listed in the task. Read every matching instruction file before touching that file. Do not wait for the instruction to be injected reactively — pull it proactively.
+
+Before writing any test, open an existing test for the most analogous code in the project and read it. Mirror its structure exactly — framework, syntax, organisation. Do not default to a style you already know.
+
+#### 4b. Implement
 
 Write the code. Hold yourself to these non-negotiable standards:
 
@@ -44,6 +58,8 @@ Write the code. Hold yourself to these non-negotiable standards:
 - Dependency inversion: depend on abstractions, inject concretions
 
 **Test-driven — one tracer bullet at a time**
+
+Tests are not optional. Every task that produces behaviour must produce tests. If a task adds only interfaces, types, or pure data structures with no logic, note why no test is needed — otherwise a missing test is a bug in your process.
 
 Build the task as **vertical slices**: one test → one piece of implementation → repeat.
 
@@ -69,37 +85,27 @@ Design new code as **deep modules** — a lot of behaviour behind a small interf
 
 **Idiomatic**
 - Match the conventions of the surrounding codebase — naming, layering, patterns, file structure
-- Read `context.md` and prior art in the codebase before writing new code; don't invent patterns that already exist
+- Read prior art in the codebase before writing new code; don't invent patterns that already exist
 - When in doubt, find an analogous feature and follow its lead
 
 **General**
 - Run typechecking and static analysis regularly during implementation, not just at the end
-- Always follow any AGENTS.md or path-level instruction files in scope for the project
 
-#### 3c. Run CI
+#### 4c. Run CI
 
-Run the full CI pipeline for the language(s) touched:
+Run checks in two phases — targeted now, full suite only on the final task.
 
-**Backend (PHP):**
-```bash
-./vendor/bin/pint           # format
-./vendor/bin/phpstan analyse --memory-limit=1G
-./vendor/bin/pest --ci --parallel --compact --coverage --min=100 --exclude-testsuite Browser
-```
+**Phase 1 — per-task (run after every task)**
 
-**Frontend (JS/TS):**
-```bash
-pnpm run format
-pnpm run types:check
-pnpm run lint:check
-pnpm run test:run
-```
+Run the project's formatter, type-checker/static analysis, and only the test files that cover the code you just wrote. Do not run the full suite. Running no tests is only acceptable for tasks where no behaviour was added (see TDD note above) — in that case, state explicitly why.
 
-If the project has a `.bin/magnus` wrapper, use that instead.
+**Phase 2 — full suite (final task only)**
 
-Fix any failures before proceeding.
+After implementing the last task in the plan, run the full CI pipeline including coverage checks.
 
-#### 3d. Mark the task done
+Fix any failures before proceeding. If the full suite reveals a gap in earlier tasks, fix it in the current commit — do not go back and amend previous commits.
+
+#### 4d. Mark the task done
 
 Update the task file: change `_Status: todo_` to `_Status: done_`.
 
@@ -107,24 +113,16 @@ Update `tasks.md`:
 - Change the task's status cell from `todo` to `done`
 - Update the progress count at the bottom
 
-#### 3e. Commit
+#### 4e. Stop
 
-```bash
-git add -A
-git commit -m "{type}: {imperative description of what was implemented}"
-```
+Report the completed task, the files you wrote or modified, and how many tasks remain. Suggest the user run `/review` to review and commit the changes before continuing — e.g. `/review main`. Do not begin the next task under any circumstances.
 
-Use conventional commit types: `feat`, `fix`, `refactor`, `test`, `chore`. The message should describe what was built, not reference the task number.
-
-#### 3f. Stop
-
-Always stop here. Report the completed task, how many tasks remain, and wait for the user to invoke again. Do not begin the next task under any circumstances.
-
-If this was the final task (all tasks now done), tell the user the feature is fully implemented and suggest running `/review` before pushing — e.g. `/review main` to review everything against the PRD and the project's coding standards.
+If this was the final task (all tasks now done), say so and suggest `/review main` to review everything against the PRD and the project's coding standards before pushing.
 
 ## Notes
 
 - Never skip a failing CI step. Fix it or stop and explain.
+- Do not commit. Committing is the reviewer's responsibility.
 - If a task turns out to be much larger than the task file suggests, stop and flag it to the user rather than blasting through — the grooming may need revisiting.
 - If you discover something that changes the design while implementing, update the ARD to reflect reality before continuing.
 - Never commit secrets, credentials, or `.env` files.

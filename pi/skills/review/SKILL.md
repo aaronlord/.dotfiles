@@ -38,19 +38,23 @@ Look for the originating spec, in this order:
 ### 3. Identify the standards sources
 
 Look for any files in the repo that document how code should be written:
-- `AGENTS.md` (root and any path-level files in scope)
+- `AGENTS.md` (root and any path-level files in scope) — read them all
+- `.github/instructions/*.instructions.md` — read every file; record both the `applyTo:` glob and the rule body. Then, for each changed file in the diff, determine which instruction files' globs match it. Build a mapping: **file path → applicable instruction files**. Pass this mapping to the Standards sub-agent so it knows which rules apply to which files.
 - `CODING_STANDARDS.md`, `CONTRIBUTING.md`, or equivalent
 - ADRs under `docs/` that establish conventions
 
+Read each file found. Pass their contents (or relevant excerpts) to the Standards sub-agent so it can cite specific rules.
+
 ### 4. Spawn all five sub-agents in parallel
 
-Send a single message with five `Agent` tool calls. Use the `general-purpose` subagent for all five.
+Send a single message with five `Agent` tool calls. Use the `worker` subagent for all five.
 
 **Standards sub-agent prompt** — include:
 
 - The full diff command and commit list.
-- The list of standards-source files found in step 3.
-- The brief: "Report — per file/hunk where relevant — every place the diff violates a documented standard. Cite the standard (file + the rule). Distinguish hard violations from judgement calls. Skip anything tooling enforces automatically. Under 400 words."
+- The list of standards-source files found in step 3, with their full contents or relevant excerpts.
+- The file-path → applicable instruction files mapping built in step 3. Instruction files use `applyTo:` globs; only apply a given instruction file's rules to changed files whose paths match its glob. Do not apply an instruction file's rules to files whose paths do not match its glob.
+- The brief: "Review each changed file against only the instruction files whose `applyTo:` glob matches that file's path. Report — per file/hunk — every place the diff violates a documented standard. Cite the standard (instruction file name + the rule). Distinguish hard violations from judgement calls. Skip anything tooling enforces automatically. **Explicitly check: does the diff introduce behaviour without corresponding test files? If so, report it as a hard violation — missing tests are not optional.** Under 400 words."
 
 **Spec sub-agent prompt** — include:
 
@@ -83,6 +87,26 @@ Add the Docs sub-agent prompt after the Performance one:
 Present the five reports under `## Standards`, `## Spec`, `## Security`, `## Performance`, and `## Docs` headings, verbatim or lightly cleaned. Do **not** merge or rerank findings — the five axes are deliberately separate (see _Why five axes_).
 
 End with a one-line summary: total findings per axis, and the worst issue within each axis (if any). Don't pick a single winner across axes — that's the reranking the separation exists to prevent.
+
+### 6. Commit
+
+After presenting the review, ask the user whether to commit the changes.
+
+If they confirm:
+
+1. Run `git status` to identify what has changed in the working tree and staging area.
+2. Stage **only the files that belong to this change** — do not use `git add -A` or `git add .`. Any files that were already dirty before the work started are not yours to commit.
+3. Show the user the exact list of files you intend to stage and the proposed commit message. Wait for confirmation before running `git commit`.
+4. Commit:
+
+```bash
+git add {only the relevant files}
+git commit -m "{type}: {imperative description}"
+```
+
+Use conventional commit types: `feat`, `fix`, `refactor`, `test`, `chore`. The message describes what was built, not the review process.
+
+If the review surfaced hard violations the user has not yet addressed, note them clearly before asking whether to commit — do not silently commit over them.
 
 ## Why five axes
 

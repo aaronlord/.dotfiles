@@ -65,6 +65,8 @@ Iterate until the user approves the breakdown.
 
 For each approved task, create `.plans/{name}/tasks/{nnn}-{task-slug}.md` (zero-padded three-digit index, e.g. `001-create-upsert-student-command.md`).
 
+Before writing each task file, scan `.github/instructions/` for `*.instructions.md` files. Read the `applyTo:` frontmatter of each file and test whether any of the files the task will create or modify would match that glob. List every matching file path under `## Instruction Files` in the task. Do not copy content — just the path. If no files match, omit the section entirely.
+
 The final **"Ensure CI passes"** task always uses the template below — populate it as shown:
 
 <ci-gate-task-template>
@@ -76,28 +78,11 @@ _Status: todo_
 
 Run the full CI pipeline and fix any failures. This is the final gate before the feature branch is ready for review.
 
-**Backend (PHP):**
-
-```bash
-./vendor/bin/pint           # format
-./vendor/bin/phpstan analyse --memory-limit=1G
-./vendor/bin/pest --ci --parallel --compact --coverage --min=100 --exclude-testsuite Browser
-```
-
-**Frontend (JS/TS):**
-
-```bash
-pnpm run format
-pnpm run types:check
-pnpm run lint:check
-pnpm run test:run
-```
-
-If the project has a `.bin/magnus` wrapper, use that instead.
+Run the project's full CI pipeline: formatter, type-checker/static analysis, and full test suite with coverage.
 
 ## Why
 
-Individual tasks run CI locally but coverage gaps, cross-module type errors, and formatting drift can accumulate across tasks. This task ensures the branch is green end-to-end before going to review.
+Individual tasks run targeted tests, so coverage gaps, cross-module type errors, and formatting drift can accumulate. This task ensures the branch is green end-to-end before going to review.
 
 ## Dependencies
 
@@ -147,6 +132,10 @@ List any tasks that must be completed before this one, or `none`.
 ## Relevant ARD Sections
 
 Quote or reference the specific parts of the ARD that drive this task's design decisions.
+
+## Instruction Files
+
+{List paths to any `.github/instructions/*.instructions.md` files whose `applyTo:` glob matches files this task will create or edit. Omit this section if none match.}
 
 ## Notes
 
