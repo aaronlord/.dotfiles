@@ -1,7 +1,7 @@
 {
-  "defaultProvider": "openrouter",
-  "defaultModel": "anthropic/claude-haiku-4.5",
-  "defaultThinkingLevel": "medium",
-  "packages": [],
-  "theme": "cool-magenta"
+    "defaultProvider": "openrouter",
+    "defaultModel": "anthropic/claude-haiku-4.5",
+    "defaultThinkingLevel": "medium",
+    "packages": [],
+    "theme": "cyberdream"
 }
