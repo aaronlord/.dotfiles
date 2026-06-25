@@ -28,7 +28,10 @@ interface PathInstruction {
 }
 
 /** Minimal YAML parser — only handles the `applyTo` field. */
-function parseFrontmatter(raw: string): { applyTo: string[] | null; body: string } {
+function parseFrontmatter(raw: string): {
+  applyTo: string[] | null;
+  body: string;
+} {
   const match = raw.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?([\s\S]*)$/);
   if (!match) return { applyTo: null, body: raw };
 
@@ -137,7 +140,7 @@ export default function (pi: ExtensionAPI) {
 
       pi.sendMessage(
         {
-          customType: "path-instructions",
+          customType: "instructions",
           content: [
             `**Path instructions** (\`${instruction.patterns.join("`, `")}\`)`,
             "",
