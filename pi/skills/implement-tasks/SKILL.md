@@ -1,7 +1,6 @@
 ---
 name: implement-tasks
 description: Implement the next task from a groomed plan, then stop and wait. Reads the task file for full context, implements, runs CI, marks done in tasks.md, and commits. Use after /groom-plan when the plan is ready to be built.
-disable-model-invocation: true
 ---
 
 # /implement-tasks

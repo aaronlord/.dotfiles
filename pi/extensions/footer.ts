@@ -9,14 +9,53 @@
 
 import type { AssistantMessage } from "@earendil-works/pi-ai";
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
-import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
+import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { isAbsolute, join, relative, resolve, sep } from "node:path";
-import {
-  truncateToWidth,
-  visibleWidth,
-} from "@earendil-works/pi-tui";
+import { truncateToWidth, visibleWidth } from "@earendil-works/pi-tui";
 import "./usage";
+
+// ---------------------------------------------------------------------------
+// Feature / branch cost tracking
+// ---------------------------------------------------------------------------
+
+const FEATURE_COSTS_FILE = join(homedir(), ".pi", "agent", "feature-costs.json");
+
+/** Accumulated cost (USD) per git branch across all sessions. */
+export const featureCosts = new Map<string, number>();
+
+/** The git branch active at the time of the last turn / branch change. */
+export let currentBranch: string | undefined;
+
+export function loadFeatureCosts(): void {
+  try {
+    const raw = JSON.parse(readFileSync(FEATURE_COSTS_FILE, "utf8")) as Record<string, number>;
+    featureCosts.clear();
+    for (const [branch, cost] of Object.entries(raw)) {
+      if (typeof cost === "number") featureCosts.set(branch, cost);
+    }
+  } catch {
+    // File absent or malformed — start fresh
+  }
+}
+
+export function saveFeatureCosts(): void {
+  try {
+    mkdirSync(join(homedir(), ".pi", "agent"), { recursive: true });
+    const data: Record<string, number> = {};
+    for (const [branch, cost] of featureCosts) data[branch] = cost;
+    writeFileSync(FEATURE_COSTS_FILE, JSON.stringify(data, null, 2), "utf8");
+  } catch { /* ignore write errors */ }
+}
+
+export function addBranchCost(branch: string, cost: number): void {
+  featureCosts.set(branch, (featureCosts.get(branch) ?? 0) + cost);
+}
+
+/** Last path segment of a branch name, e.g. "feat/my-thing" → "my-thing" */
+function shortBranch(branch: string): string {
+  return branch.split("/").pop() ?? branch;
+}
 
 // ---------------------------------------------------------------------------
 // Types
@@ -219,12 +258,18 @@ export default function (pi: ExtensionAPI) {
     const currentFile = ctx.sessionManager.getSessionFile() ?? undefined;
     // Load all sessions except the current one (avoid double-counting in-progress turns)
     loadAllSessions(currentFile);
+    loadFeatureCosts();
 
     // Set up custom footer (TUI only)
     if (ctx.mode !== "tui") return;
 
     ctx.ui.setFooter((tui, theme, footerData) => {
-      const unsub = footerData.onBranchChange(() => tui.requestRender());
+      // Keep currentBranch in sync so turn_end can attribute costs correctly
+      currentBranch = footerData.getGitBranch() ?? undefined;
+      const unsub = footerData.onBranchChange(() => {
+        currentBranch = footerData.getGitBranch() ?? undefined;
+        tui.requestRender();
+      });
 
       return {
         dispose: unsub,
@@ -275,7 +320,7 @@ export default function (pi: ExtensionAPI) {
           const week = periodStats(weekStartKey());
 
           // --- Extension statuses (read early for inline injection) ---
-          const extStatuses = footerData.getExtensionStatuses()
+          const extStatuses = footerData.getExtensionStatuses();
 
           // --- Build left stats parts ---
           const parts: string[] = [];
@@ -308,17 +353,17 @@ export default function (pi: ExtensionAPI) {
           }
 
           // Headroom compression savings
-          const headroomStatus = extStatuses.get("headroom")
+          const headroomStatus = extStatuses.get("headroom");
           if (headroomStatus) {
-            parts.push(theme.fg("muted", "/"))
-            parts.push(theme.fg("warning", headroomStatus))
+            parts.push(theme.fg("muted", "/"));
+            parts.push(theme.fg("warning", headroomStatus));
           }
 
           // RTK command-rewrite savings
-          const rtkStatus = extStatuses.get("rtk")
+          const rtkStatus = extStatuses.get("rtk");
           if (rtkStatus) {
-            parts.push(theme.fg("muted", "/"))
-            parts.push(theme.fg("bashMode", rtkStatus))
+            parts.push(theme.fg("muted", "/"));
+            parts.push(theme.fg("bashMode", rtkStatus));
           }
 
           // Token and cost for today and week
@@ -346,10 +391,29 @@ export default function (pi: ExtensionAPI) {
                 theme.fg("syntaxNumber", `$${today.costUsd.toFixed(3)}`),
               );
             }
-            if (week.tokens > 0 && (today.tokens === 0 || week.tokens > today.tokens)) {
+            if (
+              week.tokens > 0 &&
+              (today.tokens === 0 || week.tokens > today.tokens)
+            ) {
               parts.push(theme.fg("muted", "/"));
               parts.push(theme.fg("syntaxFunction", `${fmtTok(week.tokens)}`));
-              parts.push(theme.fg("syntaxNumber", `$${week.costUsd.toFixed(3)}`));
+              parts.push(
+                theme.fg("syntaxNumber", `$${week.costUsd.toFixed(3)}`),
+              );
+            }
+
+            // Branch / feature cost (cumulative across all sessions on this branch)
+            const branch = currentBranch;
+            if (branch) {
+              const branchCost = featureCosts.get(branch) ?? 0;
+              if (branchCost > 0) {
+                parts.push(theme.fg("muted", "/"));
+                parts.push(
+                  theme.fg("dim", "\u2387 ") +
+                  theme.fg("dim", shortBranch(branch) + " ") +
+                  theme.fg("syntaxNumber", `$${branchCost.toFixed(3)}`),
+                );
+              }
             }
           }
 
@@ -386,7 +450,11 @@ export default function (pi: ExtensionAPI) {
                 );
 
           // Build right side without provider first
+          const presetStatus = extStatuses.get("preset");
           let rightStyled = theme.fg("accent", modelName) + thinkingLabel;
+          if (presetStatus) {
+            rightStyled = rightStyled + theme.fg("dim", " · ") + presetStatus;
+          }
 
           // Optionally prepend provider when multiple providers available
           if (footerData.getAvailableProviderCount() > 1 && ctx.model) {
@@ -422,4 +490,13 @@ export default function (pi: ExtensionAPI) {
     });
   });
 
+  // Accumulate cost for the active git branch each turn
+  pi.on("turn_end", async (event) => {
+    if (event.message.role !== "assistant") return;
+    const m = event.message as AssistantMessage;
+    const cost = m.usage?.cost?.total;
+    if (cost == null || !currentBranch) return;
+    addBranchCost(currentBranch, cost);
+    saveFeatureCosts();
+  });
 }

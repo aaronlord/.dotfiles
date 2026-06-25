@@ -1,7 +1,6 @@
 ---
 name: plan
 description: Create rough draft of PRD and ARD from user prompt with only high-level codebase context. Avoid deep exploration.
-disable-model-invocation: true
 ---
 
 # /plan
@@ -48,7 +47,7 @@ If planning surfaces a new domain term that needs pinning down or a hard-to-reve
   context.md   ← written now, read by all downstream skills
   prd.md
   ard.md
-  tasks/                ← empty for now, created by /groom-plan
+  tasks/                ← empty for now, created by /plan-to-tasks
 ```
 
 ### 4a. Write context.md (concise)
@@ -159,4 +158,4 @@ Once both documents are written, tell the user:
 - The path to the plan: `.plans/{name}/`
 - A brief summary of what you drafted
 - Any open questions you surfaced
-- Next step: run `/review-plan {name}` to stress-test the design
+- Next step: run `/review-plan {name}` to stress-test, or `/plan-to-tasks {name}` to break into tasks

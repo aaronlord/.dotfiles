@@ -1,7 +1,6 @@
 ---
 name: review-plan
 description: Stress-test the current plan's PRD and ARD using a grill-me interview. Read both documents, identify gaps and ambiguities, interview the user relentlessly until reaching shared understanding, then update both documents in place. Use when the user wants to review or refine a plan before grooming it into tasks.
-disable-model-invocation: true
 ---
 
 # /review-plan

@@ -8,7 +8,7 @@ Used by the headroom.ts pi extension to compress bash/read/grep/find outputs.
 Exit codes:
   0  Compressed output written to stdout
   1  Error (pass-through unchanged)
-  2  Input too short — skip (caller uses original)
+  2  Input too short / no improvement — pass through unchanged
 """
 from __future__ import annotations
 
@@ -36,7 +36,7 @@ try:
             ],
         }
     ]
-    result = compress(msgs)
+    result = compress(msgs, protect_recent=0, compress_user_messages=True)
 
     content = result.messages[-1]["content"]
     compressed: str
@@ -48,7 +48,6 @@ try:
     else:
         sys.exit(1)
 
-    # Only emit if actually smaller (avoid edge cases where compression inflates)
     if len(compressed) >= len(text):
         sys.exit(2)
 

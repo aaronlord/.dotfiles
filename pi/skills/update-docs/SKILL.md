@@ -1,7 +1,6 @@
 ---
 name: update-docs
 description: Update project documentation to reflect recent changes or a specific convention/pattern. Reads relevant code and commits, then updates the right doc — AGENTS.md, CONTEXT.md, docs/adr/, or docs/**. Use when the user invokes /update-docs with a topic hint, or when a review flags documentation drift.
-disable-model-invocation: true
 ---
 
 # /update-docs

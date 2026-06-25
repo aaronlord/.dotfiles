@@ -1,7 +1,6 @@
 ---
 name: plan-to-tasks
 description: Break a reviewed ARD into an ordered list of independently-implementable tasks. Creates tasks.md (index) and tasks/{n}-task-name.md (individual task files with full context). Use after /review-plan when the plan is ready to be broken down for implementation.
-disable-model-invocation: true
 ---
 
 # /plan-to-tasks

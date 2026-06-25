@@ -1,0 +1,71 @@
+// Headroom pi extension — routes LLM traffic through the headroom proxy
+// for full-conversation context compression.
+//
+// The proxy must be running locally (port 8787). Start it with:
+//   tmux new-session -d -s headroom "source ~/.pi/headroom.env && headroom proxy"
+//
+// Machine-local config: ~/.pi/headroom.env
+//   OPENAI_TARGET_API_URL=https://api.individual.githubcopilot.com  (work)
+//   OPENAI_TARGET_API_URL=https://openrouter.ai/api/v1              (personal)
+//
+// When the proxy is detected, the active provider's baseUrl is overridden
+// to route through http://127.0.0.1:8787/v1. The proxy compresses the full
+// conversation history on every request — more effective than per-tool-result
+// compression.
+
+import type { ExtensionAPI, ExtensionContext } from "@earendil-works/pi-coding-agent"
+
+const PROXY_URL = "http://127.0.0.1:8787"
+const PROXY_BASE = `${PROXY_URL}/v1`
+const LIVEZ_URL = `${PROXY_URL}/livez`
+
+// Providers that use OpenAI-compatible chat completions
+const ROUTABLE_PROVIDERS = new Set([
+  "github-copilot",
+  "openrouter",
+  "openai",
+])
+
+async function isProxyRunning(): Promise<boolean> {
+  try {
+    const res = await fetch(LIVEZ_URL, { signal: AbortSignal.timeout(1000) })
+    return res.ok
+  } catch {
+    return false
+  }
+}
+
+function updateStatus(ctx: ExtensionContext, active: boolean) {
+  if (active) {
+    ctx.ui.setStatus("headroom", ctx.ui.theme.fg("success", "headroom"))
+  } else {
+    ctx.ui.setStatus("headroom", undefined)
+  }
+}
+
+export default function (pi: ExtensionAPI) {
+  let routingActive = false
+
+  pi.on("session_start", async (_event, ctx) => {
+    const provider = ctx.model?.provider
+    if (!provider || !ROUTABLE_PROVIDERS.has(provider)) return
+
+    const up = await isProxyRunning()
+    if (!up) return
+
+    pi.registerProvider(provider, { baseUrl: PROXY_BASE })
+    routingActive = true
+    updateStatus(ctx, true)
+    ctx.ui.notify("headroom proxy active — routing through http://127.0.0.1:8787", "info")
+  })
+
+  pi.on("session_end", async (_event, ctx) => {
+    if (!routingActive) return
+    const provider = ctx.model?.provider
+    if (provider) {
+      pi.registerProvider(provider, { baseUrl: undefined as unknown as string })
+    }
+    routingActive = false
+    updateStatus(ctx, false)
+  })
+}
