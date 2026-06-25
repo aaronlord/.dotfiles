@@ -10,3 +10,5 @@ pi/trust.json
 pi/npm/
 pi/sessions/
 pi/settings.json
+
+.playwright-cli

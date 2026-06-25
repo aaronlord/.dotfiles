@@ -274,6 +274,9 @@ export default function (pi: ExtensionAPI) {
           const today = periodStats(todayKey());
           const week = periodStats(weekStartKey());
 
+          // --- Extension statuses (read early for inline injection) ---
+          const extStatuses = footerData.getExtensionStatuses()
+
           // --- Build left stats parts ---
           const parts: string[] = [];
 
@@ -298,17 +301,30 @@ export default function (pi: ExtensionAPI) {
             const cacheHit =
               latestCacheHitRate == null
                 ? ""
-                : theme.fg("bashMode", ` (${latestCacheHitRate.toFixed(1)}%)`);
+                : theme.fg("success", ` (${latestCacheHitRate.toFixed(1)}%)`);
             parts.push(
               `${cacheRead}${theme.fg("dim", " ")}${cacheWrite}${cacheHit}`,
             );
+          }
+
+          // Headroom compression savings
+          const headroomStatus = extStatuses.get("headroom")
+          if (headroomStatus) {
+            parts.push(theme.fg("muted", "/"))
+            parts.push(theme.fg("warning", headroomStatus))
+          }
+
+          // RTK command-rewrite savings
+          const rtkStatus = extStatuses.get("rtk")
+          if (rtkStatus) {
+            parts.push(theme.fg("muted", "/"))
+            parts.push(theme.fg("bashMode", rtkStatus))
           }
 
           // Token and cost for today and week
           if (totalCost > 0 || today.tokens > 0 || week.tokens > 0) {
             parts.push(theme.fg("dim", "│"));
 
-            // Session cost
             const usingSubscription = ctx.model
               ? ctx.modelRegistry.isUsingOAuth(ctx.model)
               : false;
@@ -323,7 +339,6 @@ export default function (pi: ExtensionAPI) {
               ),
             );
 
-            // today tokens / cost
             if (today.tokens > 0) {
               parts.push(theme.fg("muted", "/"));
               parts.push(theme.fg("syntaxFunction", `${fmtTok(today.tokens)}`));
@@ -331,7 +346,6 @@ export default function (pi: ExtensionAPI) {
                 theme.fg("syntaxNumber", `$${today.costUsd.toFixed(3)}`),
               );
             }
-            // week tokens/cost
             if (week.tokens > 0 && (today.tokens === 0 || week.tokens > today.tokens)) {
               parts.push(theme.fg("muted", "/"));
               parts.push(theme.fg("syntaxFunction", `${fmtTok(week.tokens)}`));
@@ -402,20 +416,7 @@ export default function (pi: ExtensionAPI) {
             }
           }
 
-          // --- Extension status lines ---
-          const lines = [statsLine];
-          const extStatuses = footerData.getExtensionStatuses();
-          if (extStatuses.size > 0) {
-            const statusLine = [...extStatuses.entries()]
-              .sort(([a], [b]) => a.localeCompare(b))
-              .map(([, t]) => t.replace(/[\r\n\t]/g, " ").trim())
-              .join(" ");
-            lines.push(
-              truncateToWidth(statusLine, width, theme.fg("dim", "...")),
-            );
-          }
-
-          return lines;
+          return [statsLine];
         },
       };
     });
