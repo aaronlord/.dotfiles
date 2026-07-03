@@ -9,7 +9,14 @@
 
 import type { AssistantMessage } from "@earendil-works/pi-ai";
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
-import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
+import {
+  existsSync,
+  mkdirSync,
+  readdirSync,
+  readFileSync,
+  statSync,
+  writeFileSync,
+} from "node:fs";
 import { homedir } from "node:os";
 import { isAbsolute, join, relative, resolve, sep } from "node:path";
 import { truncateToWidth, visibleWidth } from "@earendil-works/pi-tui";
@@ -19,7 +26,12 @@ import "./usage";
 // Feature / branch cost tracking
 // ---------------------------------------------------------------------------
 
-const FEATURE_COSTS_FILE = join(homedir(), ".pi", "agent", "feature-costs.json");
+const FEATURE_COSTS_FILE = join(
+  homedir(),
+  ".pi",
+  "agent",
+  "feature-costs.json",
+);
 
 /** Accumulated cost (USD) per git branch across all sessions. */
 export const featureCosts = new Map<string, number>();
@@ -29,7 +41,10 @@ export let currentBranch: string | undefined;
 
 export function loadFeatureCosts(): void {
   try {
-    const raw = JSON.parse(readFileSync(FEATURE_COSTS_FILE, "utf8")) as Record<string, number>;
+    const raw = JSON.parse(readFileSync(FEATURE_COSTS_FILE, "utf8")) as Record<
+      string,
+      number
+    >;
     featureCosts.clear();
     for (const [branch, cost] of Object.entries(raw)) {
       if (typeof cost === "number") featureCosts.set(branch, cost);
@@ -45,7 +60,9 @@ export function saveFeatureCosts(): void {
     const data: Record<string, number> = {};
     for (const [branch, cost] of featureCosts) data[branch] = cost;
     writeFileSync(FEATURE_COSTS_FILE, JSON.stringify(data, null, 2), "utf8");
-  } catch { /* ignore write errors */ }
+  } catch {
+    /* ignore write errors */
+  }
 }
 
 export function addBranchCost(branch: string, cost: number): void {
@@ -370,6 +387,22 @@ export default function (pi: ExtensionAPI) {
           if (totalCost > 0 || today.tokens > 0 || week.tokens > 0) {
             parts.push(theme.fg("dim", "│"));
 
+            // Branch / feature cost (cumulative across all sessions on this branch)
+            const branch = currentBranch;
+            if (branch) {
+              const branchCost = featureCosts.get(branch) ?? 0;
+
+              if (branchCost > 0) {
+                parts.push(
+                  theme.fg("syntaxFunction", shortBranch(branch) + " ") +
+                    theme.fg("syntaxNumber", `$${branchCost.toFixed(3)}`),
+                );
+
+                // parts.push(theme.fg("muted", "/"));
+                parts.push(theme.fg("dim", "│"));
+              }
+            }
+
             const usingSubscription = ctx.model
               ? ctx.modelRegistry.isUsingOAuth(ctx.model)
               : false;
@@ -400,20 +433,6 @@ export default function (pi: ExtensionAPI) {
               parts.push(
                 theme.fg("syntaxNumber", `$${week.costUsd.toFixed(3)}`),
               );
-            }
-
-            // Branch / feature cost (cumulative across all sessions on this branch)
-            const branch = currentBranch;
-            if (branch) {
-              const branchCost = featureCosts.get(branch) ?? 0;
-              if (branchCost > 0) {
-                parts.push(theme.fg("muted", "/"));
-                parts.push(
-                  theme.fg("dim", "\u2387 ") +
-                  theme.fg("dim", shortBranch(branch) + " ") +
-                  theme.fg("syntaxNumber", `$${branchCost.toFixed(3)}`),
-                );
-              }
             }
           }
 
