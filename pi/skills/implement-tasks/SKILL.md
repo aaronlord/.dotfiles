@@ -31,6 +31,20 @@ Run `git branch --show-current`. If you are on the default branch (e.g. `main` o
 
 Pick the next uncompleted task in order. If there's no such task (all done, or blocked), tell the user why and stop.
 
+### 3a. Choose execution mode
+
+Ask the user once per `/implement-tasks` invocation, unless they already stated a preference earlier in this session:
+
+> "Implement this task inline in this session, or dispatch it to a subagent (e.g. a cheaper model)? Reply `inline` or `subagent`."
+
+**If `inline`:** continue to step 4 exactly as written below.
+
+**If `subagent`:**
+1. Build the dispatch task text out of exactly these pieces, in this order: (a) the full contents of the task file, (b) the ARD sections named in the task's "Relevant ARD Sections", (c) the full contents of every `AGENTS.md` file in scope, (d) the full contents of every file listed under the task's "## Instruction Files" section, if present, (e) this exact instruction verbatim: "Follow TDD: one failing test, then the minimal code to pass it, repeat. Do not write all tests before all code. Run the project's formatter, type-checker, and the test files covering your change before reporting done. Do not commit. Report: files changed, the test command you ran, its full output, and a final line reading either DONE or BLOCKED with the reason."
+2. Dispatch with the `subagent` tool. One task per dispatch call — never batch multiple tasks into one dispatch.
+3. When the subagent reports back, do not treat its self-report as verification. Re-run the targeted tests it named yourself before proceeding to step 4c.
+4. If the subagent reports BLOCKED, read its stated reason. If you can resolve it yourself (missing context, an unclear instruction), fix it and re-dispatch once. If it reports BLOCKED a second time for the same task, stop and escalate to the user — do not attempt a third dispatch.
+
 ### 4. Implement the task
 
 #### 4a. Read the task file and project instructions
@@ -121,6 +135,7 @@ If this was the final task (all tasks now done), say so and suggest `/review mai
 ## Notes
 
 - Never skip a failing CI step. Fix it or stop and explain.
+- If the same task fails the same acceptance criterion on 3 separate fix attempts, stop. Do not attempt a 4th fix. Tell the user exactly which criterion keeps failing, say the task's design may need to change, and wait for their answer before touching that task again.
 - Do not commit. Committing is the reviewer's responsibility.
 - If a task turns out to be much larger than the task file suggests, stop and flag it to the user rather than blasting through — the grooming may need revisiting.
 - If you discover something that changes the design while implementing, update the ARD to reflect reality before continuing.

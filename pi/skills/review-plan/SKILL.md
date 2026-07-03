@@ -21,27 +21,38 @@ Read both `.plans/{name}/prd.md` and `.plans/{name}/ard.md` in full.
 
 Read `.plans/{name}/context.md`. This was written during `/plan` and contains all codebase exploration findings. Do not re-explore — trust this file. Only read additional source files if the plan references something not covered there.
 
-### 3. Identify gaps and ambiguities
+### 3. Scan the plan against a fixed taxonomy
 
-Before starting the interview, build a mental list of:
+Before starting the interview, go through this exact list of categories. For each one, mark it `Clear`, `Partial`, or `Missing` based on what the PRD and ARD currently say. Do not skip a category because it seems unlikely to apply — mark it `Clear` if it clearly doesn't apply, but check it explicitly.
 
-- **Gaps**: things the documents don't address but need to (missing error handling, unspecified dependencies, unclear ownership)
-- **Ambiguities**: things that could be interpreted more than one way
-- **Risks**: design choices that might cause problems (coupling, missing seam, scalability concern)
-- **Open Questions**: anything explicitly marked as open in the ARD
+- **Functional scope**: every actor and scenario from the PRD's User Stories has a corresponding design decision in the ARD; edge cases are named, not implied
+- **Domain & data model**: entities, attributes, relationships, and schema changes are named concretely (no `{placeholder}` left unresolved)
+- **Interface contracts**: command/handler/job/repository names are concrete; input/output shapes are stated
+- **Non-functional behavior**: error handling, validation, and failure modes are addressed for each user story
+- **Integration & dependencies**: external services, other teams, or other modules this touches are named
+- **Testing boundaries**: the ARD's Testing Decisions section names the test seams and prior art
+- **Terminology**: domain terms used in the PRD and ARD match CONTEXT.md's glossary (if one exists) and match each other
+- **Open questions**: every item in the ARD's Open Questions section is a real, answerable question, not a vague statement
 
-Prioritise these — resolve the most load-bearing decisions first.
+Every category marked `Partial` or `Missing` becomes at least one interview question. Prioritise `Missing` over `Partial`, and within those, resolve in this order: functional scope > domain & data model > interface contracts > non-functional behavior > integration & dependencies > testing boundaries > terminology > open questions.
 
 ### 4. Interview the user — one question at a time
 
-Follow the grill-me approach: interview relentlessly about every aspect of the plan until you reach shared understanding. Walk down each branch of the decision tree, resolving dependencies between decisions one-by-one.
+Follow the grill-me approach: interview relentlessly about every aspect of the plan until you reach shared understanding. Walk down each branch of the decision tree, resolving dependencies between decisions one-by-one. Asking many questions is correct and expected — never shorten or cap the interview to save turns.
 
 Rules:
 - Ask exactly **one question at a time**
-- Provide your **recommended answer** with each question
 - If a question can be answered by exploring the codebase, do that instead of asking
 - Don't move to the next question until the current one is resolved
 - Don't stop early — exhaust every meaningful open question before concluding
+
+**Every question must use this exact structure, in this exact order:**
+
+1. The question itself, stated as a single sentence.
+2. Your recommendation, on its own line, in this exact format: `**Recommended:** {answer} — {one-sentence reason}`
+3. If you genuinely have no reasonable default, write `**Recommended:** none — {why no default exists}` instead of omitting the line.
+
+Never skip step 2. Never phrase the recommendation as optional or bury it after the question text — it must always appear immediately after the question, before you wait for the user's answer.
 
 ### 5. Capture durable artifacts as you grill
 

@@ -47,6 +47,7 @@ If planning surfaces a new domain term that needs pinning down or a hard-to-reve
   context.md   ← written now, read by all downstream skills
   prd.md
   ard.md
+  checklist.md ← spec-quality checklist, written in step 6a
   tasks/                ← empty for now, created by /plan-to-tasks
 ```
 
@@ -82,6 +83,12 @@ What we are building to solve the problem. High-level, from the user's perspecti
 A numbered list. Cover all meaningful actors and scenarios, including edge cases.
 
 1. As a {actor}, I want {feature}, so that {benefit}.
+
+## Success Criteria
+
+A numbered list, one per user story where applicable. Each criterion must be measurable and technology-agnostic — name no framework, library, API, or database.
+
+1. {Measurable, technology-agnostic outcome}.
 
 ## Out of Scope
 
@@ -151,11 +158,55 @@ What this ARD explicitly does not cover.
 File references added via `<leader>ai` in nvim. Each entry is a `### @path/to/file` heading followed by your notes on how that file relates to this feature.
 </ard-template>
 
+### 6a. Self-review before handoff
+
+Before showing the plan to the user, check both documents against this exact list. Do not skip this step, even for a plan that feels simple.
+
+**Placeholder scan.** Search the PRD and ARD text for these exact strings and phrases. If any appear, replace them with a concrete answer or an explicit `[NEEDS CLARIFICATION: specific question]` marker — never leave them as-is:
+- "TBD", "TODO", "later", "etc.", "and so on"
+- "handle appropriately", "handle edge cases", "add appropriate error handling"
+- "implement later", "fill in details", "figure out"
+- Any sentence describing what a section should contain instead of containing it
+
+**Consistency scan.** Confirm every module, command, and entity name used in the ARD's "Code Structure" section also appears in "Implementation Decisions" (or vice versa). Confirm nothing in the ARD contradicts the PRD's "Out of Scope" section.
+
+**Success criteria scan.** Confirm every user story has a matching, measurable, technology-agnostic success criterion. A criterion is technology-agnostic if it names no framework, library, API, or database. Add any that are missing.
+
+If you find and fix issues, do not re-run this scan afterward — fix them once and move on.
+
+**Write the spec-quality checklist.** Write `.plans/{name}/checklist.md`:
+
+<checklist-template>
+# Spec Quality Checklist: {Feature Name}
+
+_Written by /plan. Re-check manually if the PRD or ARD change before /review-plan runs._
+
+## Content Quality
+
+- [ ] No placeholder phrases remain (see Self-Review Placeholder Scan)
+- [ ] PRD is written from the user's perspective, not the engineer's
+- [ ] ARD names are concrete (module, command, handler, entity names), not generic
+
+## Completeness
+
+- [ ] Every user story has a measurable, technology-agnostic success criterion
+- [ ] Every open question in the ARD is stated as an explicit question, not implied
+- [ ] Out of Scope is stated in both PRD and ARD
+
+## Consistency
+
+- [ ] Names used in ARD "Code Structure" match names used in "Implementation Decisions"
+- [ ] Nothing in the ARD contradicts the PRD's Out of Scope section
+</checklist-template>
+
+Mark each item `[x]` only if you actually checked it against the documents and it passes. Leave it `[ ]` if it doesn't.
+
 ### 7. Stop and hand back
 
 Once both documents are written, tell the user:
 
 - The path to the plan: `.plans/{name}/`
 - A brief summary of what you drafted
+- Any items left unchecked in `checklist.md`, and why
 - Any open questions you surfaced
 - Next step: run `/review-plan {name}` to stress-test, or `/plan-to-tasks {name}` to break into tasks

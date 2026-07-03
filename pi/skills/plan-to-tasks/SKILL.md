@@ -20,7 +20,12 @@ Given the plan name, read both files immediately — before asking the user any 
 - `.plans/{name}/prd.md` — user story, problem statement, goals
 - `.plans/{name}/ard.md` — architecture decisions (primary source for task derivation)
 
-If either file is missing, tell the user which one and stop. If the ARD status is still `draft` rather than `reviewed`, warn the user that running `/review-plan` first is strongly recommended, but proceed if they confirm. Only ask the user questions if something remains genuinely unclear after reading both files.
+If either file is missing, tell the user which one and stop. If the ARD status is still `draft` rather than `reviewed`, stop and show this exact message, substituting the real plan name:
+
+> ARD status is still `draft`. Running `/review-plan {name}` first is strongly recommended.
+> Type `proceed` to groom this plan into tasks anyway, or run `/review-plan {name}` first.
+
+Wait for the literal word `proceed`. Any other reply — including a vague "yes" — is not consent; ask what they'd like to do instead. Only ask the user questions if something remains genuinely unclear after reading both files.
 
 ### 2. Load codebase context
 
@@ -32,7 +37,9 @@ Read `.plans/{name}/context.md`. This was written during `/plan` and contains al
 
 ### 3. Derive tasks as vertical slices
 
-Break the work into **tracer bullet** tasks — minimal, end-to-end slices through the system that validate architecture and dependencies before building full scope. Each task should be a thin vertical slice that:
+Break the work into **tracer bullet** tasks — minimal, end-to-end slices through the system that validate architecture and dependencies before building full scope. A task is the smallest unit that carries its own test cycle and is worth a fresh reviewer's gate: fold setup, configuration, and scaffolding into the task whose deliverable needs them, and split further only where a reviewer could reasonably approve one task while rejecting its neighbour.
+
+Each task should be a thin vertical slice that:
 
 - Is independently implementable and reviewable
 - Has a clear, verifiable outcome
@@ -43,6 +50,16 @@ Avoid horizontal slices (e.g. "all repositories" as one task). Each slice should
 Order tasks so dependencies come first. Number them sequentially.
 
 Always append one final task — **"Ensure CI passes"** — as the last item, depending on all other tasks. This task is not negotiable and must not be removed during the quiz. Its job is to run the full CI suite end-to-end and fix any failures (test coverage gaps, static analysis errors, formatting issues) that slipped through during individual task implementation.
+
+### 3a. Cross-consistency check
+
+Before presenting the task list, check it against the PRD and ARD, item by item:
+
+- Every user story in the PRD's "User Stories" section is covered by at least one task. If a story has no task, add one — do not proceed with a gap.
+- Every non-CI task cites something concrete from the ARD (a module, command, handler, or decision) that you will quote under that task's "Relevant ARD Sections" in step 5. A task with nothing to cite is not derived from the plan — cut it or merge it into the task it actually belongs to.
+- No two tasks name the same file or interface as their primary deliverable, unless one explicitly modifies what the other created.
+
+Fix any gaps you find yourself before moving to step 4. Only mention this check to the user if it surfaced a gap you could not resolve on your own.
 
 ### 4. Quiz the user on the breakdown
 
@@ -61,6 +78,14 @@ Ask the user:
 Iterate until the user approves the breakdown.
 
 ### 5. Write the task files
+
+**No placeholders.** Every task file must contain the actual content an implementer needs — many tasks will be implemented by a smaller, less capable model working from the task file alone, with no access to your reasoning or the conversation that produced it. Never write any of these in a task file:
+- "TBD", "handle edge cases", "add appropriate error handling", "add validation" without saying what validation
+- "Similar to Task N" without repeating the concrete detail — the implementer may never read Task N
+- An acceptance criterion that isn't independently checkable (e.g. not "works correctly", but "returns 404 when the student ID does not exist")
+- A reference to a type, function, method, or file that isn't named exactly, with its real path or signature
+
+If you don't know an exact name, path, or signature, stop and check the codebase or the ARD before writing the task — do not guess and do not leave it vague.
 
 For each approved task, create `.plans/{name}/tasks/{nnn}-{task-slug}.md` (zero-padded three-digit index, e.g. `001-create-upsert-student-command.md`).
 
@@ -121,6 +146,11 @@ How this task fits into the overall feature. What it enables downstream.
 ## Dependencies
 
 List any tasks that must be completed before this one, or `none`.
+
+## Interfaces
+
+- **Consumes**: exact function/method/command signatures this task depends on from earlier tasks. Write `none` if this task has no upstream dependencies.
+- **Produces**: exact function/method/command signatures, class names, or file paths this task creates that later tasks will depend on. Write `none` if nothing downstream depends on this task's output.
 
 ## Acceptance Criteria
 
