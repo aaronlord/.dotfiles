@@ -1,6 +1,6 @@
 ---
 name: update-docs
-description: Update project documentation to reflect recent changes or a specific convention/pattern. Reads relevant code and commits, then updates the right doc — AGENTS.md, CONTEXT.md, docs/adr/, or docs/**. Use when the user invokes /update-docs with a topic hint, or when a review flags documentation drift.
+description: Update project documentation to reflect recent changes or a specific convention/pattern, or audit AGENTS.md/CONTEXT.md for staleness and bloat. Reads relevant code and commits, then updates the right doc — AGENTS.md, CONTEXT.md, docs/adr/, or docs/**. Use when the user invokes /update-docs with a topic hint, when a review flags documentation drift, or periodically to audit static context for rot.
 ---
 
 # /update-docs
@@ -11,16 +11,42 @@ Keep project documentation in sync with how the codebase actually works.
 
 ```
 /update-docs {topic hint}
+/update-docs audit
 ```
 
 Examples:
 - `/update-docs how we write command handlers`
 - `/update-docs the new tenant scoping convention`
 - `/update-docs ADR for switching to Vite`
+- `/update-docs audit` — run the static-context audit (step 0) instead of a topic update
 
-If no hint is given, ask: _"What changed, or what do you want to document?"_
+If no hint is given and the user didn't ask for an audit, ask: _"What changed, or what do you want to document?"_
 
 ## Process
+
+### 0. Context-audit mode (`/update-docs audit`)
+
+This mode treats the static-context boundary itself — everything always loaded into every session, per paper: `AGENTS.md` (root and path-level) and `CONTEXT.md` — as a first-class artifact to review, not just a place other topics get written to. Run this instead of steps 1–5, then stop; don't combine an audit with a topic update in one pass.
+
+1. **Read every static-context file in scope**: root `AGENTS.md`, every path-level `AGENTS.md`, `CONTEXT.md`. Note each file's line count.
+2. **Check for staleness** — for each rule/section, spot-check it against the actual codebase (grep for the pattern, command, or convention it describes). A rule describing something the code no longer does is stale.
+3. **Check for dead references** — any file path, command, or doc link the text names that no longer exists.
+4. **Check for duplication/contradiction** — the same rule stated in both root and a path-level `AGENTS.md` with different wording; two sections that disagree.
+5. **Check for misplaced content** — a section that reads like a one-off task instruction or a rarely-needed procedure rather than a durable, every-session-relevant convention. Per the static/dynamic context trade-off: content only relevant to specific tasks belongs in a `skill`, loaded on demand, not in `AGENTS.md`, loaded every session regardless of relevance. Flag these as move-to-skill candidates rather than deleting them outright.
+6. **Check for raw bloat** — sections that could state the same constraint in fewer words without losing meaning. Every token here is paid on every session regardless of relevance; verbosity has a real, recurring cost.
+
+Report findings as one table:
+
+```
+| file:section | issue | detail | recommendation |
+| --- | --- | --- | --- |
+| AGENTS.md § Testing | stale | Says "run `phpunit`" but the project migrated to `pest` 3 months ago (see composer.json) | Update to reference `pest` |
+| api/AGENTS.md § Auth | duplicate | Root AGENTS.md § Auth already states the same JWT rule, worded differently | Remove from path-level file, keep root as the single source |
+| AGENTS.md § Onboarding | misplaced | Describes a one-time repo-setup procedure never needed mid-task | Move to docs/onboarding.md or a setup skill; not every-session-relevant |
+| AGENTS.md § Style | bloat | 12-line prose paragraph restating what a 2-line bullet list already covers elsewhere in the same file | Cut to the bullet list version |
+```
+
+Close with a line count summary (`AGENTS.md: N lines`, etc.) and ask the user which findings to act on before making any edit — this mode never edits unprompted.
 
 ### 1. Understand the topic
 

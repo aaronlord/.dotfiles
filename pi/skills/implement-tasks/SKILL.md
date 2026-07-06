@@ -44,8 +44,12 @@ Either way, the actual implementation contract — read-order, SOLID, TDD discip
 **If `subagent`:**
 1. Dispatch the `implementer` subagent with only: the plan name and the task file path. Do not pre-paste `AGENTS.md`, instruction-file, or ARD contents into the dispatch — `implementer` resolves and reads all of that itself from the paths you give it.
 2. One task per dispatch call — never batch multiple tasks into one dispatch.
-3. When the subagent reports back, do not treat its self-report as verification. Re-run the targeted tests it named yourself before proceeding to step 4.
-4. If the subagent reports BLOCKED, read its stated reason. If you can resolve it yourself (missing context, an unclear instruction), fix it and re-dispatch once. If it reports BLOCKED a second time for the same task, stop and escalate to the user — do not attempt a third dispatch.
+3. When the subagent reports back, do not treat its self-report as verification — this is an eval, not a courtesy re-check. Dispatch the `trajectory-auditor` subagent with: the `implementer.md` file, and `implementer`'s full final report verbatim. `trajectory-auditor` checks the report's claims against live repo evidence (changed files, reproduced test output, scope discipline, hard-constraint compliance, hallucinated references) — it is not re-reviewing code quality, only whether the report can be trusted.
+4. Read `trajectory-auditor`'s verdict. Any `blocker` row means the report cannot be trusted as-is:
+   - If the blocker is fixable by re-running or clarifying (e.g. it merely under-reported a file), resolve it yourself using the evidence `trajectory-auditor` surfaced, or re-dispatch `implementer` once with the specific gap named.
+   - If the blocker indicates the work itself is wrong or a hard constraint was violated, treat it the same as an `implementer` BLOCKED report — stop and escalate to the user, do not paper over it.
+   - `concern`/`suggestion` rows don't block proceeding, but surface them to the user alongside the task summary in step 4c.
+5. If `implementer` itself reports BLOCKED, read its stated reason. If you can resolve it yourself (missing context, an unclear instruction), fix it and re-dispatch once. If it reports BLOCKED a second time for the same task, stop and escalate to the user — do not attempt a third dispatch.
 
 ### 4. After implementation: orchestrator-only steps
 
