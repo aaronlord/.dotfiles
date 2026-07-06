@@ -1,6 +1,6 @@
 ---
 name: diagnose-bugs
-description: Diagnosis loop for hard bugs and performance regressions. Use when the user says "diagnose"/"debug this", or reports something broken/throwing/failing/slow.
+description: Diagnosis loop for hard bugs and performance regressions. Use when the user says "diagnose"/"debug this", or reports something broken/throwing/failing/slow — including Sentry issues.
 ---
 
 # Diagnosing Bugs
@@ -8,6 +8,17 @@ description: Diagnosis loop for hard bugs and performance regressions. Use when 
 A discipline for hard bugs. Skip phases only when explicitly justified.
 
 When exploring the codebase, read `CONTEXT.md` (if it exists) to get a clear mental model of the relevant modules, and check ADRs in `docs/adr/` for the area you're touching.
+
+## Phase 0 — Sentry issues (if the bug source is a Sentry issue)
+
+When the trigger is a Sentry issue (link, ID, or "fix SENTRY-XXX"), pull it in before starting Phase 1:
+
+1. Fetch the issue: `sentry_get_sentry_resource` (by URL) or `sentry_search_issues` to find it, then `sentry_analyze_issue_with_seer` for stack trace / root-cause signal if useful.
+2. Note the **short issue ID** (e.g. `HEALTH-PORTAL-9E`) — this is what goes in the regression test comment in Phase 5. Don't lose it.
+3. Pull stack trace, breadcrumbs, request payload, user context, tags — these are your repro ingredients for Phase 1/2. Prefer replaying the captured payload/event (loop technique #5) over guessing.
+4. Once fixed and merged, update the issue with `sentry_update_issue` (resolve, or comment with the fix commit).
+
+Everything below proceeds as normal — a Sentry issue is just another way to arrive at the bug, still needs a red-capable loop and a regression test.
 
 ## Phase 1 — Build a feedback loop
 
@@ -120,6 +131,19 @@ If a correct seam exists:
 3. Apply the fix.
 4. Watch it pass.
 5. Re-run the Phase 1 feedback loop against the original (un-minimised) scenario.
+
+**Regression test should replicate the issue first, then fix — always, wherever a seam exists.** This applies doubly to Sentry-sourced bugs.
+
+If the bug came from a Sentry issue, don't narrate the issue in prose inside the test. Reference the short ID in a one-line comment directly above the test and let the test body speak for itself:
+
+```php
+// HEALTH-PORTAL-9E
+it('fixes the issue where guest checkout crashes on empty cart', function () {
+    ...
+});
+```
+
+No paragraph explaining the Sentry issue, no pasted stack trace in a comment block — the ID is the pointer, the test body is the spec.
 
 ## Phase 6 — Cleanup + post-mortem
 
