@@ -11,7 +11,7 @@ Four-axis review of the diff between `HEAD` and a fixed point the user supplies:
 - **Performance** — does the diff introduce regressions, inefficiencies, or scalability concerns?
 - **Docs** — does the diff introduce a new pattern, convention, or decision not reflected in any doc?
 
-All five axes run as **parallel sub-agents** so they don't pollute each other's context, then this skill aggregates their findings.
+All five axes run as **parallel, dedicated specialist sub-agents** (`standards-reviewer`, `spec-reviewer`, `security-reviewer`, `performance-reviewer`, `docs-reviewer`) so they don't pollute each other's context and each one enforces its own scope and output format by construction, not by per-call prompt text. This skill's job is to gather the dynamic inputs each specialist needs and aggregate what comes back.
 
 ## Process
 
@@ -47,40 +47,33 @@ Read each file found. Pass their contents (or relevant excerpts) to the Standard
 
 ### 4. Spawn all five sub-agents in parallel
 
-Send a single message with five `Agent` tool calls. Use the `worker` subagent for all five.
+Send a single message with five `Agent` tool calls, each dispatched to its own dedicated specialist agent — not the generic `worker`. Each specialist already carries its own review method, tool scope, and output format; your job here is only to hand it the dynamic, per-repo data it needs. Keep each payload to data, not instructions — the instructions already live in the agent file.
 
-**Standards sub-agent prompt** — include:
+**`standards-reviewer`** — pass:
 
 - The full diff command and commit list.
-- The list of standards-source files found in step 3, with their full contents or relevant excerpts.
-- The file-path → applicable instruction files mapping built in step 3. Instruction files use `applyTo:` globs; only apply a given instruction file's rules to changed files whose paths match its glob. Do not apply an instruction file's rules to files whose paths do not match its glob.
-- The brief: "Review each changed file against only the instruction files whose `applyTo:` glob matches that file's path. Report — per file/hunk — every place the diff violates a documented standard. Cite the standard (instruction file name + the rule). Distinguish hard violations from judgement calls. Skip anything tooling enforces automatically. **Explicitly check: does the diff introduce behaviour without corresponding test files? If so, report it as a hard violation — missing tests are not optional.** Under 400 words."
+- The standards-source files found in step 3, with full contents or relevant excerpts.
+- The file-path → applicable instruction files mapping built in step 3.
 
-**Spec sub-agent prompt** — include:
+**`spec-reviewer`** — pass:
 
 - The diff command and commit list.
 - The path or fetched contents of the spec.
-- The brief: "Report: (a) requirements the spec asked for that are missing or partial; (b) behaviour in the diff that wasn't asked for (scope creep); (c) requirements that look implemented but where the implementation looks wrong. Quote the spec line for each finding. Under 400 words."
 
-If the spec is missing, skip the Spec sub-agent and note this in the final report.
+If the spec is missing, skip this dispatch entirely — `spec-reviewer` reports its own "no spec available" output when asked with nothing to review, but prefer not to spawn it at all and note the omission in the final report.
 
-**Security sub-agent prompt** — include:
-
-- The full diff command and commit list.
-- The brief: "Review the diff for security vulnerabilities and insecure patterns. Cover: injection (SQL, command, XSS), authentication/authorisation flaws, insecure data exposure (secrets, PII, over-broad API responses), unsafe deserialization, missing input validation, insecure dependencies introduced, and any other OWASP Top 10 concerns relevant to the diff. For each finding: state the vulnerability class, quote the relevant code, explain the risk, and suggest a fix. Distinguish confirmed vulnerabilities from theoretical risks. Under 400 words."
-
-**Performance sub-agent prompt** — include:
+**`security-reviewer`** — pass:
 
 - The full diff command and commit list.
-- The brief: "Review the diff for performance regressions and inefficiencies. Look broadly for any code that is unnecessarily slow, wasteful, or unlikely to scale — don't limit yourself to a checklist. Common patterns to watch for include (but are not limited to): N+1 queries, missing indexes, unbounded loops or recursion, unnecessary computation in hot paths, missing caching where applicable, large payload sizes, blocking I/O, and memory leaks. For each finding: quote the relevant code, explain the performance impact, and suggest a fix. Distinguish confirmed regressions from theoretical concerns. Under 400 words."
 
-Add the Docs sub-agent prompt after the Performance one:
-
-**Docs sub-agent prompt** — include:
+**`performance-reviewer`** — pass:
 
 - The full diff command and commit list.
-- The list of doc files found in step 3 (`AGENTS.md`, `CONTEXT.md`, `docs/decisions/`, `docs/**`).
-- The brief: "Review the diff for documentation drift. Look for: new patterns or conventions introduced without a corresponding update to AGENTS.md; new domain terms used in code but absent from CONTEXT.md; architectural decisions made in the diff that aren't recorded in docs/decisions/; existing docs that now contradict what the code does. For each finding: quote the relevant code, name the doc that should be updated, and describe the missing or contradicting content in one sentence. Do NOT rewrite the docs — flag only. End each finding with: → run /update-docs to fix. Under 300 words."
+
+**`docs-reviewer`** — pass:
+
+- The full diff command and commit list.
+- The list of doc files found in step 3 (`AGENTS.md`, `CONTEXT.md`, `docs/decisions/`, `docs/**`), with contents or relevant excerpts.
 
 ### 5. Aggregate
 

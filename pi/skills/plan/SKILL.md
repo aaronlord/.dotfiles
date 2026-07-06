@@ -13,6 +13,8 @@ The user provides a free-text prompt describing what they want to build. Do not 
 
 ## Process
 
+This skill is an orchestrator, not a drafter: it gathers inputs, dispatches recon and drafting to dedicated specialists, and persists what comes back. It does not explore the codebase or write PRD/ARD prose itself — `scout` and `spec-drafter` do, each with their own bounded scope baked into their agent file.
+
 ### 1. Infer the feature name
 
 Derive a short, lowercase kebab-case name from the prompt (e.g. `"sync students from Wonde"` → `wonde-sync`). Show the inferred name to the user and proceed — don't ask for confirmation unless it's genuinely ambiguous.
@@ -21,208 +23,53 @@ Derive a short, lowercase kebab-case name from the prompt (e.g. `"sync students 
 
 If `.plans/{name}/` already exists, tell the user and offer to open the existing ARD instead of overwriting. Stop here if they say yes.
 
-### 3. Minimal codebase exploration (high-level only)
+### 3. Dispatch a scout for high-level recon only
 
-This skill should not do deep codebase exploration. The goal is a rough first draft with gaps — not a complete analysis. Stop after one or two quick lookups.
+Dispatch the `scout` subagent with:
 
-Exploration boundaries:
-- Read `CONTEXT.md` if it exists (one look, move on if missing).
-- Read `docs/adr/` only if it exists.
-- List top-level app modules or directories once to understand shape.
-- If a specific module is relevant, list it once at top level only. Do not drill into subdirectories.
-- Do not read source files, scan controllers, inspect schemas, or make API inferences.
-- Total exploration: 2–3 bash commands max.
+- The user's original prompt.
+- Explicit thoroughness: **Quick** — targeted lookups, key files only.
+- An explicit boundary list, since scout defaults to code-level recon and this step must stay high-level:
+  - Read `CONTEXT.md` if it exists (one look, skip if missing).
+  - Read `docs/adr/` only if it exists.
+  - List top-level app modules/directories once to understand shape.
+  - If a specific module looks relevant, list it once at top level only — do not drill into subdirectories.
+  - Do not read source files, scan controllers, inspect schemas, or make API inferences.
+  - Total exploration: 2–3 lookups max.
 
-Leave blanks instead of inferring:
-- If you don't know whether a feature goes in Module X or Y, write both as alternatives in the ARD and ask the user.
-- If you don't know the exact command/handler names or schema shape, write placeholders (`{UserPasswordCommand}`, `{password_reset_table}`, etc.) and leave them as open questions.
-- If prior art is not immediately obvious, skip it.
-
-If planning surfaces a new domain term that needs pinning down or a hard-to-reverse decision worth recording, use the `domain-modeling` skill rather than burying that material inside PRD/ARD.
+Scout returns its usual structured findings (files retrieved, key code/notes, architecture, start-here pointer) — treat that as recon input for step 4, not as the plan itself.
 
 ### 4. Create the scaffold
 
 ```
 .plans/{name}/
-  context.md   ← written now, read by all downstream skills
+  context.md   ← written in step 5, read by all downstream skills
   prd.md
   ard.md
-  checklist.md ← spec-quality checklist, written in step 6a
+  checklist.md ← spec-quality checklist, written in step 5
   tasks/                ← empty for now, created by /plan-to-tasks
 ```
 
-### 4a. Write context.md (concise)
+### 5. Dispatch spec-drafter to draft the documents
 
-Write `.plans/{name}/context.md` with just enough high-level context for downstream skills to understand the domain and where the new feature will live. Keep concise:
+Dispatch the `spec-drafter` subagent with:
 
-- Short list of relevant modules and one-line notes.
-- Any ADRs or glossary entries that matter.
-- Surface important conventions only if they affect design (naming patterns, layering, major interfaces).
+- The user's original prompt.
+- The inferred feature name.
+- The scout's findings from step 3, verbatim.
 
-Goal: downstream skills should not need to re-explore, but they can perform deeper exploration later if needed.
+`spec-drafter` returns four content blocks (`context.md`, `prd.md`, `ard.md`, `checklist.md`) already self-reviewed against its own placeholder/consistency/data-contracts/success-criteria scan, plus a one-line note on any checklist items it left unchecked and why.
 
-### 5. Draft the PRD
+Write each returned block to its path under `.plans/{name}/` exactly as returned — this skill does not edit spec-drafter's prose, only persists it.
 
-Use the template below. Populate it from the user's prompt and the high-level context. Be concrete where possible — reference real module names, actors, and domain terms from project when they are obvious.
+If drafting surfaces a new domain term that needs pinning down, or a hard-to-reverse decision worth recording separately, tell the user to run the `domain-modeling` skill rather than trying to fold that material back into the PRD/ARD yourself.
 
-<prd-template>
-# PRD: {Feature Name}
+### 6. Stop and hand back
 
-_Status: draft_
-
-## Problem Statement
-
-What problem is the user (or system) facing? Written from the user's perspective, not the engineer's.
-
-## Solution
-
-What we are building to solve the problem. High-level, from the user's perspective.
-
-## User Stories
-
-A numbered list. Cover all meaningful actors and scenarios, including edge cases.
-
-1. As a {actor}, I want {feature}, so that {benefit}.
-
-## Success Criteria
-
-A numbered list, one per user story where applicable. Each criterion must be measurable and technology-agnostic — name no framework, library, API, or database.
-
-1. {Measurable, technology-agnostic outcome}.
-
-## Out of Scope
-
-What this feature explicitly does not include.
-
-## Further Notes
-
-Any open product questions, dependencies on other teams, or links to external context.
-</prd-template>
-
-### 6. Draft the ARD
-
-Use the template below. This is the engineering document — be specific about modules, layers, and design decisions, but only to the degree supported by the high-level context. Rough sketches, command/handler names, job structures, open questions are fine.
-
-<ard-template>
-# ARD: {Feature Name}
-
-_Status: draft_
-
-## Design Notes
-
-High-level notes on how this will work. Include alternatives you're considering, constraints you've identified, and anything that shapes the approach.
-
-## Code Structure
-
-Sketch the module structure. Use the project's DDD/Hexagonal/CQRS conventions. Name commands, handlers, jobs, repositories, aggregates, interfaces as specifically as you can. Rough is fine — the point is to make the shape concrete.
-
-```
-Module/
-  Application/
-    Commands/
-    DTOs/
-    Repositories/
-  Domain/
-    Aggregates/
-  Infrastructure/
-    Jobs/
-    Repositories/
-  Presentation/
-```
-
-## Data Contracts
-
-Every DTO, command payload, event, or API request/response shape this feature introduces or modifies. One subsection per contract:
-
-```
-### {DtoName}
-| Property | Type | Notes |
-| --- | --- | --- |
-| id | string | ... |
-```
-
-If a field's type or presence is genuinely unknown at this stage, write a placeholder row (`{field}: {type?}`) instead of omitting the DTO — `/review-plan` will resolve it with the user. Do not skip this section because the shape feels obvious; name it concretely so it can be confirmed.
-
-## Implementation Decisions
-
-Key decisions already made. Include:
-- Module boundaries
-- Interface shapes
-- Schema changes
-- API contracts
-- Relevant ADRs
-
-## Testing Decisions
-
-- What the tests will assert (behaviour through the interface, not internals)
-- Which seams are the test boundaries
-- Prior art in the codebase
-
-## Open Questions
-
-Things that need to be resolved before or during implementation. These are the starting point for /review-plan.
-
-## Out of Scope
-
-What this ARD explicitly does not cover.
-
-## References
-
-File references added via `<leader>ai` in nvim. Each entry is a `### @path/to/file` heading followed by your notes on how that file relates to this feature.
-</ard-template>
-
-### 6a. Self-review before handoff
-
-Before showing the plan to the user, check both documents against this exact list. Do not skip this step, even for a plan that feels simple.
-
-**Placeholder scan.** Search the PRD and ARD text for these exact strings and phrases. If any appear, replace them with a concrete answer or an explicit `[NEEDS CLARIFICATION: specific question]` marker — never leave them as-is:
-- "TBD", "TODO", "later", "etc.", "and so on"
-- "handle appropriately", "handle edge cases", "add appropriate error handling"
-- "implement later", "fill in details", "figure out"
-- Any sentence describing what a section should contain instead of containing it
-
-**Consistency scan.** Confirm every module, command, and entity name used in the ARD's "Code Structure" section also appears in "Implementation Decisions" (or vice versa). Confirm nothing in the ARD contradicts the PRD's "Out of Scope" section.
-
-**Data contracts scan.** Confirm every DTO, command payload, event, or API shape named anywhere in the ARD has a matching entry in "Data Contracts" with at least a best-guess property list and types. A DTO name with no corresponding contract entry is a gap — add a best-guess entry or an explicit placeholder row, never leave it unnamed.
-
-**Success criteria scan.** Confirm every user story has a matching, measurable, technology-agnostic success criterion. A criterion is technology-agnostic if it names no framework, library, API, or database. Add any that are missing.
-
-If you find and fix issues, do not re-run this scan afterward — fix them once and move on.
-
-**Write the spec-quality checklist.** Write `.plans/{name}/checklist.md`:
-
-<checklist-template>
-# Spec Quality Checklist: {Feature Name}
-
-_Written by /plan. Re-check manually if the PRD or ARD change before /review-plan runs._
-
-## Content Quality
-
-- [ ] No placeholder phrases remain (see Self-Review Placeholder Scan)
-- [ ] PRD is written from the user's perspective, not the engineer's
-- [ ] ARD names are concrete (module, command, handler, entity names), not generic
-
-## Completeness
-
-- [ ] Every user story has a measurable, technology-agnostic success criterion
-- [ ] Every open question in the ARD is stated as an explicit question, not implied
-- [ ] Out of Scope is stated in both PRD and ARD
-- [ ] Every DTO/payload named in the ARD has a Data Contracts entry (concrete or placeholder)
-
-## Consistency
-
-- [ ] Names used in ARD "Code Structure" match names used in "Implementation Decisions"
-- [ ] Nothing in the ARD contradicts the PRD's Out of Scope section
-</checklist-template>
-
-Mark each item `[x]` only if you actually checked it against the documents and it passes. Leave it `[ ]` if it doesn't.
-
-### 7. Stop and hand back
-
-Once both documents are written, tell the user:
+Once all four files are written, tell the user:
 
 - The path to the plan: `.plans/{name}/`
-- A brief summary of what you drafted
-- Any items left unchecked in `checklist.md`, and why
-- Any open questions you surfaced
+- A brief summary of what was drafted (from the returned `prd.md`/`ard.md` content)
+- Any items left unchecked in `checklist.md`, and why (from spec-drafter's closing note)
+- Any open questions surfaced in `ard.md`'s Open Questions section
 - Next step: run `/review-plan {name}` to stress-test, or `/plan-to-tasks {name}` to break into tasks

@@ -37,88 +37,27 @@ Ask the user once per `/implement-tasks` invocation, unless they already stated 
 
 > "Implement this task inline in this session, or dispatch it to a subagent (e.g. a cheaper model)? Reply `inline` or `subagent`."
 
-**If `inline`:** continue to step 4 exactly as written below.
+Either way, the actual implementation contract — read-order, SOLID, TDD discipline, targeted CI, escalation rules, hard constraints, output format — lives in one place: `~/.pi/agent/agents/implementer.md`. This skill never duplicates that prose; it only decides who executes it and verifies the result.
+
+**If `inline`:** Read `~/.pi/agent/agents/implementer.md` now, in full, and follow it directly in this session for the task at `.plans/{name}/tasks/{nnn}-task-name.md`. When it finishes (or reports BLOCKED per its own escalation rules), continue to step 4.
 
 **If `subagent`:**
-1. Build the dispatch task text out of exactly these pieces, in this order: (a) the full contents of the task file, (b) the ARD sections named in the task's "Relevant ARD Sections", (c) the full contents of every `AGENTS.md` file in scope, (d) the full contents of every file listed under the task's "## Instruction Files" section, if present, (e) this exact instruction verbatim: "Follow TDD: one failing test, then the minimal code to pass it, repeat. Do not write all tests before all code. Run the project's formatter, type-checker, and the test files covering your change before reporting done. Do not commit. Report: files changed, the test command you ran, its full output, and a final line reading either DONE or BLOCKED with the reason."
-2. Dispatch with the `subagent` tool. One task per dispatch call — never batch multiple tasks into one dispatch.
-3. When the subagent reports back, do not treat its self-report as verification. Re-run the targeted tests it named yourself before proceeding to step 4c.
+1. Dispatch the `implementer` subagent with only: the plan name and the task file path. Do not pre-paste `AGENTS.md`, instruction-file, or ARD contents into the dispatch — `implementer` resolves and reads all of that itself from the paths you give it.
+2. One task per dispatch call — never batch multiple tasks into one dispatch.
+3. When the subagent reports back, do not treat its self-report as verification. Re-run the targeted tests it named yourself before proceeding to step 4.
 4. If the subagent reports BLOCKED, read its stated reason. If you can resolve it yourself (missing context, an unclear instruction), fix it and re-dispatch once. If it reports BLOCKED a second time for the same task, stop and escalate to the user — do not attempt a third dispatch.
 
-### 4. Implement the task
+### 4. After implementation: orchestrator-only steps
 
-#### 4a. Read the task file and project instructions
+Everything below is the orchestrator's job — it happens after `implementer` (inline or dispatched) has produced a working, tested task, never before.
 
-Load `.plans/{name}/tasks/{nnn}-task-name.md` in full. Read `.plans/{name}/ard.md` for broader design context. Read `.plans/{name}/context.md` for codebase context — do not re-explore the codebase. Only open additional source files called out in the task's **Notes** or **Relevant ARD Sections**.
+#### 4a. Full-suite CI — final task only
 
-Read all `AGENTS.md` files in scope — root and any path-level files covering the directories you will touch. Do this before writing any code. These are non-negotiable constraints, not suggestions. If an `AGENTS.md` rule contradicts your defaults, the rule wins.
+Targeted, per-task CI (formatter, type-checker, the tests covering this task's change) already happened inside the implementation step above — do not re-run that here.
 
-If the task file contains an `## Instruction Files` section, read every file listed there before touching any code. These are non-negotiable constraints — treat them with the same weight as `AGENTS.md`. Do not skip them, do not skim them.
+After implementing the **last** task in the plan, run the full CI pipeline including coverage checks. Fix any failures before proceeding. If the full suite reveals a gap in earlier tasks, fix it in the current commit — do not go back and amend previous commits.
 
-Also check `.github/instructions/` for any `*.instructions.md` files whose `applyTo:` glob matches the files you are about to write or edit that are not already listed in the task. Read every matching instruction file before touching that file. Do not wait for the instruction to be injected reactively — pull it proactively.
-
-Before writing any test, open an existing test for the most analogous code in the project and read it. Mirror its structure exactly — framework, syntax, organisation. Do not default to a style you already know.
-
-#### 4b. Implement
-
-Write the code. Hold yourself to these non-negotiable standards:
-
-**SOLID**
-- Single responsibility: each class/function does one thing
-- Open/closed: extend behaviour without modifying existing code
-- Liskov: subtypes are substitutable for their base types
-- Interface segregation: depend on narrow interfaces, not fat ones
-- Dependency inversion: depend on abstractions, inject concretions
-
-**Test-driven — one tracer bullet at a time**
-
-Tests are not optional. Every task that produces behaviour must produce tests. If a task adds only interfaces, types, or pure data structures with no logic, note why no test is needed — otherwise a missing test is a bug in your process.
-
-Build the task as **vertical slices**: one test → one piece of implementation → repeat.
-
-```
-RED→GREEN: test1 → impl1
-RED→GREEN: test2 → impl2
-...
-```
-
-- **Never write all the tests first, then all the code.** That horizontal slicing produces tests of _imagined_ behaviour — they test the shape of things, pass when behaviour breaks, and fail when it doesn't. Write the next test only once the previous slice is green.
-- Write only enough code to pass the current test. Don't anticipate future tests.
-- **Never refactor while red.** Get to green first, then look for duplication to extract and complexity to hide behind a smaller interface.
-
-Per-cycle checklist:
-```
-[ ] Test describes behaviour, not implementation
-[ ] Test uses the public interface only — would survive an internal refactor
-[ ] Code is minimal for this test; no speculative features
-[ ] Tests assert observable behaviour, covering happy path, edge cases, failure modes
-```
-
-Design new code as **deep modules** — a lot of behaviour behind a small interface — so the interface is the test surface. If you find yourself wanting to test _past_ the interface, the module is the wrong shape.
-
-**Idiomatic**
-- Match the conventions of the surrounding codebase — naming, layering, patterns, file structure
-- Read prior art in the codebase before writing new code; don't invent patterns that already exist
-- When in doubt, find an analogous feature and follow its lead
-
-**General**
-- Run typechecking and static analysis regularly during implementation, not just at the end
-
-#### 4c. Run CI
-
-Run checks in two phases — targeted now, full suite only on the final task.
-
-**Phase 1 — per-task (run after every task)**
-
-Run the project's formatter, type-checker/static analysis, and only the test files that cover the code you just wrote. Do not run the full suite. Running no tests is only acceptable for tasks where no behaviour was added (see TDD note above) — in that case, state explicitly why.
-
-**Phase 2 — full suite (final task only)**
-
-After implementing the last task in the plan, run the full CI pipeline including coverage checks.
-
-Fix any failures before proceeding. If the full suite reveals a gap in earlier tasks, fix it in the current commit — do not go back and amend previous commits.
-
-#### 4d. Mark the task done
+#### 4b. Mark the task done
 
 Update the task file: change `_Status: todo_` to `_Status: done_`.
 
@@ -126,17 +65,15 @@ Update `tasks.md`:
 - Change the task's status cell from `todo` to `done`
 - Update the progress count at the bottom
 
-#### 4e. Stop
+#### 4c. Stop
 
-Report the completed task, the files you wrote or modified, and how many tasks remain. Suggest the user run `/review` to review and commit the changes before continuing — e.g. `/review main`. Do not begin the next task under any circumstances.
+Report the completed task, the files changed, and how many tasks remain. Suggest the user run `/review` to review and commit the changes before continuing — e.g. `/review main`. Do not begin the next task under any circumstances.
 
 If this was the final task (all tasks now done), say so and suggest `/review main` to review everything against the PRD and the project's coding standards before pushing.
 
 ## Notes
 
-- Never skip a failing CI step. Fix it or stop and explain.
-- If the same task fails the same acceptance criterion on 3 separate fix attempts, stop. Do not attempt a 4th fix. Tell the user exactly which criterion keeps failing, say the task's design may need to change, and wait for their answer before touching that task again.
-- Do not commit. Committing is the reviewer's responsibility.
-- If a task turns out to be much larger than the task file suggests, stop and flag it to the user rather than blasting through — the grooming may need revisiting.
-- If you discover something that changes the design while implementing, update the ARD to reflect reality before continuing.
+- Never skip a failing CI step. Fix it or stop and explain — this applies to the orchestrator's Phase-2 full-suite gate as much as to `implementer`'s targeted checks.
+- Do not commit. Committing is the reviewer's responsibility, not this skill's and not `implementer`'s.
 - Never commit secrets, credentials, or `.env` files.
+- The 3-attempt escalation rule, the "task is much bigger than it looked" flag, and the "design changed mid-implementation" rule all live in `implementer.md` now — if you're the orchestrator receiving a BLOCKED report for one of these, that's your cue to stop and ask the user, not to re-dispatch a fix yourself beyond the one retry allowed in step 3a.
