@@ -130,6 +130,19 @@ Module/
   Presentation/
 ```
 
+## Data Contracts
+
+Every DTO, command payload, event, or API request/response shape this feature introduces or modifies. One subsection per contract:
+
+```
+### {DtoName}
+| Property | Type | Notes |
+| --- | --- | --- |
+| id | string | ... |
+```
+
+If a field's type or presence is genuinely unknown at this stage, write a placeholder row (`{field}: {type?}`) instead of omitting the DTO — `/review-plan` will resolve it with the user. Do not skip this section because the shape feels obvious; name it concretely so it can be confirmed.
+
 ## Implementation Decisions
 
 Key decisions already made. Include:
@@ -170,6 +183,8 @@ Before showing the plan to the user, check both documents against this exact lis
 
 **Consistency scan.** Confirm every module, command, and entity name used in the ARD's "Code Structure" section also appears in "Implementation Decisions" (or vice versa). Confirm nothing in the ARD contradicts the PRD's "Out of Scope" section.
 
+**Data contracts scan.** Confirm every DTO, command payload, event, or API shape named anywhere in the ARD has a matching entry in "Data Contracts" with at least a best-guess property list and types. A DTO name with no corresponding contract entry is a gap — add a best-guess entry or an explicit placeholder row, never leave it unnamed.
+
 **Success criteria scan.** Confirm every user story has a matching, measurable, technology-agnostic success criterion. A criterion is technology-agnostic if it names no framework, library, API, or database. Add any that are missing.
 
 If you find and fix issues, do not re-run this scan afterward — fix them once and move on.
@@ -192,6 +207,7 @@ _Written by /plan. Re-check manually if the PRD or ARD change before /review-pla
 - [ ] Every user story has a measurable, technology-agnostic success criterion
 - [ ] Every open question in the ARD is stated as an explicit question, not implied
 - [ ] Out of Scope is stated in both PRD and ARD
+- [ ] Every DTO/payload named in the ARD has a Data Contracts entry (concrete or placeholder)
 
 ## Consistency
 

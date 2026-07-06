@@ -57,6 +57,7 @@ Before presenting the task list, check it against the PRD and ARD, item by item:
 
 - Every user story in the PRD's "User Stories" section is covered by at least one task. If a story has no task, add one — do not proceed with a gap.
 - Every non-CI task cites something concrete from the ARD (a module, command, handler, or decision) that you will quote under that task's "Relevant ARD Sections" in step 5. A task with nothing to cite is not derived from the plan — cut it or merge it into the task it actually belongs to.
+- Every DTO/payload in the ARD's "Data Contracts" section is produced or consumed by at least one task. If one isn't, add it to the task that should own it.
 - No two tasks name the same file or interface as their primary deliverable, unless one explicitly modifies what the other created.
 
 Fix any gaps you find yourself before moving to step 4. Only mention this check to the user if it surfaced a gap you could not resolve on your own.
@@ -151,6 +152,7 @@ List any tasks that must be completed before this one, or `none`.
 
 - **Consumes**: exact function/method/command signatures this task depends on from earlier tasks. Write `none` if this task has no upstream dependencies.
 - **Produces**: exact function/method/command signatures, class names, or file paths this task creates that later tasks will depend on. Write `none` if nothing downstream depends on this task's output.
+- **Data Contracts**: any DTO/payload from the ARD's "Data Contracts" section this task creates or consumes, with the exact property list and types copied in — not just the name. Write `none` if this task touches no data contract.
 
 ## Acceptance Criteria
 

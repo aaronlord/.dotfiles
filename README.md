@@ -12,4 +12,8 @@
 
 ![Bash](bash.png)
 
+### Docs
+
+- [Git worktrees with worktrunk](docs/worktrees.md)
+
 [1]:http://www.randsinrepose.com/archives/2009/11/02/the_foamy_rules_for_rabid_tools.html

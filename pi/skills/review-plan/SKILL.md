@@ -26,6 +26,7 @@ Read `.plans/{name}/context.md`. This was written during `/plan` and contains al
 Before starting the interview, go through this exact list of categories. For each one, mark it `Clear`, `Partial`, or `Missing` based on what the PRD and ARD currently say. Do not skip a category because it seems unlikely to apply — mark it `Clear` if it clearly doesn't apply, but check it explicitly.
 
 - **Functional scope**: every actor and scenario from the PRD's User Stories has a corresponding design decision in the ARD; edge cases are named, not implied
+- **Data contracts**: every DTO, command payload, event, or API request/response shape in the ARD's "Data Contracts" section has every property named with a concrete type (no placeholder rows, no `TBD` types)
 - **Domain & data model**: entities, attributes, relationships, and schema changes are named concretely (no `{placeholder}` left unresolved)
 - **Interface contracts**: command/handler/job/repository names are concrete; input/output shapes are stated
 - **Non-functional behavior**: error handling, validation, and failure modes are addressed for each user story
@@ -34,7 +35,9 @@ Before starting the interview, go through this exact list of categories. For eac
 - **Terminology**: domain terms used in the PRD and ARD match CONTEXT.md's glossary (if one exists) and match each other
 - **Open questions**: every item in the ARD's Open Questions section is a real, answerable question, not a vague statement
 
-Every category marked `Partial` or `Missing` becomes at least one interview question. Prioritise `Missing` over `Partial`, and within those, resolve in this order: functional scope > domain & data model > interface contracts > non-functional behavior > integration & dependencies > testing boundaries > terminology > open questions.
+Every category marked `Partial` or `Missing` becomes at least one interview question. Prioritise `Missing` over `Partial`, and within those, resolve in this order: functional scope > data contracts > domain & data model > interface contracts > non-functional behavior > integration & dependencies > testing boundaries > terminology > open questions.
+
+Data contracts are resolved early and field-by-field: for each DTO/payload with a placeholder row or missing property, ask the user for the exact property name and type before moving to other categories. Do not accept a vague answer ("an object with the usual fields") — press for the concrete list.
 
 ### 4. Interview the user — one question at a time
 
@@ -70,6 +73,7 @@ Once the interview is complete, rewrite both `prd.md` and `ard.md` to reflect th
 - Update _Status_ from `draft` to `reviewed`
 - Fill in gaps identified during the interview
 - Replace ambiguous language with precise decisions
+- Replace every placeholder row in "Data Contracts" with the confirmed property names and types
 - Clear out any Open Questions that were resolved (or note the resolution inline)
 - Keep the user's original intent — don't over-engineer or change the scope
 

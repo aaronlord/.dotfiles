@@ -2,43 +2,10 @@
 # Shared utilities for worktree management scripts.
 # Source this file: source "${BASH_SOURCE[0]%/*}/lib/worktree-utils"
 
-# Branch name -> URL/filesystem slug (lowercase, slashes->hyphens, alphanumeric+hyphens only)
-compute_slug() {
-    echo "$1" | tr '[:upper:]' '[:lower:]' | tr '/' '-' | tr -cd '[:alnum:]-'
-}
-
-# Absolute path to the main (primary) worktree for the current repo
-get_main_root() {
-    git worktree list | head -1 | awk '{print $1}'
-}
-
-# Sibling directory path for a given branch's worktree
-get_worktree_path() {
-    local branch="$1"
-    local main_root slug
-    main_root=$(get_main_root)
-    slug=$(compute_slug "$branch")
-    echo "$(dirname "$main_root")/$(basename "$main_root")-${slug}"
-}
-
 # Read a single value from a .env file (last match wins, handles values containing =)
 get_env_value() {
     local key="$1" file="$2"
     grep -E "^${key}=" "$file" 2>/dev/null | tail -1 | cut -d= -f2-
-}
-
-# Find a free port starting from $1, avoiding ports already claimed by sibling worktrees
-find_free_port() {
-    local port="$1"
-    local main_root sibling_dir repo_name used_ports
-    main_root=$(get_main_root)
-    sibling_dir=$(dirname "$main_root")
-    repo_name=$(basename "$main_root")
-    used_ports=$(grep -h -r "^APP_PORT=\|^VITE_PORT=" "${sibling_dir}/${repo_name}-"*/.env 2>/dev/null | cut -d= -f2 | sort -n)
-    while echo "$used_ports" | grep -qx "$port"; do
-        port=$((port + 1))
-    done
-    echo "$port"
 }
 
 # Rewrite the port in a URL (scheme://host[:port] -> scheme://host:new_port)
@@ -65,7 +32,7 @@ _set_env_key() {
 # Patch worktree-specific values into a .env file
 patch_worktree_env() {
     local env_file="$1" repo_name="$2" slug="$3" app_port="$4" vite_port="$5"
-    local existing_url app_url
+    local existing_url app_url project_name
     existing_url=$(get_env_value APP_URL "$env_file")
     if [ -n "$existing_url" ]; then
         app_url=$(_rewrite_url_port "$existing_url" "$app_port")
@@ -74,7 +41,10 @@ patch_worktree_env() {
     else
         app_url="http://localhost:${app_port}"
     fi
-    _set_env_key COMPOSE_PROJECT_NAME "${repo_name}-${slug}" "$env_file"
+    # Docker Compose project names must be lowercase alphanumeric/hyphens/underscores;
+    # branch names (e.g. ticket-prefixed branches like MNG-2197) commonly aren't.
+    project_name=$(printf '%s' "${repo_name}-${slug}" | tr '[:upper:]' '[:lower:]')
+    _set_env_key COMPOSE_PROJECT_NAME "$project_name" "$env_file"
     _set_env_key APP_URL "$app_url" "$env_file"
     _set_env_key APP_PORT "$app_port" "$env_file"
     _set_env_key VITE_PORT "$vite_port" "$env_file"

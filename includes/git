@@ -64,11 +64,3 @@ function ge(){
     mkdir -p "$1"
     git archive master | tar -x -C "$1"
 }
-
-function gw() {
-    $HOME/.dotfiles/bin/tmux-add-worktree "$@"
-}
-
-function cya() {
-    $HOME/.dotfiles/bin/tmux-delete-worktree
-}
