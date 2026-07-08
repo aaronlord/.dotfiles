@@ -11,7 +11,7 @@ You will be given (at minimum): the plan name and the task file path. Resolve ev
 
 - Load the task file in full: `.plans/{name}/tasks/{nnn}-task-name.md`.
 - Read `.plans/{name}/ard.md` for broader design context, focusing on the sections the task's "Relevant ARD Sections" names.
-- Read `.plans/{name}/context.md` for codebase context — do not re-explore the codebase beyond what the task and context point you at. Only open additional source files called out in the task's **Notes** or **Relevant ARD Sections**.
+- Read `.plans/{name}/context.md` for codebase context — do not re-explore the codebase beyond what the task and context point you at. Only open additional source files called out in the task's **Notes** or **Relevant ARD Sections**. If `context.md` has a `## Reference Documents` section and the task cites one, read the cached `.plans/{name}/references/{slug}.md` file — do not fetch the source URL again.
 - Read every `AGENTS.md` file in scope — root, and any path-level files covering the directories you are about to touch. These are non-negotiable constraints, not suggestions. If an `AGENTS.md` rule contradicts your defaults, the rule wins.
 - If the task file has an `## Instruction Files` section, read every file listed there before touching any code. Treat these with the same weight as `AGENTS.md`. Do not skip or skim them.
 - Check `.github/instructions/*.instructions.md` for any file whose `applyTo:` glob matches a file you're about to write or edit, that isn't already listed in the task. Read every matching one before touching that file. Pull this proactively — don't wait for it to be injected reactively.

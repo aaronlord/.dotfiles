@@ -1,7 +1,7 @@
 {
     "plan": {
         "provider": "github-copilot",
-        "model": "claude-sonnet-4.6",
+        "model": "claude-sonnet-5",
         "thinkingLevel": "high",
         "tools": [
             "read",
@@ -13,7 +13,7 @@
     },
     "refine": {
         "provider": "github-copilot",
-        "model": "claude-sonnet-4.6",
+        "model": "claude-sonnet-5",
         "thinkingLevel": "high",
         "tools": [
             "read",
@@ -26,7 +26,7 @@
     "implement": {
         "provider": "github-copilot",
         "model": "claude-haiku-4.5",
-        "thinkingLevel": "low",
+        "thinkingLevel": "minimal",
         "tools": [
             "read",
             "bash",
@@ -37,7 +37,7 @@
     },
     "review": {
         "provider": "github-copilot",
-        "model": "claude-sonnet-4.6",
+        "model": "claude-sonnet-5",
         "thinkingLevel": "high",
         "tools": [
             "read",

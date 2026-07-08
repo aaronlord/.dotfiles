@@ -10,3 +10,7 @@ Run one command per bash tool call. Do not chain commands with `&&`. Wait for th
 ### Directory traversal
 
 Use `tree` or `find` to explore directory structures instead of chaining multiple `ls` commands.
+
+### Code comments
+
+Keep comments terse — caveman-style, few words, no restating the obvious. One line for guard/edge-case comments, not multi-sentence prose. State only the non-obvious *why*.

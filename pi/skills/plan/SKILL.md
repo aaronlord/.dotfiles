@@ -39,24 +39,47 @@ Dispatch the `scout` subagent with:
 
 Scout returns its usual structured findings (files retrieved, key code/notes, architecture, start-here pointer) — treat that as recon input for step 4, not as the plan itself.
 
-### 4. Create the scaffold
+### 4. Cache any URLs the user provided
+
+If the user's prompt includes one or more URLs, fetch each one **once** and cache it locally instead of re-fetching it in every later phase (`/review-plan`, `/plan-to-tasks`, `/implement-tasks` all reuse the cache).
+
+For each URL:
+
+- Fetch the page.
+- Save it to `.plans/{name}/references/{slug}.md`, where `{slug}` is a kebab-case name derived from the URL (host + meaningful path segments).
+- Prefix the saved file with frontmatter recording the source and fetch date:
+
+```
+---
+source: {url}
+fetched: {ISO date}
+---
+```
+
+- Follow the frontmatter with the fetched content, trimmed to what's relevant if the page is very long (strip nav/boilerplate, keep the substantive sections).
+
+Pass a short pointer per URL (path + one-line description, not the full text) to `spec-drafter` in step 6, so it can cite the cached file instead of the raw URL.
+
+### 5. Create the scaffold
 
 ```
 .plans/{name}/
-  context.md   ← written in step 5, read by all downstream skills
+  context.md   ← written in step 6, read by all downstream skills
   prd.md
   ard.md
-  checklist.md ← spec-quality checklist, written in step 5
-  tasks/                ← empty for now, created by /plan-to-tasks
+  checklist.md ← spec-quality checklist, written in step 6
+  references/  ← cached URL fetches from step 4, if any
+  tasks/       ← empty for now, created by /plan-to-tasks
 ```
 
-### 5. Dispatch spec-drafter to draft the documents
+### 6. Dispatch spec-drafter to draft the documents
 
 Dispatch the `spec-drafter` subagent with:
 
 - The user's original prompt.
 - The inferred feature name.
 - The scout's findings from step 3, verbatim.
+- Any cached reference pointers from step 4 (path + one-line description per URL).
 
 `spec-drafter` returns four content blocks (`context.md`, `prd.md`, `ard.md`, `checklist.md`) already self-reviewed against its own placeholder/consistency/data-contracts/success-criteria scan, plus a one-line note on any checklist items it left unchecked and why.
 
@@ -64,7 +87,7 @@ Write each returned block to its path under `.plans/{name}/` exactly as returned
 
 If drafting surfaces a new domain term that needs pinning down, or a hard-to-reverse decision worth recording separately, tell the user to run the `domain-modeling` skill rather than trying to fold that material back into the PRD/ARD yourself.
 
-### 6. Stop and hand back
+### 7. Stop and hand back
 
 Once all four files are written, tell the user:
 

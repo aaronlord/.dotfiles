@@ -31,6 +31,8 @@ Wait for the literal word `proceed`. Any other reply — including a vague "yes"
 
 Read `.plans/{name}/context.md`. This was written during `/plan` and contains all codebase exploration findings. Use it as your starting point — don't re-do broad discovery. Then do targeted exploration of the specific code this plan will touch, looking for:
 
+If `context.md` has a `## Reference Documents` section, read the cached `.plans/{name}/references/*.md` files it lists instead of re-fetching those URLs. If a task needs to cite one, cite the cached file path, not the raw URL. Only fetch a URL if it isn't already cached, then save and append it the same way `/plan` and `/review-plan` do.
+
 - Prefactoring opportunities: "make the change easy, then make the easy change" — if existing code needs restructuring to make the implementation cleaner, that's a task too
 - Natural implementation order based on dependencies (schema before repositories, interfaces before implementations, etc.)
 - Prior art for similar tasks in the project

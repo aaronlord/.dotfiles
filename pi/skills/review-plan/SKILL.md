@@ -21,6 +21,8 @@ Read both `.plans/{name}/prd.md` and `.plans/{name}/ard.md` in full.
 
 Read `.plans/{name}/context.md`. This was written during `/plan` and contains all codebase exploration findings. Do not re-explore — trust this file. Only read additional source files if the plan references something not covered there.
 
+If `context.md` has a `## Reference Documents` section, treat those `.plans/{name}/references/*.md` files as the source for anything the interview needs from that external URL — read the cached file, do not re-fetch the URL. If the interview surfaces a new URL not already cached, fetch it once, save it to `.plans/{name}/references/{slug}.md` with the same `source`/`fetched` frontmatter used during `/plan`, and append it to `context.md`'s `## Reference Documents` section so later phases reuse it too.
+
 ### 3. Scan the plan against a fixed taxonomy
 
 Before starting the interview, go through this exact list of categories. For each one, mark it `Clear`, `Partial`, or `Missing` based on what the PRD and ARD currently say. Do not skip a category because it seems unlikely to apply — mark it `Clear` if it clearly doesn't apply, but check it explicitly.
