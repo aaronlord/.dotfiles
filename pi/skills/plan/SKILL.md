@@ -21,7 +21,7 @@ Derive a short, lowercase kebab-case name from the prompt (e.g. `"sync students 
 
 ### 2. Check for an existing plan
 
-If `.plans/{name}/` already exists, tell the user and offer to open the existing ARD instead of overwriting. Stop here if they say yes.
+If `.plans/{name}/` already exists, tell the user and point them at the `follow-up-plan` skill instead of overwriting — it handles both updating the existing plan in place and starting a new plan seeded with the old one's context. Stop here.
 
 ### 3. Dispatch a scout for high-level recon only
 
@@ -41,9 +41,11 @@ Scout returns its usual structured findings (files retrieved, key code/notes, ar
 
 ### 4. Cache any URLs the user provided
 
-If the user's prompt includes one or more URLs, fetch each one **once** and cache it locally instead of re-fetching it in every later phase (`/review-plan`, `/plan-to-tasks`, `/implement-tasks` all reuse the cache).
+If the user's prompt includes one or more URLs, fetch each one **once** and cache it locally instead of re-fetching it in every later phase (`/review-plan`, `/plan-to-tasks`, `/implement-task`, `/implement-tasks` all reuse the cache).
 
-For each URL:
+**Figma design URLs (`figma.com/design/...`) are a special case — do not fetch/scrape them.** A Figma design URL renders a JS app, not readable content; generic page-fetching gets nothing usable. Instead, record it as a design reference pointer: extract the `fileKey` and `nodeId` from the URL, and add a `## Design References` section to `context.md` listing the raw URL, `fileKey`, and `nodeId`. Don't call any Figma tools yet — resolving the actual design (metadata, screenshots, design context) happens later, live, when a task that implements it is actually worked — see the `implement-figma-design` skill for that process. Tell `spec-drafter` (step 6) about the design reference pointer (URL + fileKey/nodeId) the same way you'd tell it about a cached doc pointer, so it can note in the ARD which part of the feature the design covers.
+
+For every other URL:
 
 - Fetch the page.
 - Save it to `.plans/{name}/references/{slug}.md`, where `{slug}` is a kebab-case name derived from the URL (host + meaningful path segments).
@@ -80,6 +82,7 @@ Dispatch the `spec-drafter` subagent with:
 - The inferred feature name.
 - The scout's findings from step 3, verbatim.
 - Any cached reference pointers from step 4 (path + one-line description per URL).
+- Any Figma design reference pointers from step 4 (URL + fileKey/nodeId), so the ARD can note which part of the feature each one covers.
 
 `spec-drafter` returns four content blocks (`context.md`, `prd.md`, `ard.md`, `checklist.md`) already self-reviewed against its own placeholder/consistency/data-contracts/success-criteria scan, plus a one-line note on any checklist items it left unchecked and why.
 

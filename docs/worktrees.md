@@ -50,20 +50,22 @@ personal tmux session automation layered on top.
 
 ```toml
 [post-start]
-tmux-session = "tmux new-session -ds {{ branch | sanitize }} -c {{ worktree_path }} && tmux send-keys -t {{ branch | sanitize }} 'test -x tmux.sh && ./tmux.sh {{ branch | sanitize }} {{ worktree_path }}' C-m"
+tmux-session = "session=$(basename {{ worktree_path }} | tr . _) && tmux new-session -ds \"$session\" -c {{ worktree_path }} && tmux send-keys -t \"$session\" 'test -x tmux.sh && ./tmux.sh '\"$session\"' {{ worktree_path }}' C-m"
 
 [post-switch]
-tmux-attach = "tmux switch-client -t {{ branch | sanitize }} 2>/dev/null || true"
+tmux-attach = "session=$(basename {{ worktree_path }} | tr . _) && tmux switch-client -t \"$session\" 2>/dev/null || true"
 
 [post-remove]
-tmux-kill = "tmux kill-session -t {{ branch | sanitize }} 2>/dev/null || true"
+tmux-kill = "session=$(basename {{ worktree_path }} | tr . _) && tmux kill-session -t \"$session\" 2>/dev/null || true"
 ```
 
 - Creating a worktree spins up a detached tmux session named after the
-  branch, and runs the repo's own `./tmux.sh` if it has one (a no-op
-  guard, so this applies harmlessly to repos without one).
+  worktree **directory** (matching `tmux-sessionizer`'s naming, dots
+  replaced with underscores), not the branch, and runs the repo's own
+  `./tmux.sh` if it has one (a no-op guard, so this applies harmlessly
+  to repos without one).
 - **Every** `wt switch` (not just creation) re-attaches your tmux
-  client to that branch's session.
+  client to that worktree's session.
 - Removing a worktree kills its tmux session.
 
 An `open` alias (`wt open`, or a `w` tmux keybinding wired up per-repo)

@@ -1,6 +1,6 @@
 ---
 name: spec-drafter
-description: "Drafts a first-pass PRD + ARD (rough, with explicit placeholders and open questions) for a new feature, from a scout's compressed recon and the user's prompt. Never explores the codebase itself — consumes only what it's handed. Never asks the user anything — leaves gaps as explicit placeholders for /review-plan to resolve later. Use as the drafting step of /plan, after a scout has gathered high-level context. Never used for task breakdown, implementation, or spec review — those are /plan-to-tasks, /implement-tasks, /review-plan's jobs."
+description: "Drafts a first-pass PRD + ARD (rough, with explicit placeholders and open questions) for a new feature, from a scout's compressed recon and the user's prompt. Never explores the codebase itself — consumes only what it's handed. Never asks the user anything — leaves gaps as explicit placeholders for /review-plan to resolve later. Use as the drafting step of /plan, after a scout has gathered high-level context. Never used for task breakdown, implementation, or spec review — those are /plan-to-tasks, /implement-task, /implement-tasks, /review-plan's jobs."
 tools: read, grep, find, ls
 isolated: true
 ---

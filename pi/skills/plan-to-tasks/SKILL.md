@@ -33,6 +33,8 @@ Read `.plans/{name}/context.md`. This was written during `/plan` and contains al
 
 If `context.md` has a `## Reference Documents` section, read the cached `.plans/{name}/references/*.md` files it lists instead of re-fetching those URLs. If a task needs to cite one, cite the cached file path, not the raw URL. Only fetch a URL if it isn't already cached, then save and append it the same way `/plan` and `/review-plan` do.
 
+If `context.md` has a `## Design References` section (Figma URL + fileKey/nodeId, recorded by `/plan`), figure out which task(s) implement which node(s) — a design reference belongs on whichever task actually builds that piece of UI, not on every task in the plan.
+
 - Prefactoring opportunities: "make the change easy, then make the easy change" — if existing code needs restructuring to make the implementation cleaner, that's a task too
 - Natural implementation order based on dependencies (schema before repositories, interfaces before implementations, etc.)
 - Prior art for similar tasks in the project
@@ -82,17 +84,26 @@ Iterate until the user approves the breakdown.
 
 ### 5. Write the task files
 
-**No placeholders.** Every task file must contain the actual content an implementer needs — many tasks will be implemented by a smaller, less capable model working from the task file alone, with no access to your reasoning or the conversation that produced it. Never write any of these in a task file:
+For each approved task, create `.plans/{name}/tasks/{nnn}-{task-slug}.md` (zero-padded three-digit index, e.g. `001-create-upsert-student-command.md`).
+
+**First, find matching instruction files.** Before drafting a task's `## What`, scan `.github/instructions/` for `*.instructions.md` files. Read the `applyTo:` frontmatter of each and test it against the files this task will create or modify. For every match, read the file's content (not just its glob) — it already teaches the boilerplate: class shape, imports, DI pattern, naming, return types, folder conventions, example code. List every matching path under `## Instruction Files` in the task (path only, do not copy its content into the task).
+
+**Then, check for a design reference.** If `context.md` has a `## Design References` section and this task builds the UI a listed Figma node covers, fill in the task's `## Design Reference` section (URL, fileKey, nodeId, and the pointer to `implement-figma-design`). Only one task per design node should claim it — don't duplicate the same reference across multiple tasks.
+
+**Don't re-teach what the instruction file already teaches.** If a matching instruction file exists, the task's `## What` must not restate its boilerplate as a full code listing. Write it as: file path + method/function signature (name, params, return type) + what it does in plain terms (input → behavior → output), calling out only what's specific to this feature — a business rule, edge case, exact value, or deviation from the instruction file's default pattern (e.g. "no auth check here, unlike the standard controller rule, because this is a public page — see `IdleController` precedent"). The instruction file plus the acceptance criteria should be enough for the implementer to write the code; the task is not a code drop for copy-paste.
+
+Only include an inline code snippet in `## What` when:
+- No instruction file matches that file's type, or
+- The instruction file's example doesn't cover the specific construct needed (a nonstandard control-flow, a tricky expression, a specific regex/algorithm) — show only that non-obvious fragment, not the whole file, or
+- Exact wording matters and prose would be ambiguous (e.g. a route declaration, a config key, a migration's column list)
+
+**No placeholders.** Every task file must still contain the actual content an implementer needs — many tasks will be implemented by a smaller, less capable model working from the task file alone, with no access to your reasoning or the conversation that produced it. Never write any of these in a task file:
 - "TBD", "handle edge cases", "add appropriate error handling", "add validation" without saying what validation
 - "Similar to Task N" without repeating the concrete detail — the implementer may never read Task N
 - An acceptance criterion that isn't independently checkable (e.g. not "works correctly", but "returns 404 when the student ID does not exist")
 - A reference to a type, function, method, or file that isn't named exactly, with its real path or signature
 
-If you don't know an exact name, path, or signature, stop and check the codebase or the ARD before writing the task — do not guess and do not leave it vague.
-
-For each approved task, create `.plans/{name}/tasks/{nnn}-{task-slug}.md` (zero-padded three-digit index, e.g. `001-create-upsert-student-command.md`).
-
-Before writing each task file, scan `.github/instructions/` for `*.instructions.md` files. Read the `applyTo:` frontmatter of each file and test whether any of the files the task will create or modify would match that glob. List every matching file path under `## Instruction Files` in the task. Do not copy content — just the path. If no files match, omit the section entirely.
+If you don't know an exact name, path, or signature, stop and check the codebase or the ARD before writing the task — do not guess and do not leave it vague. Precision about names and signatures is required even when the implementation code itself is left to the instruction file's conventions.
 
 The final **"Ensure CI passes"** task always uses the template below — populate it as shown:
 
@@ -140,7 +151,7 @@ _Status: todo_
 
 ## What
 
-A clear description of what this task implements. Be specific — name the files, classes, commands, jobs, or interfaces involved.
+Per file touched: exact path, the signature (method/function name, params, return type), and what it does in plain terms — input → behavior → output. Name any business rule, edge case, exact value, or deviation from the matching instruction file's default pattern. Do not paste a full implementation for constructs already covered by a matching `## Instruction Files` entry — see step 5's rules on when an inline snippet is warranted.
 
 ## Why
 
@@ -168,7 +179,11 @@ Quote or reference the specific parts of the ARD that drive this task's design d
 
 ## Instruction Files
 
-{List paths to any `.github/instructions/*.instructions.md` files whose `applyTo:` glob matches files this task will create or edit. Omit this section if none match.}
+{List paths to any `.github/instructions/*.instructions.md` files whose `applyTo:` glob matches files this task will create or edit. Omit this section if none match. The implementer is expected to read these and follow their conventions — `## What` should not repeat what they already say.}
+
+## Design Reference
+
+{Omit this section entirely unless this task implements a piece of UI covered by a Figma design reference from `context.md`. If it applies: the exact Figma URL, `fileKey`, and `nodeId` this task implements, plus the instruction "Follow the `implement-figma-design` skill for this task's UI work." If the design reference only covers part of this task (e.g. one section of a larger page), say which part explicitly — don't make the implementer guess the boundary.}
 
 ## Notes
 
@@ -200,4 +215,4 @@ Tell the user:
 
 - How many tasks were created
 - The dependency order and any parallelism opportunities
-- Next step: run `/implement-tasks {name}` to begin implementation
+- Next step: run `/implement-task {name}` to work through tasks one at a time, or `/implement-tasks {name}` to run the full loop unattended

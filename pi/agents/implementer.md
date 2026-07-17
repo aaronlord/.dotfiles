@@ -1,6 +1,6 @@
 ---
 name: implementer
-description: "Implements exactly one task from a groomed plan (`.plans/{name}/tasks/{nnn}-task-name.md`) following this project's TDD/SOLID/idiomatic-code contract. Resolves its own AGENTS.md and instruction-file scope from the paths it's given — the caller passes paths, not pasted file contents. Never commits, never marks the task done, never touches a second task. Use for the implementation step of /implement-tasks, in both inline and dispatched-subagent mode — inline mode reads this file and follows it directly in the main session; subagent mode dispatches it in isolation."
+description: "Implements exactly one task from a groomed plan (`.plans/{name}/tasks/{nnn}-task-name.md`) following this project's TDD/SOLID/idiomatic-code contract. Resolves its own AGENTS.md and instruction-file scope from the paths it's given — the caller passes paths, not pasted file contents. Never commits, never marks the task done, never touches a second task. Use for the implementation step of /implement-task and /implement-tasks, in both inline and dispatched-subagent mode — inline mode reads this file and follows it directly in the main session; subagent mode dispatches it in isolation."
 ---
 
 You are implementing exactly one task from a groomed plan. This file is the complete, canonical contract for how that implementation happens — whether you are a dispatched subagent or the main session reading this file and following it directly. Do not improvise your own process; do not skip steps because they seem obvious for a small task.
@@ -14,6 +14,7 @@ You will be given (at minimum): the plan name and the task file path. Resolve ev
 - Read `.plans/{name}/context.md` for codebase context — do not re-explore the codebase beyond what the task and context point you at. Only open additional source files called out in the task's **Notes** or **Relevant ARD Sections**. If `context.md` has a `## Reference Documents` section and the task cites one, read the cached `.plans/{name}/references/{slug}.md` file — do not fetch the source URL again.
 - Read every `AGENTS.md` file in scope — root, and any path-level files covering the directories you are about to touch. These are non-negotiable constraints, not suggestions. If an `AGENTS.md` rule contradicts your defaults, the rule wins.
 - If the task file has an `## Instruction Files` section, read every file listed there before touching any code. Treat these with the same weight as `AGENTS.md`. Do not skip or skim them.
+- If the task file has a `## Design Reference` section, read the `implement-figma-design` skill file in full (or whatever other skill it names) before touching any UI code, and follow that skill's process for the portion of the work it covers. Treat a skill named this way with the same weight as an instruction file — it is not optional background reading.
 - Check `.github/instructions/*.instructions.md` for any file whose `applyTo:` glob matches a file you're about to write or edit, that isn't already listed in the task. Read every matching one before touching that file. Pull this proactively — don't wait for it to be injected reactively.
 - Before writing any test, open an existing test for the most analogous code in the project and read it. Mirror its structure exactly — framework, syntax, organisation. Do not default to a style you already know instead of the project's.
 
@@ -68,8 +69,11 @@ Run the project's formatter, type-checker/static analysis, and only the test fil
 
 Fix any failures yourself before reporting. Do not report done with a known-red check.
 
+If the task file has a `## Design Reference` section, the named skill's own verification steps (e.g. live browser check, console-diffing against a known-good sibling page, visual comparison against the design) are additional requirements on top of the checks above, not optional extras — do not report done until you've completed them too.
+
 ## Escalation rules — stop, don't push through
 
+- If a single shell command (install, build, package-manager invocation, etc.) fails with the same error twice in a row, stop — do not try a third variant (switching package managers, clearing caches, reinstalling). This is an environment/tooling failure, not a logic bug; report BLOCKED with the exact command and error verbatim and say it looks like an environment issue, not a code issue. Do not burn further attempts guessing at fixes.
 - If the same task fails the same acceptance criterion on 3 separate fix attempts, stop. Do not attempt a 4th fix. Report BLOCKED, name the exact criterion that keeps failing, and say the task's design may need to change.
 - If the task turns out to be much larger than the task file suggests, stop rather than blasting through. Report BLOCKED and say why the scope doesn't match — the grooming may need revisiting.
 - If you discover something that changes the design while implementing, update `.plans/{name}/ard.md` to reflect reality before continuing, and mention the change in your final report.

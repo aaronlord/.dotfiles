@@ -45,11 +45,14 @@ Data contracts are resolved early and field-by-field: for each DTO/payload with 
 
 Follow the grill-me approach: interview relentlessly about every aspect of the plan until you reach shared understanding. Walk down each branch of the decision tree, resolving dependencies between decisions one-by-one. Asking many questions is correct and expected — never shorten or cap the interview to save turns.
 
+Before working through the taxonomy questions, open the grill by asking the user for their initial thoughts on the plan (what's off, what's missing, what worries them). Fold anything they raise into the taxonomy scan from step 3 and interview on it alongside the categories you found.
+
 Rules:
 - Ask exactly **one question at a time**
 - If a question can be answered by exploring the codebase, do that instead of asking
 - Don't move to the next question until the current one is resolved
 - Don't stop early — exhaust every meaningful open question before concluding
+- After every other question is resolved, ask the user if they have anything further to add. If they raise something, resolve it (looping back into the rules above) and ask again. Only treat the interview as complete once the user explicitly replies that they have nothing to add.
 
 **Every question must use this exact structure, in this exact order:**
 
