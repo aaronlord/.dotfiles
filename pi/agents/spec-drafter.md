@@ -66,7 +66,13 @@ High-level notes on how this will work. Include alternatives you're considering,
 
 ## Code Structure
 
-Sketch the module structure. Use the project's DDD/Hexagonal/CQRS conventions from the scout recon. Name commands, handlers, jobs, repositories, aggregates, interfaces as specifically as you can. Rough is fine — the point is to make the shape concrete.
+Sketch the module structure as a file tree (```-fenced, e.g. using `tree`-style `├──`/`└──` branches), covering every new or modified file. Use the project's DDD/Hexagonal/CQRS conventions from the scout recon. Name commands, handlers, jobs, repositories, aggregates, interfaces as specifically as you can. Rough is fine — the point is to make the shape concrete.
+
+Below the tree, list a one-line note per file that needs one (new files, non-obvious purpose, notable changes) as a flat list, in this exact format:
+
+- **path/to/file.ts**: what it is / why it exists
+
+Not every file in the tree needs a note — skip obvious/self-explanatory ones.
 
 ## Data Contracts
 

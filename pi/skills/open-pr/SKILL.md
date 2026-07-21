@@ -57,7 +57,16 @@ If found, read it — use its section structure as the body skeleton. If not fou
 <concise description>
 ```
 
-### 4. Gather context for the description
+### 4. Extract ticket if available
+
+Search for ticket in:
+
+1. Branch name: `git branch --show-current` — look for pattern like `[TICKET-123]` or `ticket-123`
+2. Commit messages: `git log --oneline <default-branch>..HEAD` — extract `[TICKET-123]` from end of commit messages
+
+If found, store it for the title in step 5. Use the first occurrence found (prefer branch > commits).
+
+### 5. Gather context for the description
 
 ```bash
 git log --oneline <default-branch>..HEAD
@@ -66,7 +75,7 @@ git diff <default-branch>...HEAD --stat
 
 Read the actual diff for anything non-trivial — don't write the description from commit messages alone.
 
-### 5. Write the description
+### 6. Write the description
 
 Rules — be strict about these:
 
@@ -75,11 +84,12 @@ Rules — be strict about these:
 - No filler: no "This PR...", no restating the title, no changelong prose, no marketing language.
 - Fill every template section that applies; if a section doesn't apply, write "N/A" or remove it — don't leave it blank or invent content.
 - Prefer bullet points over paragraphs when the template section allows free text.
-- Title: **conventional commit style** — `<type>(<scope>): <short imperative summary>`, e.g. `fix(auth): resolve race condition in token refresh`, `feat(billing): add proration for mid-cycle upgrades`. Scope is optional, omit if no single scope fits.
+- Title: **conventional commit style** — `<type>(<scope>): <short imperative summary> [TICKET-123]`, e.g. `fix(auth): resolve race condition in token refresh [AUTH-42]`, `feat(billing): add proration for mid-cycle upgrades [BIL-108]`. Scope is optional, omit if no single scope fits. Ticket (in brackets) goes at the end if available.
   - Check `git log --oneline -20` on the base branch first to confirm the repo actually uses conventional commits and matches its type vocabulary/scope style before applying this.
   - Pick `type` from the commits being merged (`feat`, `fix`, `chore`, `refactor`, `docs`, `test`, `perf`, `build`, `ci`, `style`). If commits mix types, pick the dominant one for the title — don't invent a combined type.
+  - Append the ticket from step 4 if found: ` [TICKET-123]` at the end.
 
-### 6. Create the PR
+### 7. Create the PR
 
 ```bash
 gh pr create \
@@ -92,7 +102,7 @@ Write the composed body to a temp file first (e.g. `/tmp/pr-body.md`) rather tha
 
 If the repo has no default reviewers/labels configured and the user hasn't asked for any, don't add them — stick to title, body, assignee.
 
-### 7. Report
+### 8. Report
 
 Print the resulting PR URL. Nothing else needed.
 
