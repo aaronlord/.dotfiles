@@ -9,91 +9,24 @@
 
 import type { AssistantMessage } from "@earendil-works/pi-ai";
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
-import {
-  existsSync,
-  mkdirSync,
-  readdirSync,
-  readFileSync,
-  statSync,
-  writeFileSync,
-} from "node:fs";
-import { homedir } from "node:os";
-import { isAbsolute, join, relative, resolve, sep } from "node:path";
+import { isAbsolute, relative, resolve, sep } from "node:path";
 import { truncateToWidth, visibleWidth } from "@earendil-works/pi-tui";
+import {
+  addBranchCost,
+  deleteLegacyFeatureCosts,
+  getBranchCost,
+  resolveRepoRoot,
+} from "./lib/branch-costs";
+import { getPeriodStats, loadAllSessions } from "./lib/usage-data";
 import "./usage";
-
-// ---------------------------------------------------------------------------
-// Feature / branch cost tracking
-// ---------------------------------------------------------------------------
-
-const FEATURE_COSTS_FILE = join(
-  homedir(),
-  ".pi",
-  "agent",
-  "feature-costs.json",
-);
-
-/** Accumulated cost (USD) per git branch across all sessions. */
-export const featureCosts = new Map<string, number>();
 
 /** The git branch active at the time of the last turn / branch change. */
 export let currentBranch: string | undefined;
-
-export function loadFeatureCosts(): void {
-  try {
-    const raw = JSON.parse(readFileSync(FEATURE_COSTS_FILE, "utf8")) as Record<
-      string,
-      number
-    >;
-    featureCosts.clear();
-    for (const [branch, cost] of Object.entries(raw)) {
-      if (typeof cost === "number") featureCosts.set(branch, cost);
-    }
-  } catch {
-    // File absent or malformed — start fresh
-  }
-}
-
-export function saveFeatureCosts(): void {
-  try {
-    mkdirSync(join(homedir(), ".pi", "agent"), { recursive: true });
-    const data: Record<string, number> = {};
-    for (const [branch, cost] of featureCosts) data[branch] = cost;
-    writeFileSync(FEATURE_COSTS_FILE, JSON.stringify(data, null, 2), "utf8");
-  } catch {
-    /* ignore write errors */
-  }
-}
-
-export function addBranchCost(branch: string, cost: number): void {
-  featureCosts.set(branch, (featureCosts.get(branch) ?? 0) + cost);
-}
 
 /** Last path segment of a branch name, e.g. "feat/my-thing" → "my-thing" */
 function shortBranch(branch: string): string {
   return branch.split("/").pop() ?? branch;
 }
-
-// ---------------------------------------------------------------------------
-// Types
-// ---------------------------------------------------------------------------
-
-interface ModelStats {
-  tokens: number;
-  costUsd: number;
-}
-
-interface DayStats {
-  totalTokens: number;
-  costUsd: number;
-  byModel: Record<string, ModelStats>;
-}
-
-// ---------------------------------------------------------------------------
-// In-memory cache   date (YYYY-MM-DD) → DayStats
-// ---------------------------------------------------------------------------
-
-const statsCache = new Map<string, DayStats>();
 
 // ---------------------------------------------------------------------------
 // Date helpers
@@ -111,120 +44,6 @@ function weekStartKey(): string {
 
 function monthStartKey(): string {
   return new Date().toISOString().slice(0, 8) + "01";
-}
-
-function tsToDateKey(ts: string | number): string {
-  if (typeof ts === "number") return new Date(ts).toISOString().slice(0, 10);
-  return String(ts).slice(0, 10);
-}
-
-// ---------------------------------------------------------------------------
-// Cache operations
-// ---------------------------------------------------------------------------
-
-function addToCache(
-  dateKey: string,
-  model: string,
-  tokens: number,
-  cost: number,
-): void {
-  let day = statsCache.get(dateKey);
-  if (!day) {
-    day = { totalTokens: 0, costUsd: 0, byModel: {} };
-    statsCache.set(dateKey, day);
-  }
-  day.totalTokens += tokens;
-  day.costUsd += cost;
-  if (!day.byModel[model]) day.byModel[model] = { tokens: 0, costUsd: 0 };
-  day.byModel[model].tokens += tokens;
-  day.byModel[model].costUsd += cost;
-}
-
-function periodStats(fromKey: string): {
-  tokens: number;
-  costUsd: number;
-  aic: number;
-} {
-  let tokens = 0,
-    costUsd = 0;
-  for (const [date, day] of statsCache) {
-    if (date >= fromKey) {
-      tokens += day.totalTokens;
-      costUsd += day.costUsd;
-    }
-  }
-  return { tokens, costUsd, aic: costUsd / 0.01 };
-}
-
-// ---------------------------------------------------------------------------
-// Session file loading
-// ---------------------------------------------------------------------------
-
-function parseJsonlFile(filePath: string, skipFile?: string): void {
-  if (skipFile && filePath === skipFile) return;
-  let content: string;
-  try {
-    content = readFileSync(filePath, "utf8");
-  } catch {
-    return;
-  }
-
-  for (const line of content.split("\n")) {
-    if (!line.trim()) continue;
-    try {
-      const entry = JSON.parse(line);
-      if (entry.type !== "message") continue;
-      const msg = entry.message;
-      if (!msg || msg.role !== "assistant") continue;
-      const cost = msg.usage?.cost?.total;
-      if (cost == null) continue;
-
-      const ts = entry.timestamp;
-      if (!ts) continue;
-
-      const dateKey = tsToDateKey(ts);
-      const model = msg.model ?? "unknown";
-      const tokens =
-        msg.usage.totalTokens ??
-        (msg.usage.input ?? 0) +
-          (msg.usage.output ?? 0) +
-          (msg.usage.cacheRead ?? 0) +
-          (msg.usage.cacheWrite ?? 0);
-
-      addToCache(dateKey, model, tokens, cost);
-    } catch {
-      /* skip malformed lines */
-    }
-  }
-}
-
-function loadAllSessions(skipFile?: string): void {
-  const sessionsDir = join(homedir(), ".pi", "agent", "sessions");
-  if (!existsSync(sessionsDir)) return;
-
-  function walk(dir: string): void {
-    let entries: string[];
-    try {
-      entries = readdirSync(dir);
-    } catch {
-      return;
-    }
-    for (const entry of entries) {
-      const full = join(dir, entry);
-      try {
-        const stat = statSync(full);
-        if (stat.isDirectory()) {
-          walk(full);
-        } else if (entry.endsWith(".jsonl")) {
-          parseJsonlFile(full, skipFile);
-        }
-      } catch {
-        /* skip */
-      }
-    }
-  }
-
-  walk(sessionsDir);
 }
 
 // ---------------------------------------------------------------------------
@@ -265,17 +84,20 @@ function fmtDate(dateKey: string): string {
 // Extension entry point
 // ---------------------------------------------------------------------------
 
+let currentRepoRoot: string | undefined;
+let currentBranchCostUsd = 0;
+
 export default function (pi: ExtensionAPI) {
   // -------------------------------------------------------------------------
   // On session start: clear cache and reload all historical data
   // -------------------------------------------------------------------------
 
-  pi.on("session_start", async (_event, ctx) => {
-    statsCache.clear();
+  pi.on("session_start", async (event, ctx) => {
     const currentFile = ctx.sessionManager.getSessionFile() ?? undefined;
     // Load all sessions except the current one (avoid double-counting in-progress turns)
-    loadAllSessions(currentFile);
-    loadFeatureCosts();
+    loadAllSessions(currentFile, event);
+    currentRepoRoot = resolveRepoRoot(process.cwd());
+    deleteLegacyFeatureCosts(); // one-time cleanup, no-op once file is gone
 
     // Set up custom footer (TUI only)
     if (ctx.mode !== "tui") return;
@@ -283,8 +105,16 @@ export default function (pi: ExtensionAPI) {
     ctx.ui.setFooter((tui, theme, footerData) => {
       // Keep currentBranch in sync so turn_end can attribute costs correctly
       currentBranch = footerData.getGitBranch() ?? undefined;
+      currentBranchCostUsd =
+        currentRepoRoot && currentBranch
+          ? (getBranchCost(currentRepoRoot, currentBranch)?.cost ?? 0)
+          : 0;
       const unsub = footerData.onBranchChange(() => {
         currentBranch = footerData.getGitBranch() ?? undefined;
+        currentBranchCostUsd =
+          currentRepoRoot && currentBranch
+            ? (getBranchCost(currentRepoRoot, currentBranch)?.cost ?? 0)
+            : 0;
         tui.requestRender();
       });
 
@@ -333,8 +163,8 @@ export default function (pi: ExtensionAPI) {
               : `${pctStr}% (${fmtTok(contextWindow)})`;
 
           // --- Historical stats (from cache) ---
-          const today = periodStats(todayKey());
-          const week = periodStats(weekStartKey());
+          const today = getPeriodStats(todayKey());
+          const week = getPeriodStats(weekStartKey());
 
           // --- Extension statuses (read early for inline injection) ---
           const extStatuses = footerData.getExtensionStatuses();
@@ -389,18 +219,14 @@ export default function (pi: ExtensionAPI) {
 
             // Branch / feature cost (cumulative across all sessions on this branch)
             const branch = currentBranch;
-            if (branch) {
-              const branchCost = featureCosts.get(branch) ?? 0;
+            if (branch && currentBranchCostUsd > 0) {
+              parts.push(
+                theme.fg("syntaxFunction", shortBranch(branch) + " ") +
+                  theme.fg("syntaxNumber", `$${currentBranchCostUsd.toFixed(3)}`),
+              );
 
-              if (branchCost > 0) {
-                parts.push(
-                  theme.fg("syntaxFunction", shortBranch(branch) + " ") +
-                    theme.fg("syntaxNumber", `$${branchCost.toFixed(3)}`),
-                );
-
-                // parts.push(theme.fg("muted", "/"));
-                parts.push(theme.fg("dim", "│"));
-              }
+              // parts.push(theme.fg("muted", "/"));
+              parts.push(theme.fg("dim", "│"));
             }
 
             const usingSubscription = ctx.model
@@ -514,8 +340,10 @@ export default function (pi: ExtensionAPI) {
     if (event.message.role !== "assistant") return;
     const m = event.message as AssistantMessage;
     const cost = m.usage?.cost?.total;
-    if (cost == null || !currentBranch) return;
-    addBranchCost(currentBranch, cost);
-    saveFeatureCosts();
+    if (cost == null || !currentBranch || !currentRepoRoot) return;
+    const tokens =
+      m.usage.input + m.usage.output + m.usage.cacheRead + m.usage.cacheWrite;
+    addBranchCost(currentRepoRoot, currentBranch, cost, tokens);
+    currentBranchCostUsd += cost;
   });
 }

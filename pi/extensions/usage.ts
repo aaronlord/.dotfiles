@@ -9,30 +9,23 @@
 
 import type { AssistantMessage } from "@earendil-works/pi-ai";
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
-import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
-import { homedir } from "node:os";
-import { join } from "node:path";
 import {
   Box,
   Text,
   truncateToWidth,
   visibleWidth,
 } from "@earendil-works/pi-tui";
+import {
+  getDayStats,
+  getPeriodStats,
+  loadAllSessions,
+  recordTurn,
+} from "./lib/usage-data";
+import { resolveRepoRoot, getBranchCostsForRepo } from "./lib/branch-costs";
 
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
-
-interface ModelStats {
-  tokens: number;
-  costUsd: number;
-}
-
-interface DayStats {
-  totalTokens: number;
-  costUsd: number;
-  byModel: Record<string, ModelStats>;
-}
 
 interface UsageRow {
   dateKey: string;
@@ -43,6 +36,12 @@ interface UsageRow {
   byModel: Record<string, { tokens: number; costUsd: number }>;
 }
 
+interface UsageReportBranchRow {
+  branch: string;
+  tokens: number;
+  cost: number;
+}
+
 interface UsageReport {
   rows: UsageRow[];
   maxCost: number;
@@ -50,13 +49,8 @@ interface UsageReport {
   week: { tokens: number; costUsd: number };
   month: { tokens: number; costUsd: number };
   allTime: { tokens: number; costUsd: number };
+  branchRows: UsageReportBranchRow[];
 }
-
-// ---------------------------------------------------------------------------
-// Cache
-// ---------------------------------------------------------------------------
-
-const statsCache = new Map<string, DayStats>();
 
 // ---------------------------------------------------------------------------
 // Date helpers
@@ -74,119 +68,6 @@ function weekStartKey(): string {
 
 function monthStartKey(): string {
   return new Date().toISOString().slice(0, 8) + "01";
-}
-
-function tsToDateKey(ts: string | number): string {
-  if (typeof ts === "number") return new Date(ts).toISOString().slice(0, 10);
-  return String(ts).slice(0, 10);
-}
-
-// ---------------------------------------------------------------------------
-// Cache ops
-// ---------------------------------------------------------------------------
-
-function addToCache(
-  dateKey: string,
-  model: string,
-  tokens: number,
-  cost: number,
-): void {
-  let day = statsCache.get(dateKey);
-  if (!day) {
-    day = { totalTokens: 0, costUsd: 0, byModel: {} };
-    statsCache.set(dateKey, day);
-  }
-  day.totalTokens += tokens;
-  day.costUsd += cost;
-  if (!day.byModel[model]) day.byModel[model] = { tokens: 0, costUsd: 0 };
-  day.byModel[model].tokens += tokens;
-  day.byModel[model].costUsd += cost;
-}
-
-function periodStats(fromKey: string): {
-  tokens: number;
-  costUsd: number;
-} {
-  let tokens = 0,
-    costUsd = 0;
-  for (const [date, day] of statsCache) {
-    if (date >= fromKey) {
-      tokens += day.totalTokens;
-      costUsd += day.costUsd;
-    }
-  }
-  return { tokens, costUsd };
-}
-
-// ---------------------------------------------------------------------------
-// Session file loading
-// ---------------------------------------------------------------------------
-
-function parseJsonlFile(filePath: string, skipFile?: string): void {
-  if (skipFile && filePath === skipFile) return;
-  let content: string;
-  try {
-    content = readFileSync(filePath, "utf8");
-  } catch {
-    return;
-  }
-
-  for (const line of content.split("\n")) {
-    if (!line.trim()) continue;
-    try {
-      const entry = JSON.parse(line);
-      if (entry.type !== "message") continue;
-      const msg = entry.message;
-      if (!msg || msg.role !== "assistant") continue;
-      const cost = msg.usage?.cost?.total;
-      if (cost == null) continue;
-
-      const ts = entry.timestamp;
-      if (!ts) continue;
-
-      const dateKey = tsToDateKey(ts);
-      const model = msg.model ?? "unknown";
-      const tokens =
-        msg.usage.totalTokens ??
-        (msg.usage.input ?? 0) +
-          (msg.usage.output ?? 0) +
-          (msg.usage.cacheRead ?? 0) +
-          (msg.usage.cacheWrite ?? 0);
-
-      addToCache(dateKey, model, tokens, cost);
-    } catch {
-      /* skip malformed lines */
-    }
-  }
-}
-
-function loadAllSessions(skipFile?: string): void {
-  const sessionsDir = join(homedir(), ".pi", "agent", "sessions");
-  if (!existsSync(sessionsDir)) return;
-
-  function walk(dir: string): void {
-    let entries: string[];
-    try {
-      entries = readdirSync(dir);
-    } catch {
-      return;
-    }
-    for (const entry of entries) {
-      const full = join(dir, entry);
-      try {
-        const stat = statSync(full);
-        if (stat.isDirectory()) {
-          walk(full);
-        } else if (entry.endsWith(".jsonl")) {
-          parseJsonlFile(full, skipFile);
-        }
-      } catch {
-        /* skip */
-      }
-    }
-  }
-
-  walk(sessionsDir);
 }
 
 // ---------------------------------------------------------------------------
@@ -230,7 +111,7 @@ export default function (pi: ExtensionAPI) {
 
   pi.registerMessageRenderer("usage-report", (message, _options, theme) => {
     const report = message.details as UsageReport;
-    const { rows, maxCost, maxTokens, week, month, allTime } = report;
+    const { rows, maxCost, maxTokens, week, month, allTime, branchRows } = report;
     const BAR_W = 24;
     const LABEL_W = 40;
 
@@ -308,6 +189,25 @@ export default function (pi: ExtensionAPI) {
       );
     }
 
+    // cap avoids unbounded old-branch clutter; other repos' branches aren't comparable so excluded
+    if (branchRows.length > 0) {
+      lines.push("");
+      lines.push(theme.fg("dim", "─".repeat(70)));
+      lines.push(
+        theme.fg("accent", "═══") +
+          theme.fg("muted", " By Branch (this repo, most recent 15) ") +
+          theme.fg("accent", "═══"),
+      );
+      lines.push("");
+      const maxBranchCost = Math.max(...branchRows.map((r) => r.cost), 0.001);
+      for (const row of branchRows) {
+        const label = row.branch.padEnd(LABEL_W);
+        lines.push(
+          `  ${theme.fg("muted", label)}  ${costBar(row.cost, row.cost === maxBranchCost)}  ${tokCol(row.tokens)}  ${costCol(row.cost)}`,
+        );
+      }
+    }
+
     const box = new Box(1, 1);
     box.addChild(new Text(lines.join("\n"), 0, 0));
     return box;
@@ -317,23 +217,19 @@ export default function (pi: ExtensionAPI) {
   // Session start: load cache
   // -------------------------------------------------------------------------
 
-  pi.on("session_start", async (_event, ctx) => {
-    statsCache.clear();
+  pi.on("session_start", async (event, ctx) => {
     const currentFile = ctx.sessionManager.getSessionFile() ?? undefined;
-    loadAllSessions(currentFile);
+    loadAllSessions(currentFile, event);
   });
 
-  // -------------------------------------------------------------------------
-  // Turn end: add to cache
-  // -------------------------------------------------------------------------
-
+  // live update: fold each completed turn into today's cache immediately,
+  // so /usage's "today" figures don't lag until next session_start reload
   pi.on("turn_end", async (event, ctx) => {
     if (event.message.role !== "assistant") return;
     const m = event.message as AssistantMessage & { model?: string };
     const cost = m.usage?.cost?.total;
     if (cost == null) return;
 
-    const dateKey = todayKey();
     const model = m.model ?? ctx.model?.id ?? "unknown";
     const u = m.usage as typeof m.usage & { totalTokens?: number };
     const tokens =
@@ -343,7 +239,7 @@ export default function (pi: ExtensionAPI) {
         (u.cacheRead ?? 0) +
         (u.cacheWrite ?? 0);
 
-    addToCache(dateKey, model, tokens, cost);
+    recordTurn(todayKey(), model, tokens, cost);
   });
 
   // -------------------------------------------------------------------------
@@ -362,7 +258,7 @@ export default function (pi: ExtensionAPI) {
       }
 
       const rows: UsageRow[] = days.map((dateKey) => {
-        const day = statsCache.get(dateKey);
+        const day = getDayStats(dateKey);
         return {
           dateKey,
           tokens: day?.totalTokens ?? 0,
@@ -377,13 +273,20 @@ export default function (pi: ExtensionAPI) {
       const maxTokens = Math.max(...rows.map((r) => r.tokens), 1);
       for (const r of rows) r.isMax = r.costUsd === maxCost && r.costUsd > 0;
 
+      const repoRoot = resolveRepoRoot(process.cwd());
+      const branchRows: UsageReportBranchRow[] = getBranchCostsForRepo(repoRoot)
+        .sort((a, b) => b.lastUpdated.localeCompare(a.lastUpdated))
+        .slice(0, 15)
+        .map((entry) => ({ branch: entry.branch, tokens: entry.tokens, cost: entry.cost }));
+
       const report: UsageReport = {
         rows,
         maxCost,
         maxTokens,
-        week: periodStats(weekStartKey()),
-        month: periodStats(monthStartKey()),
-        allTime: periodStats("2000-01-01"),
+        week: getPeriodStats(weekStartKey()),
+        month: getPeriodStats(monthStartKey()),
+        allTime: getPeriodStats("2000-01-01"),
+        branchRows,
       };
 
       pi.sendMessage({
