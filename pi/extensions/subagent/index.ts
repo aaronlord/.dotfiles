@@ -42,6 +42,16 @@ function formatTokens(count: number): string {
 	return `${(count / 1000000).toFixed(1)}M`;
 }
 
+function modelLabel(model?: string, thinkingLevel?: string): string | undefined {
+	const parts = [model, thinkingLevel].filter(Boolean);
+	return parts.length > 0 ? parts.join(":") : undefined;
+}
+
+function overrideSuffix(model?: string, thinkingLevel?: string): string {
+	const label = modelLabel(model, thinkingLevel);
+	return label ? ` (${label})` : "";
+}
+
 function formatUsageStats(
 	usage: {
 		input: number;
@@ -155,6 +165,7 @@ interface SingleResult {
 	stderr: string;
 	usage: UsageStats;
 	model?: string;
+	thinkingLevel?: string;
 	stopReason?: string;
 	errorMessage?: string;
 	step?: number;
@@ -270,6 +281,7 @@ async function runSingleAgent(
 	agentName: string,
 	task: string,
 	cwd: string | undefined,
+	overrides: { model?: string; thinkingLevel?: string } | undefined,
 	step: number | undefined,
 	signal: AbortSignal | undefined,
 	onUpdate: OnUpdateCallback | undefined,
@@ -291,8 +303,12 @@ async function runSingleAgent(
 		};
 	}
 
+	const resolvedModel = overrides?.model ?? agent.model;
+	const resolvedThinkingLevel = overrides?.thinkingLevel ?? agent.thinkingLevel;
+
 	const args: string[] = ["--mode", "json", "-p", "--no-session"];
-	if (agent.model) args.push("--model", agent.model);
+	if (resolvedModel) args.push("--model", resolvedModel);
+	if (resolvedThinkingLevel) args.push("--thinking", resolvedThinkingLevel);
 	if (agent.tools && agent.tools.length > 0) args.push("--tools", agent.tools.join(","));
 
 	let tmpPromptDir: string | null = null;
@@ -306,7 +322,8 @@ async function runSingleAgent(
 		messages: [],
 		stderr: "",
 		usage: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, cost: 0, contextTokens: 0, turns: 0 },
-		model: agent.model,
+		model: resolvedModel,
+		thinkingLevel: resolvedThinkingLevel,
 		step,
 	};
 
@@ -428,16 +445,29 @@ async function runSingleAgent(
 	}
 }
 
+const ThinkingLevelSchema = StringEnum(["off", "minimal", "low", "medium", "high", "xhigh", "max"] as const, {
+	description: "Override the agent's default thinking level for this call.",
+});
+
+const ModelSchema = Type.String({
+	description:
+		"Override the agent's default model for this call. Use provider/model form (e.g. github-copilot/claude-sonnet-5) — bare IDs pattern-match across all configured providers and may resolve to one without an API key.",
+});
+
 const TaskItem = Type.Object({
 	agent: Type.String({ description: "Name of the agent to invoke" }),
 	task: Type.String({ description: "Task to delegate to the agent" }),
 	cwd: Type.Optional(Type.String({ description: "Working directory for the agent process" })),
+	model: Type.Optional(ModelSchema),
+	thinkingLevel: Type.Optional(ThinkingLevelSchema),
 });
 
 const ChainItem = Type.Object({
 	agent: Type.String({ description: "Name of the agent to invoke" }),
 	task: Type.String({ description: "Task with optional {previous} placeholder for prior output" }),
 	cwd: Type.Optional(Type.String({ description: "Working directory for the agent process" })),
+	model: Type.Optional(ModelSchema),
+	thinkingLevel: Type.Optional(ThinkingLevelSchema),
 });
 
 const AgentScopeSchema = StringEnum(["user", "project", "both"] as const, {
@@ -455,6 +485,8 @@ const SubagentParams = Type.Object({
 		Type.Boolean({ description: "Prompt before running project-local agents. Default: true.", default: true }),
 	),
 	cwd: Type.Optional(Type.String({ description: "Working directory for the agent process (single mode)" })),
+	model: Type.Optional(ModelSchema),
+	thinkingLevel: Type.Optional(ThinkingLevelSchema),
 });
 
 export default function (pi: ExtensionAPI) {
@@ -466,6 +498,7 @@ export default function (pi: ExtensionAPI) {
 			"Modes: single (agent + task), parallel (tasks array), chain (sequential with {previous} placeholder).",
 			`Default agent scope is "user" (from ${path.join(getAgentDir(), "agents")}).`,
 			`To enable project-local agents in ${CONFIG_DIR_NAME}/agents, set agentScope: "both" (or "project").`,
+			"Each agent's `model` and `thinkingLevel` frontmatter set its default; pass `model`/`thinkingLevel` (top-level for single mode, per-item for tasks/chain) to override for that call only.",
 		].join(" "),
 		parameters: SubagentParams,
 
@@ -556,6 +589,7 @@ export default function (pi: ExtensionAPI) {
 						step.agent,
 						taskWithContext,
 						step.cwd,
+						{ model: step.model, thinkingLevel: step.thinkingLevel },
 						i + 1,
 						signal,
 						chainUpdate,
@@ -628,6 +662,7 @@ export default function (pi: ExtensionAPI) {
 						t.agent,
 						t.task,
 						t.cwd,
+						{ model: t.model, thinkingLevel: t.thinkingLevel },
 						undefined,
 						signal,
 						// Per-task update callback
@@ -670,6 +705,7 @@ export default function (pi: ExtensionAPI) {
 					params.agent,
 					params.task,
 					params.cwd,
+					{ model: params.model, thinkingLevel: params.thinkingLevel },
 					undefined,
 					signal,
 					onUpdate,
@@ -714,6 +750,7 @@ export default function (pi: ExtensionAPI) {
 						theme.fg("muted", `${i + 1}.`) +
 						" " +
 						theme.fg("accent", step.agent) +
+						theme.fg("dim", overrideSuffix(step.model, step.thinkingLevel)) +
 						theme.fg("dim", ` ${preview}`);
 				}
 				if (args.chain.length > 3) text += `\n  ${theme.fg("muted", `... +${args.chain.length - 3} more`)}`;
@@ -726,7 +763,7 @@ export default function (pi: ExtensionAPI) {
 					theme.fg("muted", ` [${scope}]`);
 				for (const t of args.tasks.slice(0, 3)) {
 					const preview = t.task.length > 40 ? `${t.task.slice(0, 40)}...` : t.task;
-					text += `\n  ${theme.fg("accent", t.agent)}${theme.fg("dim", ` ${preview}`)}`;
+					text += `\n  ${theme.fg("accent", t.agent)}${theme.fg("dim", overrideSuffix(t.model, t.thinkingLevel))}${theme.fg("dim", ` ${preview}`)}`;
 				}
 				if (args.tasks.length > 3) text += `\n  ${theme.fg("muted", `... +${args.tasks.length - 3} more`)}`;
 				return new Text(text, 0, 0);
@@ -736,6 +773,7 @@ export default function (pi: ExtensionAPI) {
 			let text =
 				theme.fg("toolTitle", theme.bold("subagent ")) +
 				theme.fg("accent", agentName) +
+				theme.fg("dim", overrideSuffix(args.model, args.thinkingLevel)) +
 				theme.fg("muted", ` [${scope}]`);
 			text += `\n  ${theme.fg("dim", preview)}`;
 			return new Text(text, 0, 0);
@@ -803,7 +841,7 @@ export default function (pi: ExtensionAPI) {
 							container.addChild(new Markdown(finalOutput.trim(), 0, 0, mdTheme));
 						}
 					}
-					const usageStr = formatUsageStats(r.usage, r.model);
+					const usageStr = formatUsageStats(r.usage, modelLabel(r.model, r.thinkingLevel));
 					if (usageStr) {
 						container.addChild(new Spacer(1));
 						container.addChild(new Text(theme.fg("dim", usageStr), 0, 0));
@@ -819,7 +857,7 @@ export default function (pi: ExtensionAPI) {
 					text += `\n${renderDisplayItems(displayItems, COLLAPSED_ITEM_COUNT)}`;
 					if (displayItems.length > COLLAPSED_ITEM_COUNT) text += `\n${theme.fg("muted", "(Ctrl+O to expand)")}`;
 				}
-				const usageStr = formatUsageStats(r.usage, r.model);
+				const usageStr = formatUsageStats(r.usage, modelLabel(r.model, r.thinkingLevel));
 				if (usageStr) text += `\n${theme.fg("dim", usageStr)}`;
 				return new Text(text, 0, 0);
 			}
@@ -888,7 +926,7 @@ export default function (pi: ExtensionAPI) {
 							container.addChild(new Markdown(finalOutput.trim(), 0, 0, mdTheme));
 						}
 
-						const stepUsage = formatUsageStats(r.usage, r.model);
+						const stepUsage = formatUsageStats(r.usage, modelLabel(r.model, r.thinkingLevel));
 						if (stepUsage) container.addChild(new Text(theme.fg("dim", stepUsage), 0, 0));
 					}
 
@@ -973,7 +1011,7 @@ export default function (pi: ExtensionAPI) {
 							container.addChild(new Markdown(finalOutput.trim(), 0, 0, mdTheme));
 						}
 
-						const taskUsage = formatUsageStats(r.usage, r.model);
+						const taskUsage = formatUsageStats(r.usage, modelLabel(r.model, r.thinkingLevel));
 						if (taskUsage) container.addChild(new Text(theme.fg("dim", taskUsage), 0, 0));
 					}
 

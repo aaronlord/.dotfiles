@@ -67,7 +67,7 @@ You MUST follow these steps in order:
 
 3. Write the replacement for the selected lines to TEMP_FILE. Nothing else. No explanation.
 
-Never output code conversationally. Never edit files other than through the above steps. Do not use /grill-me.
+Never output code conversationally. Never edit files other than through the above steps. Do not use /my-grill-me.
 </Rules>
 
 <Prompt>
