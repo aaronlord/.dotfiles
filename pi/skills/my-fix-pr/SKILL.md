@@ -166,11 +166,13 @@ mutation($id: ID!) {
 }' -f id="{thread_id}"
 ```
 
-For any comment the user decided **not** to fix (explicitly skipped, already addressed by existing code, or stale/no-longer-applicable), leave the thread unresolved but post a reply explaining why, so the reviewer has context without needing to re-ask:
+For any comment the user decided **not** to fix (explicitly skipped, already addressed by existing code, or stale/no-longer-applicable), leave the thread unresolved but post a reply explaining why, so the reviewer has context without needing to re-ask. Append a signature line disclosing the reply is AI-generated, so the reviewer knows it wasn't manually typed by the PR author:
 
 ```bash
 gh api repos/{owner}/{repo}/pulls/{pr_number}/comments/{comment_id}/replies \
-  -f body="{explanation of why this was skipped}"
+  -f body="This is an AI-generated summary of @{pr_author}'s feedback:
+
+> {explanation of why this was skipped}"
 ```
 
 Do not resolve a thread you decided not to fix — resolving implies the reviewer's concern is addressed. Only resolve threads for comments actually fixed.

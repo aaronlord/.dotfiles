@@ -59,7 +59,7 @@ _Status: draft_
 
 ## Code Structure
 
-File tree (```-fenced, `tree`-style `├──`/`└──`), every new/modified file. Follow project conventions from recon findings. Name commands/handlers/jobs/repositories/aggregates/interfaces specifically. Rough is fine — shape must be concrete.
+File tree (```-fenced), every new/modified file. Use indentation only — no ASCII tree glyphs (`├──`/`└──`/`│`). Trailing slash on dir names, extension on file names. Follow project conventions from recon findings. Name commands/handlers/jobs/repositories/aggregates/interfaces specifically. Rough is fine — shape must be concrete.
 
 Below the tree, one-line note per file that needs one (new file, non-obvious purpose, notable change):
 
