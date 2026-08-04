@@ -56,7 +56,7 @@ Give a recommendation: default to "new plan" when the original plan's tasks are 
    - Any new recon findings from step 1.
    - Explicit instructions: **revise, don't rewrite** — carry forward every section the follow-up doesn't touch verbatim; only change what the new request actually changes. Reset `_Status_` back to `draft` in both `prd.md` and `ard.md` (the follow-up invalidates any prior `/my-review-plan` pass). Run the same self-review scan it normally runs on a fresh draft.
 3. Overwrite `.plans/{name}/context.md`, `prd.md`, `ard.md`, `checklist.md` with what's returned.
-4. Leave `tasks.md` and `tasks/` untouched, but flag them as stale in the handback (step 4) if the plan had any — the user will need to re-run `/my-plan-to-tasks {name}` for the affected slice.
+4. Leave `tasks.md` and `tasks/` untouched, but flag them as stale in the handback (step 4) if the plan had any — the user will need to re-run `/my-plan-to-tasks {name}` for the affected part of the plan.
 
 ### 3b. Branch: new plan, seeded with the old one as context
 

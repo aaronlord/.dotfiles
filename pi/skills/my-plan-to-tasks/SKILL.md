@@ -50,15 +50,6 @@ If `context.md` has a `## Reference Documents` section, read the cached `.plans/
 - Natural implementation order based on dependencies (schema before repositories, interfaces before implementations, etc.)
 - Prior art for similar tasks in the project
 
-### 2a. Optional Jira granularity calibration
-
-If the user has pointed at one or more reference Jira epics for this plan (or asks how finely to
-split), follow the "Jira calibration" section of
-[`references/slicing-spine.md`](references/slicing-spine.md): pull each epic's child stories via
-`acli`, classify each against the 10-point spine, and record the resulting table in
-`.plans/{name}/context.md` under `## Granularity calibration`. Skip this step entirely if the
-user hasn't named a reference epic — do not go looking for one unprompted.
-
 **Staleness check.** ARDs and previously-written task files drift from reality — designs move, code ships without status updates. Before deriving new tasks, verify the ARD's key claims against the current codebase: for every module, path, or interface the ARD names, confirm it actually exists at that location (or doesn't yet). If the plan already has a `tasks/` directory from a prior run, check whether any task marked `todo` has its target files already present on the default branch — a wrong or guessed path is far more expensive to an implementer than a missing detail, and a task claiming `todo` for already-shipped work is a silent trap.
 
 ### 3. Derive tasks as vertical slices
@@ -88,38 +79,21 @@ Before presenting the task list, check it against the PRD and ARD, item by item:
 
 - No task whose target files already exist on the default branch is left marked `todo`. Update its status to `done` (or drop it) and tell the user — don't write it up as unimplemented work.
 
-Fix any gaps you find yourself before moving to step 3b. Only mention this check to the user if it surfaced a gap you could not resolve on your own.
-
-### 3b. Group tasks into slices
-
-A plan of any real size should ship as more than one PR. Assign every task to a **slice** using
-[`references/slicing-spine.md`](references/slicing-spine.md)'s 10-point spine (capability
-boundary is decided at `/my-plan` time — if this plan actually bundles two independently
-shippable capabilities, stop and tell the user to split it into separate plans before continuing).
-For each slice, note: its spine point (or rule/edge-case label under point 8/9), which tasks
-belong to it in order, and confirm its last task leaves the branch in a shippable state (behind a
-feature toggle or a stub/`Mother::make()` satisfying any contract the next slice will fill in).
-Multiple genuinely trivial tasks under the same spine point may share one slice — same "would a
-reviewer approve one and reject its neighbour" bar used for tasks themselves. The final "Ensure
-CI passes" task belongs to the last slice.
-
-Move to step 4 once every task has a slice.
+Fix any gaps you find yourself before moving to step 4. Only mention this check to the user if it surfaced a gap you could not resolve on your own.
 
 ### 4. Quiz the user on the breakdown
 
-Present the proposed task list as a numbered list, grouped under their slice. For each task show:
+Present the proposed task list as a numbered list. For each task show:
 
 - **Title**: short imperative description
 - **What it covers**: which layers/files/concepts
 - **Depends on**: which earlier tasks must complete first (if any)
-- **Slice**: which slice it belongs to (spine point + label)
 
 Ask the user:
 
 - Does the granularity feel right?
 - Are the dependency relationships correct?
 - Should any tasks be merged or split?
-- Does the slice grouping look right — anything that should ship as its own PR sooner, or fold into a neighbouring slice?
 
 Iterate until the user approves the breakdown.
 
@@ -208,10 +182,6 @@ How this task fits into the overall feature. What it enables downstream. Keep th
 
 List any tasks that must be completed before this one, or `none`.
 
-## Slice
-
-The slice this task belongs to (spine point + label, e.g. "5 — Read path"), from step 3b.
-
 ## Interfaces
 
 - **Consumes**: exact function/method/command signatures this task depends on from earlier tasks. Write `none` if this task has no upstream dependencies.
@@ -246,22 +216,12 @@ Create or overwrite `.plans/{name}/tasks.md`:
 <tasks-index-template>
 # Tasks: {Feature Name}
 
-| #   | Task                                              | Status | Depends on | Slice |
-| --- | ------------------------------------------------- | ------ | ---------- | ----- |
-| 1   | [Task title](tasks/001-task-name.md)              | todo   | —          | 1     |
-| 2   | [Task title](tasks/002-task-name.md)              | todo   | 1          | 2     |
-| 3   | [Task title](tasks/003-task-name.md)              | todo   | 1, 2       | 2     |
-| 4   | [Ensure CI passes](tasks/004-ensure-ci-passes.md) | todo   | all        | {last} |
-
-## Slices
-
-| Slice | Name                    | Spine point | Tasks | Branch | PR |
-| ----- | ----------------------- | ----------- | ----- | ------ | -- |
-| 1     | Presentation scaffold   | 2           | 1     | —      | —  |
-| 2     | Read path               | 5           | 2, 3  | —      | —  |
-
-Branch and PR columns start empty (`—`) and are filled in by `/my-implement-tasks` as each
-slice's branch is created and its PR opened.
+| #   | Task                                              | Status | Depends on |
+| --- | ------------------------------------------------- | ------ | ---------- |
+| 1   | [Task title](tasks/001-task-name.md)              | todo   | —          |
+| 2   | [Task title](tasks/002-task-name.md)              | todo   | 1          |
+| 3   | [Task title](tasks/003-task-name.md)              | todo   | 1, 2       |
+| 4   | [Ensure CI passes](tasks/004-ensure-ci-passes.md) | todo   | all        |
 
 ## Progress
 
@@ -274,22 +234,19 @@ Tell the user:
 
 - How many tasks were created
 - The dependency order and any parallelism opportunities
-- How many slices were created and what each ships (from the `## Slices` table)
-- Next step: run `/my-implement-task {name}` to work through tasks one at a time, or `/my-implement-tasks {name}` to run the full loop unattended — the latter now opens a stacked PR at each slice boundary rather than one PR at the end
+- Next step: run `/my-implement-task {name}` to work through tasks one at a time, or `/my-implement-tasks {name}` to run the full loop unattended
 
 ## Output format
 
-- A proposed numbered task breakdown for approval, with each task's title, scope, dependencies, and slice
+- A proposed numbered task breakdown for approval, with each task's title, scope, and dependencies
 - Generated `.plans/{name}/tasks/{nnn}-{task-slug}.md` files using the templates above
-- Generated or updated `.plans/{name}/tasks.md`, including its `## Slices` table
-- A final wrap-up that states task count, dependency order, parallelism opportunities, slice count, and the next step (`/my-implement-task {name}` or `/my-implement-tasks {name}`)
+- Generated or updated `.plans/{name}/tasks.md`
+- A final wrap-up that states task count, dependency order, parallelism opportunities, and the next step (`/my-implement-task {name}` or `/my-implement-tasks {name}`)
 
 ## Anti-patterns to avoid
 
 - Do not use this skill before `/my-review-plan` unless the user explicitly accepts grooming an ARD still marked `draft` by replying with the literal word `proceed`.
 - Do not create horizontal slices; derive thin vertical tracer-bullet tasks instead.
-- Do not leave a plan of any real size ungrouped into slices; a single PR for the whole plan is the failure mode this step exists to prevent.
-- Do not go looking for a reference Jira epic unprompted; only pull one if the user names it.
 - Do not remove, merge away, or skip the final **"Ensure CI passes"** task.
 - Do not restate boilerplate already covered by matching instruction files.
 - Do not write placeholders, vague acceptance criteria, guessed names, or hand-wavy references to other tasks in place of concrete paths and signatures.
