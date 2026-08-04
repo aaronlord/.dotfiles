@@ -5,7 +5,7 @@ description: >
   one-task-at-a-time "conductor" mode. Use when the user wants to drive each task by hand
   after my-plan-to-tasks. Do NOT use for unattended end-to-end execution; use my-implement-tasks
   for the orchestrator loop instead.
-version: 1.0.0
+version: 1.1.0
 ---
 
 # /my-implement-task
@@ -69,20 +69,21 @@ finishes (or reports BLOCKED per its own escalation rules), continue to step 4.
 
 **If `subagent`:**
 
-1. Dispatch a subagent (e.g. via the `subagent` tool's generic `worker` agent) with
+1. Look up this task's tier in the `tasks.md` table you already read in step 1 (a `Tier` column: `lightweight`/`versatile`/`powerful`, absent on older plans or the CI-gate task). If present, resolve it against `~/.pi/agent/model-tiers.md`'s mapping table and pass the matching `provider/model-id` as the `model` param on the dispatch below. If the tier is absent, unmapped, or `model-tiers.md` doesn't exist, dispatch with no `model` override — don't block or ask the user to fill in the mapping mid-task.
+2. Dispatch a subagent (e.g. via the `subagent` tool's generic `worker` agent) with
    `references/implementation-contract.md`'s contents as its task instructions, plus only: the
    plan name and the task file path. Do not pre-paste `AGENTS.md`, instruction-file, or ARD
    contents into the dispatch — the contract resolves and reads all of that itself from the
    paths you give it.
-2. One task per dispatch call — never batch multiple tasks into one dispatch.
-3. When the subagent reports back, do not treat its self-report as verification — this is an
+3. One task per dispatch call — never batch multiple tasks into one dispatch.
+4. When the subagent reports back, do not treat its self-report as verification — this is an
    eval, not a courtesy re-check. Dispatch a second subagent with
    [`../my-implement-tasks/references/trajectory-audit.md`](../my-implement-tasks/references/trajectory-audit.md)
    and the first subagent's full final report verbatim, asking it to check the report's claims
    against live repo evidence (changed files, reproduced test output, scope discipline,
    hard-constraint compliance, hallucinated references) — it is not re-reviewing code quality,
    only whether the report can be trusted.
-4. Read the verification verdict. Any blocker-level finding means the report cannot be trusted
+5. Read the verification verdict. Any blocker-level finding means the report cannot be trusted
    as-is:
    - If the blocker is fixable by re-running or clarifying (e.g. it merely under-reported a
      file), resolve it yourself using the surfaced evidence, or re-dispatch the implementation
@@ -91,7 +92,7 @@ finishes (or reports BLOCKED per its own escalation rules), continue to step 4.
      it the same as a BLOCKED report — stop and escalate to the user, do not paper over it.
    - Lower-severity findings don't block proceeding, but surface them to the user alongside the
      task summary in step 4c.
-5. If the implementation step itself reports BLOCKED, read its stated reason. If you can resolve
+6. If the implementation step itself reports BLOCKED, read its stated reason. If you can resolve
    it yourself (missing context, an unclear instruction), fix it and re-dispatch once. If it
    reports BLOCKED a second time for the same task, stop and escalate to the user — do not
    attempt a third dispatch.
@@ -147,6 +148,10 @@ If all tasks are now done, say so and still suggest `/my-review main` before pus
 - Do not commit. Committing is the reviewer's responsibility, not this skill's and not the
   implementation step's.
 - Never commit secrets, credentials, or `.env` files.
+- Do not resolve a task's tier into a `model` override on the inline path — tier only applies to
+  dispatched subagents; inline execution always uses the session's own model.
+- Do not stop the loop to ask about a missing tier or a missing `~/.pi/agent/model-tiers.md` —
+  fall back to no `model` override and continue.
 - The 3-attempt escalation rule, the "task is much bigger than it looked" flag, and the "design
   changed mid-implementation" rule all live in
   [`references/implementation-contract.md`](references/implementation-contract.md) now — if

@@ -5,7 +5,7 @@ description: >
   mode. Use when the user says implement-tasks, implement the whole plan, or drive it
   automatically after my-plan-to-tasks. Do NOT use for manual one-task-at-a-time progress; use
   my-implement-task for conductor mode instead.
-version: 1.0.0
+version: 1.1.0
 ---
 
 # /my-implement-tasks
@@ -92,6 +92,12 @@ whose every dependency is in `done`.
 - If no candidate exists and every task is in `done`, go to **7. Wrap up**.
 
 #### 5.2 Implement
+
+Look up this task's tier in `tasks.md`'s `Tier` column (loaded in step 1). If present, resolve it
+against `~/.pi/agent/model-tiers.md`'s mapping table and use the matching `provider/model-id` as
+the `model` param when dispatching. If the tier is absent, unmapped, or `model-tiers.md` doesn't
+exist, dispatch with no `model` override — don't halt the loop over a missing mapping. This only
+applies on the dispatched path; running the task directly in the current session ignores tier.
 
 Follow [`references/implementation-contract.md`](references/implementation-contract.md) for this
 task's plan name and file path — exactly as `/my-implement-task`'s subagent branch does. Dispatch
@@ -219,3 +225,5 @@ On full completion, report:
   anything back automatically.
 - The full-suite CI gate isn't a separate step here — it's the plan's final task, which depends
   on every other task, so 5.1 can only ever select it last.
+- Do not halt the loop or ask the user because a task has no tier or `~/.pi/agent/model-tiers.md`
+  is missing — fall back to no `model` override and keep going.

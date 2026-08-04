@@ -5,7 +5,7 @@ description: >
   user says plan to tasks, break the plan into tasks, or groom a reviewed ARD for
   implementation. Do NOT use for net-new planning (my-plan, my-quick-plan), follow-up changes to
   an existing plan (my-follow-up-plan), or pre-groom review (my-review-plan).
-version: 1.1.0
+version: 1.2.0
 ---
 
 # /my-plan-to-tasks
@@ -66,6 +66,14 @@ Avoid horizontal slices (e.g. "all repositories" as one task). Each slice should
 
 Order tasks so dependencies come first. Number them sequentially.
 
+Assign each non-CI task a **model tier** — `lightweight`, `versatile`, or `powerful` — based on how much judgment it requires:
+
+- `lightweight`: a matching instruction file fully covers the pattern, the task is boilerplate/CRUD, no novel logic.
+- `versatile`: typical feature work — some judgment, but no new architecture or high-risk surface.
+- `powerful`: novel algorithm, cross-cutting refactor, or high-risk surface (security, data migration, a decision with no instruction-file precedent).
+
+This tier only matters when a task is later implemented via a dispatched subagent (see `/my-implement-task`, `/my-implement-tasks`) — inline implementation uses the session's own model regardless. Leave the CI-gate task untiered; it's mechanical, not judgment-heavy.
+
 Always append one final task — **"Ensure CI passes"** — as the last item, depending on all other tasks. This task is not negotiable and must not be removed during the quiz. Its job is to run the full CI suite end-to-end and fix any failures (test coverage gaps, static analysis errors, formatting issues) that slipped through during individual task implementation.
 
 ### 3a. Cross-consistency check
@@ -88,12 +96,14 @@ Present the proposed task list as a numbered list. For each task show:
 - **Title**: short imperative description
 - **What it covers**: which layers/files/concepts
 - **Depends on**: which earlier tasks must complete first (if any)
+- **Suggested tier**: `lightweight` / `versatile` / `powerful` (omit for the CI-gate task)
 
 Ask the user:
 
 - Does the granularity feel right?
 - Are the dependency relationships correct?
 - Should any tasks be merged or split?
+- Does each suggested tier look right, or should any be bumped up/down?
 
 Iterate until the user approves the breakdown.
 
@@ -155,12 +165,12 @@ Create or overwrite `.plans/{name}/tasks.md`:
 <tasks-index-template>
 # Tasks: {Feature Name}
 
-| #   | Task                                              | Status | Depends on |
-| --- | ------------------------------------------------- | ------ | ---------- |
-| 1   | [Task title](tasks/001-task-name.md)              | todo   | —          |
-| 2   | [Task title](tasks/002-task-name.md)              | todo   | 1          |
-| 3   | [Task title](tasks/003-task-name.md)              | todo   | 1, 2       |
-| 4   | [Ensure CI passes](tasks/004-ensure-ci-passes.md) | todo   | all        |
+| #   | Task                                              | Status | Depends on | Tier        |
+| --- | ------------------------------------------------- | ------ | ---------- | ----------- |
+| 1   | [Task title](tasks/001-task-name.md)              | todo   | —          | lightweight |
+| 2   | [Task title](tasks/002-task-name.md)              | todo   | 1          | versatile   |
+| 3   | [Task title](tasks/003-task-name.md)              | todo   | 1, 2       | powerful    |
+| 4   | [Ensure CI passes](tasks/004-ensure-ci-passes.md) | todo   | all        | —           |
 
 ## Progress
 
@@ -177,9 +187,9 @@ Tell the user:
 
 ## Output format
 
-- A proposed numbered task breakdown for approval, with each task's title, scope, and dependencies
+- A proposed numbered task breakdown for approval, with each task's title, scope, dependencies, and suggested tier
 - Generated `.plans/{name}/tasks/{nnn}-{task-slug}.md` files using the templates above
-- Generated or updated `.plans/{name}/tasks.md`
+- Generated or updated `.plans/{name}/tasks.md`, including each task's tier column
 - A final wrap-up that states task count, dependency order, parallelism opportunities, and the next step (`/my-implement-task {name}` or `/my-implement-tasks {name}`)
 
 ## Anti-patterns to avoid
@@ -188,6 +198,8 @@ Tell the user:
 - Do not create horizontal slices; derive thin vertical tracer-bullet tasks instead.
 - Do not remove, merge away, or skip the final **"Ensure CI passes"** task.
 - Do not dispatch a subagent for the **"Ensure CI passes"** task — it's static boilerplate, write it directly.
+- Do not assign that task a tier — it's mechanical, not judgment-heavy.
+- Do not add a tier field to individual task files — `tasks.md`'s Tier column is the single source of truth; it's only read on the subagent-dispatch path anyway.
 - Do not paste `prd.md`/`ard.md`/`context.md` contents into a task-writing subagent's dispatch — hand it the paths and let it read them.
 - Do not restate boilerplate already covered by matching instruction files.
 - Do not write placeholders, vague acceptance criteria, guessed names, or hand-wavy references to other tasks in place of concrete paths and signatures.
