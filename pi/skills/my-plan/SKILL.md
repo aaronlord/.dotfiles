@@ -6,7 +6,7 @@ description: >
   my-quick-plan if the prompt turns out to be small scoped work. Do NOT use for small scoped
   work (my-quick-plan), existing-plan follow-ups/review (my-follow-up-plan, my-review-plan), or
   task breakdown (my-plan-to-tasks).
-version: 1.0.0
+version: 1.0.1
 ---
 
 # /my-plan
@@ -129,11 +129,8 @@ Once all four files are written, tell the user:
 
 ## Output format
 
-- The path to the plan: `.plans/{name}/`
-- A brief summary of what was drafted (from the returned `prd.md`/`ard.md` content)
-- Any items left unchecked in `checklist.md`, and why (from the drafting step's closing note)
-- Any open questions surfaced in `ard.md`'s Implementation Notes (Open Questions bullet)
-- Next step: **go review and hand-edit `prd.md`/`ard.md` first** (rename files, fix data contracts, drop in notes) — they're a terse rough draft, not a finished spec. Then run `/my-review-plan {name}` to stress-test.
+- Written: `.plans/{name}/{context,prd,ard,checklist}.md`
+- Reported: summary, unchecked checklist items + why, open questions, next step (see step 7)
 
 ## Anti-patterns to avoid
 
