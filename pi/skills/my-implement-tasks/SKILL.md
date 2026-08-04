@@ -5,7 +5,7 @@ description: >
   mode. Use when the user says implement-tasks, implement the whole plan, or drive it
   automatically after my-plan-to-tasks. Do NOT use for manual one-task-at-a-time progress; use
   my-implement-task for conductor mode instead.
-version: 1.2.0
+version: 1.3.0
 ---
 
 # /my-implement-tasks
@@ -91,13 +91,18 @@ whose every dependency is in `done`.
 - If no candidate exists but incomplete tasks remain, everything left depends on (or is)
   something blocked. Go to **6. Halt**.
 - If no candidate exists and every task is in `done`, go to **7. Wrap up**.
+- If the candidate's `tasks.md` Tier column is `interactive-only`, go to **6a. Halt for an
+  interactive-only task** instead of dispatching it — do not attempt to autonomously implement
+  it, and do not treat this as a failure or count it toward `consecutive_escalations`.
 
 #### 5.2 Implement
 
-Look up this task's tier in `tasks.md`'s `Tier` column (loaded in step 1). If present, resolve it
-against `~/.pi/agent/model-tiers.md`'s mapping table and use the matching `provider/model-id` as
-the `model` param on the dispatch below. If the tier is absent, unmapped, or `model-tiers.md`
-doesn't exist, dispatch with no `model` override — don't halt the loop over a missing mapping.
+Look up this task's tier in `tasks.md`'s `Tier` column (loaded in step 1) — a `{weight}/{orientation}`
+pair (e.g. `powerful/generalist`). If present, resolve it against
+`~/.pi/agent/model-tiers.md`'s matrix (weight = row, orientation = column) and use the matching
+`provider/model-id` as the `model` param on the dispatch below. If the tier is absent, doesn't
+parse as a known `{weight}/{orientation}` pair, or `model-tiers.md` doesn't exist, dispatch with
+no `model` override — don't halt the loop over a missing mapping.
 
 Dispatch the task to an isolated subagent (e.g. the generic `worker` agent via the `subagent`
 tool) with [`references/implementation-contract.md`](references/implementation-contract.md)'s
@@ -198,6 +203,18 @@ Three consecutive escalations means something systemic is wrong — a bad groomi
 environment, the wrong branch — not that any individual task needs one more retry. Hand it to
 the user rather than continuing to spend turns on it.
 
+### 6a. Halt for an interactive-only task
+
+This is not a failure and does not count toward `consecutive_escalations` — it's an expected
+stop, the same way `/my-plan-to-tasks` intended when it tagged the task. Report to the user:
+
+- Every task completed and committed so far, in order.
+- The interactive-only task that stopped the loop, and its title/number.
+- Instruct the user to run `/my-implement-task {name}` to complete that one task manually (its
+  inline conductor mode is exactly what an interactive-only task needs), then re-invoke
+  `/my-implement-tasks {name}` to resume — loop state is derived from `tasks.md`/task-file status
+  on disk, so resuming picks up cleanly once that task is marked `done`.
+
 ### 7. Wrap up (all tasks done)
 
 Report every task completed and committed, in order. Call out any `judgement call`/`scope creep`
@@ -206,11 +223,18 @@ Suggest `/my-review main` for a final holistic pass before pushing or opening a 
 
 ## Output format
 
-On halt, report:
+On halt (circuit breaker), report:
 
 - every task completed and committed so far, in order
 - every blocked task, with its exact reason
 - any task left un-attempted because it depends on a blocked task
+
+On halt for an interactive-only task, report:
+
+- every task completed and committed so far, in order
+- the interactive-only task that stopped the loop
+- the instruction to run `/my-implement-task {name}` for that task, then resume `/my-implement-tasks {name}`
+- any task left un-attempted because it depends on the interactive-only task
 
 On full completion, report:
 
@@ -234,3 +258,5 @@ On full completion, report:
   on every other task, so 5.1 can only ever select it last.
 - Do not halt the loop or ask the user because a task has no tier or `~/.pi/agent/model-tiers.md`
   is missing — fall back to no `model` override and keep going.
+- Do not dispatch an `interactive-only` task to a subagent under any tier — halt per 6a and defer
+  to `/my-implement-task` instead.

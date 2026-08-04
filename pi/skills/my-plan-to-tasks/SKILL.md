@@ -5,7 +5,7 @@ description: >
   user says plan to tasks, break the plan into tasks, or groom a reviewed ARD for
   implementation. Do NOT use for net-new planning (my-plan, my-quick-plan), follow-up changes to
   an existing plan (my-follow-up-plan), or pre-groom review (my-review-plan).
-version: 1.2.0
+version: 1.3.0
 ---
 
 # /my-plan-to-tasks
@@ -66,13 +66,22 @@ Avoid horizontal slices (e.g. "all repositories" as one task). Each slice should
 
 Order tasks so dependencies come first. Number them sequentially.
 
-Assign each non-CI task a **model tier** — `lightweight`, `versatile`, or `powerful` — based on how much judgment it requires:
+Assign each non-CI task a **tier** — either `interactive-only`, or a `{weight}/{orientation}` pair:
+
+**Weight** — capability/cost class:
 
 - `lightweight`: a matching instruction file fully covers the pattern, the task is boilerplate/CRUD, no novel logic.
 - `versatile`: typical feature work — some judgment, but no new architecture or high-risk surface.
-- `powerful`: novel algorithm, cross-cutting refactor, or high-risk surface (security, data migration, a decision with no instruction-file precedent).
+- `powerful`: novel algorithm, cross-cutting refactor, or high-risk surface (security, auth-compat, money, compliance, data migration, a decision with no instruction-file precedent) — bump to `powerful` on stakes alone even when the task's apparent size or instruction-file coverage looks small.
 
-This tier only matters when a task is later implemented via a dispatched subagent (see `/my-implement-task`, `/my-implement-tasks`) — inline implementation uses the session's own model regardless. Leave the CI-gate task untiered; it's mechanical, not judgment-heavy.
+**Orientation** — what kind of capability the task needs:
+
+- `coder`: execute an already-fully-specified pattern faithfully, especially bulk/repetitive work across many files (renames, module migrations, mechanical find/replace). Favors long-context instruction-following over a model "helpfully" reinterpreting scope mid-task.
+- `generalist`: judgment calls, ambiguity, subtle correctness a straightforward test won't catch, cross-cutting design impact, or prose/instruction-writing. Favors reasoning depth and self-correction over raw throughput.
+
+`interactive-only` overrides weight/orientation entirely — reserve it for tasks that are inherently about debate or ambiguity resolution rather than execution (e.g. drafting a contentious convention, a decision with no clear right answer worth grilling the user on). This should be rare; most tasks are executable and get a `{weight}/{orientation}` pair instead.
+
+The tier only matters when a task is later implemented via a dispatched subagent (see `/my-implement-tasks`) — inline implementation via `/my-implement-task` ignores it, and `interactive-only` tasks are exactly what that inline path is for. Leave the CI-gate task untiered; it's mechanical, not judgment-heavy.
 
 Always append one final task — **"Ensure CI passes"** — as the last item, depending on all other tasks. This task is not negotiable and must not be removed during the quiz. Its job is to run the full CI suite end-to-end and fix any failures (test coverage gaps, static analysis errors, formatting issues) that slipped through during individual task implementation.
 
@@ -96,7 +105,7 @@ Present the proposed task list as a numbered list. For each task show:
 - **Title**: short imperative description
 - **What it covers**: which layers/files/concepts
 - **Depends on**: which earlier tasks must complete first (if any)
-- **Suggested tier**: `lightweight` / `versatile` / `powerful` (omit for the CI-gate task)
+- **Suggested tier**: `interactive-only`, or `{weight}/{orientation}` (e.g. `powerful/generalist`) — omit for the CI-gate task
 
 Ask the user:
 
@@ -165,12 +174,12 @@ Create or overwrite `.plans/{name}/tasks.md`:
 <tasks-index-template>
 # Tasks: {Feature Name}
 
-| #   | Task                                              | Status | Depends on | Tier        |
-| --- | ------------------------------------------------- | ------ | ---------- | ----------- |
-| 1   | [Task title](tasks/001-task-name.md)              | todo   | —          | lightweight |
-| 2   | [Task title](tasks/002-task-name.md)              | todo   | 1          | versatile   |
-| 3   | [Task title](tasks/003-task-name.md)              | todo   | 1, 2       | powerful    |
-| 4   | [Ensure CI passes](tasks/004-ensure-ci-passes.md) | todo   | all        | —           |
+| #   | Task                                              | Status | Depends on | Tier                 |
+| --- | ------------------------------------------------- | ------ | ---------- | -------------------- |
+| 1   | [Task title](tasks/001-task-name.md)              | todo   | —          | lightweight/coder     |
+| 2   | [Task title](tasks/002-task-name.md)              | todo   | 1          | versatile/generalist  |
+| 3   | [Task title](tasks/003-task-name.md)              | todo   | 1, 2       | interactive-only      |
+| 4   | [Ensure CI passes](tasks/004-ensure-ci-passes.md) | todo   | all        | —                    |
 
 ## Progress
 
@@ -199,6 +208,7 @@ Tell the user:
 - Do not remove, merge away, or skip the final **"Ensure CI passes"** task.
 - Do not dispatch a subagent for the **"Ensure CI passes"** task — it's static boilerplate, write it directly.
 - Do not assign that task a tier — it's mechanical, not judgment-heavy.
+- Do not use `interactive-only` liberally — most tasks are executable; reserve it for tasks that are inherently about debate or ambiguity resolution, not ones that are merely hard or high-stakes (those get `powerful`, not `interactive-only`).
 - Do not add a tier field to individual task files — `tasks.md`'s Tier column is the single source of truth; it's only read on the subagent-dispatch path anyway.
 - Do not paste `prd.md`/`ard.md`/`context.md` contents into a task-writing subagent's dispatch — hand it the paths and let it read them.
 - Do not restate boilerplate already covered by matching instruction files.
