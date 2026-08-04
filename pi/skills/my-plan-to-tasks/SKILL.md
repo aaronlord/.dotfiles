@@ -5,7 +5,7 @@ description: >
   user says plan to tasks, break the plan into tasks, or groom a reviewed ARD for
   implementation. Do NOT use for net-new planning (my-plan, my-quick-plan), follow-up changes to
   an existing plan (my-follow-up-plan), or pre-groom review (my-review-plan).
-version: 1.3.0
+version: 1.4.0
 ---
 
 # /my-plan-to-tasks
@@ -15,7 +15,7 @@ Break a reviewed ARD into an ordered, dependency-aware list of tasks ready for i
 ## When to use
 
 - The user passes the plan name (matching the directory under `.plans/`) and wants to break a reviewed plan into implementation tasks.
-- If no name is given, list the available plans and ask which one to groom.
+- If no name is given, check the `.plan` symlink at the repo root; if it resolves to a directory under `.plans/`, use that plan. If it's missing or broken, list the available plans and ask which one to groom.
 - Use this after `/my-review-plan`, once the PRD and ARD are ready to be broken down for implementation.
 
 ## When NOT to use
@@ -27,6 +27,8 @@ Break a reviewed ARD into an ordered, dependency-aware list of tasks ready for i
 ## Process
 
 ### 1. Load the plan — read before asking
+
+Resolve `{name}` per "When to use" above, then point `.plan` at it: `ln -sfn .plans/{name} .plan`.
 
 Given the plan name, read both files immediately — before asking the user any questions about goals, context, or scope. The plan files are the source of truth.
 

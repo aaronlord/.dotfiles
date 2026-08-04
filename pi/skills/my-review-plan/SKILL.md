@@ -5,7 +5,7 @@ description: >
   Use this skill when the user says review plan, refine plan, or sanity-check a draft before
   task breakdown. Do NOT use for net-new planning (my-plan, my-quick-plan), follow-up changes to
   an existing plan (my-follow-up-plan), or task grooming (my-plan-to-tasks).
-version: 1.0.0
+version: 1.1.0
 ---
 
 # /my-review-plan
@@ -17,7 +17,7 @@ By the time this runs, the user has likely hand-edited `prd.md`/`ard.md` already
 ## When to use
 
 - The user passes the plan name (matching the directory under `.plans/`) and wants to review, refine, or stress-test the plan before implementation grooming.
-- If no name is given, list the available plans and ask which one to review.
+- If no name is given, check the `.plan` symlink at the repo root; if it resolves to a directory under `.plans/`, use that plan. If it's missing or broken, list the available plans and ask which one to review.
 - Use this before `/my-plan-to-tasks` in the intended planning pipeline.
 
 ## When NOT to use
@@ -29,6 +29,8 @@ By the time this runs, the user has likely hand-edited `prd.md`/`ard.md` already
 ## Process
 
 ### 1. Load the plan
+
+Resolve `{name}` per "When to use" above, then point `.plan` at it: `ln -sfn .plans/{name} .plan`.
 
 Read both `.plans/{name}/prd.md` and `.plans/{name}/ard.md` in full.
 

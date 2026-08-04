@@ -5,7 +5,7 @@ description: >
   one-task-at-a-time "conductor" mode. Use when the user wants to drive each task by hand
   after my-plan-to-tasks. Do NOT use for unattended end-to-end execution; use my-implement-tasks
   for the orchestrator loop instead.
-version: 2.0.0
+version: 2.1.0
 ---
 
 # /my-implement-task
@@ -25,8 +25,12 @@ stop point after each implemented task.
 
 If no name is given:
 
-1. Run `ls .plans/` and output the list of available plans to the user.
-2. Ask the user which plan to work on. Do not proceed until they answer.
+1. Check the `.plan` symlink at the repo root. If it resolves to a directory under `.plans/`, use
+   that plan and tell the user which one.
+2. If the symlink is missing or broken, run `ls .plans/` and output the list of available plans
+   to the user, then ask which one to work on. Do not proceed until they answer.
+
+Either way, once `{name}` is resolved, point `.plan` at it: `ln -sfn .plans/{name} .plan`.
 
 ## When NOT to use
 

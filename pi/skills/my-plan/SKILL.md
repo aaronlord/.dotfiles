@@ -6,7 +6,7 @@ description: >
   my-quick-plan if the prompt turns out to be small scoped work. Do NOT use for small scoped
   work (my-quick-plan), existing-plan follow-ups/review (my-follow-up-plan, my-review-plan), or
   task breakdown (my-plan-to-tasks).
-version: 1.0.2
+version: 1.0.3
 ---
 
 # /my-plan
@@ -106,6 +106,10 @@ Pass a short pointer per URL (path + one-line description, not the full text) to
   tasks/       ← empty for now, created by /my-plan-to-tasks
 ```
 
+Point the active-plan symlink at it: `ln -sfn .plans/{name} .plan`. Downstream skills
+(`/my-review-plan`, `/my-plan-to-tasks`, `/my-implement-task(s)`, `/my-follow-up-plan`) read this
+symlink when the user doesn't name a plan explicitly.
+
 ### 6. Draft the documents
 
 Follow [`references/drafting.md`](references/drafting.md) for the drafting step — dispatch it to an isolated subagent (e.g. the generic `worker` agent via the `subagent` tool) if you want drafting kept uncontaminated by exploration reasoning, otherwise perform it directly yourself. Either way, use:
@@ -125,7 +129,7 @@ If drafting surfaces a new domain term that needs pinning down, or a hard-to-rev
 
 Once all four files are written, tell the user:
 
-- The path to the plan: `.plans/{name}/`
+- The path to the plan: `.plans/{name}/` (now the active plan — `.plan` symlink points at it)
 - A brief summary of what was drafted (from the returned `prd.md`/`ard.md` content)
 - Any items left unchecked in `checklist.md`, and why (from the drafting step's closing note)
 - Any open questions surfaced in `ard.md`'s Implementation Notes (Open Questions bullet)

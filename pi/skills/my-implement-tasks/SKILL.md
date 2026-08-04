@@ -5,7 +5,7 @@ description: >
   mode. Use when the user says implement-tasks, implement the whole plan, or drive it
   automatically after my-plan-to-tasks. Do NOT use for manual one-task-at-a-time progress; use
   my-implement-task for conductor mode instead.
-version: 1.3.0
+version: 1.4.0
 ---
 
 # /my-implement-tasks
@@ -26,8 +26,12 @@ each task.
 
 If no name is given:
 
-1. Run `ls .plans/` and output the list of available plans to the user.
-2. Ask the user which plan to work on. Do not proceed until they answer.
+1. Check the `.plan` symlink at the repo root. If it resolves to a directory under `.plans/`, use
+   that plan and tell the user which one.
+2. If the symlink is missing or broken, run `ls .plans/` and output the list of available plans
+   to the user, then ask which one to work on. Do not proceed until they answer.
+
+Either way, once `{name}` is resolved, point `.plan` at it: `ln -sfn .plans/{name} .plan`.
 
 This skill is the async/multi-task counterpart to `/my-implement-task`. `/my-implement-task`
 implements one task inline and stops so a human can look — the "conductor" mode. This skill

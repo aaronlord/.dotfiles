@@ -5,7 +5,7 @@ description: >
   inherits its context. Use this skill when the user wants to follow up on, revisit, come back
   to, or build on a previous plan. Do NOT use for net-new planning (my-plan), plan review
   (my-review-plan), or task breakdown (my-plan-to-tasks).
-version: 1.0.0
+version: 1.1.0
 ---
 
 # /my-follow-up-plan
@@ -15,7 +15,7 @@ Pick up an existing plan and decide, with the user, whether the new request belo
 ## When to use
 
 - The user names or points at an existing plan (directory under `.plans/`) plus what they now want to change or add.
-- If the plan isn't named, list the directories under `.plans/` and ask which one.
+- If the plan isn't named, check the `.plan` symlink at the repo root; if it resolves to a directory under `.plans/`, use that plan. If it's missing or broken, list the directories under `.plans/` and ask which one.
 - If the follow-up request isn't stated yet, ask for it before continuing — everything downstream depends on it.
 
 ## When NOT to use
@@ -27,6 +27,8 @@ Pick up an existing plan and decide, with the user, whether the new request belo
 ## Workflow
 
 ### 1. Load the existing plan
+
+Once `{name}` is resolved (per "When to use" above), point `.plan` at it: `ln -sfn .plans/{name} .plan`.
 
 Read, in full:
 
@@ -63,7 +65,7 @@ Give a recommendation: default to "new plan" when the original plan's tasks are 
 1. Infer a new feature name from the follow-up request (short, lowercase kebab-case). Show it to the user. If `.plans/{new-name}/` already exists, ask for a different name.
 2. Run [`references/recon.md`](references/recon.md) (Quick thoroughness, same boundaries as `/my-plan` step 3) on the follow-up request — dispatch it to an isolated subagent if you want a clean context, otherwise do it directly. Tell it what the old plan's `context.md` already covers so it doesn't re-discover modules already described there — it should only chase what's new.
 3. Cache any URLs in the follow-up prompt the same way `/my-plan` step 4 does, under `.plans/{new-name}/references/`.
-4. Create the scaffold `.plans/{new-name}/` (same shape as `/my-plan` step 5).
+4. Create the scaffold `.plans/{new-name}/` (same shape as `/my-plan` step 5), and repoint `.plan` at it: `ln -sfn .plans/{new-name} .plan`.
 5. Run [`references/drafting.md`](references/drafting.md) (dispatched to an isolated subagent if you want a clean context, otherwise directly) with:
    - The follow-up request, verbatim.
    - The inferred new feature name.
@@ -78,7 +80,7 @@ Give a recommendation: default to "new plan" when the original plan's tasks are 
 Tell the user:
 
 - Which branch was taken and why.
-- The path to the plan that was written to (existing or new).
+- The path to the plan that was written to (existing or new) — now the active plan, `.plan` symlink points at it.
 - A brief summary of what changed (branch 3a) or what was drafted (branch 3b).
 - If branch 3a and the plan had tasks: that `tasks.md`/`tasks/` are now stale for the changed portion — re-run `/my-plan-to-tasks {name}`.
 - If branch 3a: `prd.md`/`ard.md` were reset to `draft` and revised — tell the user to review and hand-edit them (they're a terse rough draft, not a finished spec) before running `/my-review-plan {name}`.
