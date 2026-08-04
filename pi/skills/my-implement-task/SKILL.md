@@ -5,7 +5,7 @@ description: >
   one-task-at-a-time "conductor" mode. Use when the user wants to drive each task by hand
   after my-plan-to-tasks. Do NOT use for unattended end-to-end execution; use my-implement-tasks
   for the orchestrator loop instead.
-version: 1.1.0
+version: 2.0.0
 ---
 
 # /my-implement-task
@@ -51,56 +51,26 @@ name. Do not create a branch without explicit confirmation.
 Pick the next uncompleted task in order. If there's no such task (all done, or blocked), tell
 the user why and stop.
 
-### 3a. Choose execution mode
+### 3a. Implement inline
 
-Ask the user once per `/my-implement-task` invocation, unless they already stated a preference
-earlier in this session:
+This skill always implements the task **inline, in this session** — never dispatched to a
+subagent. (`/my-implement-tasks` is the subagent-dispatch counterpart; this skill is the manual
+mode where the user watches each task happen directly.)
 
-> "Implement this task inline in this session, or dispatch it to a subagent (e.g. a cheaper model)? Reply `inline` or `subagent`."
-
-Either way, the actual implementation contract — read-order, SOLID, TDD discipline, targeted
-CI, escalation rules, hard constraints, output format — lives in one place:
+The actual implementation contract — read-order, SOLID, TDD discipline, targeted CI, escalation
+rules, hard constraints, output format — lives in one place:
 [`references/implementation-contract.md`](references/implementation-contract.md). This skill
-never duplicates that prose; it only decides who executes it and verifies the result.
+never duplicates that prose.
 
-**If `inline`:** Read `references/implementation-contract.md` now, in full, and follow it
-directly in this session for the task at `.plans/{name}/tasks/{nnn}-task-name.md`. When it
-finishes (or reports BLOCKED per its own escalation rules), continue to step 4.
-
-**If `subagent`:**
-
-1. Look up this task's tier in the `tasks.md` table you already read in step 1 (a `Tier` column: `lightweight`/`versatile`/`powerful`, absent on older plans or the CI-gate task). If present, resolve it against `~/.pi/agent/model-tiers.md`'s mapping table and pass the matching `provider/model-id` as the `model` param on the dispatch below. If the tier is absent, unmapped, or `model-tiers.md` doesn't exist, dispatch with no `model` override — don't block or ask the user to fill in the mapping mid-task.
-2. Dispatch a subagent (e.g. via the `subagent` tool's generic `worker` agent) with
-   `references/implementation-contract.md`'s contents as its task instructions, plus only: the
-   plan name and the task file path. Do not pre-paste `AGENTS.md`, instruction-file, or ARD
-   contents into the dispatch — the contract resolves and reads all of that itself from the
-   paths you give it.
-3. One task per dispatch call — never batch multiple tasks into one dispatch.
-4. When the subagent reports back, do not treat its self-report as verification — this is an
-   eval, not a courtesy re-check. Dispatch a second subagent with
-   [`../my-implement-tasks/references/trajectory-audit.md`](../my-implement-tasks/references/trajectory-audit.md)
-   and the first subagent's full final report verbatim, asking it to check the report's claims
-   against live repo evidence (changed files, reproduced test output, scope discipline,
-   hard-constraint compliance, hallucinated references) — it is not re-reviewing code quality,
-   only whether the report can be trusted.
-5. Read the verification verdict. Any blocker-level finding means the report cannot be trusted
-   as-is:
-   - If the blocker is fixable by re-running or clarifying (e.g. it merely under-reported a
-     file), resolve it yourself using the surfaced evidence, or re-dispatch the implementation
-     step once with the specific gap named.
-   - If the blocker indicates the work itself is wrong or a hard constraint was violated, treat
-     it the same as a BLOCKED report — stop and escalate to the user, do not paper over it.
-   - Lower-severity findings don't block proceeding, but surface them to the user alongside the
-     task summary in step 4c.
-6. If the implementation step itself reports BLOCKED, read its stated reason. If you can resolve
-   it yourself (missing context, an unclear instruction), fix it and re-dispatch once. If it
-   reports BLOCKED a second time for the same task, stop and escalate to the user — do not
-   attempt a third dispatch.
+Read `references/implementation-contract.md` now, in full, and follow it directly in this
+session for the task at `.plans/{name}/tasks/{nnn}-task-name.md`. When it finishes (or reports
+BLOCKED per its own escalation rules — stop and escalate to the user, do not attempt to route
+around it yourself), continue to step 4.
 
 ### 4. After implementation: orchestrator-only steps
 
-Everything below is the orchestrator's job — it happens after the implementation step (inline or
-dispatched) has produced a working, tested task, never before.
+Everything below is the orchestrator's job — it happens after the inline implementation step has
+produced a working, tested task, never before.
 
 #### 4a. Full-suite CI — final task only
 
@@ -136,7 +106,6 @@ Report:
 - the completed task
 - the files changed
 - how many tasks remain
-- any lower-severity verification findings from step 3a
 - `/my-review main` as the suggested next step
 
 If all tasks are now done, say so and still suggest `/my-review main` before pushing.
@@ -148,12 +117,10 @@ If all tasks are now done, say so and still suggest `/my-review main` before pus
 - Do not commit. Committing is the reviewer's responsibility, not this skill's and not the
   implementation step's.
 - Never commit secrets, credentials, or `.env` files.
-- Do not resolve a task's tier into a `model` override on the inline path — tier only applies to
-  dispatched subagents; inline execution always uses the session's own model.
-- Do not stop the loop to ask about a missing tier or a missing `~/.pi/agent/model-tiers.md` —
-  fall back to no `model` override and continue.
+- Never dispatch this task to a subagent. This skill is the inline/manual mode by design — use
+  `/my-implement-tasks` if you want subagent dispatch.
 - The 3-attempt escalation rule, the "task is much bigger than it looked" flag, and the "design
   changed mid-implementation" rule all live in
   [`references/implementation-contract.md`](references/implementation-contract.md) now — if
   you're the orchestrator receiving a BLOCKED report for one of these, that's your cue to stop
-  and ask the user, not to re-dispatch a fix yourself beyond the one retry allowed in step 3a.
+  and ask the user, per the contract's own escalation rules, not to route around it yourself.

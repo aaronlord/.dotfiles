@@ -5,7 +5,7 @@ description: >
   mode. Use when the user says implement-tasks, implement the whole plan, or drive it
   automatically after my-plan-to-tasks. Do NOT use for manual one-task-at-a-time progress; use
   my-implement-task for conductor mode instead.
-version: 1.1.0
+version: 1.2.0
 ---
 
 # /my-implement-tasks
@@ -30,9 +30,10 @@ If no name is given:
 2. Ask the user which plan to work on. Do not proceed until they answer.
 
 This skill is the async/multi-task counterpart to `/my-implement-task`. `/my-implement-task`
-implements one task and stops so a human can look — the "conductor" mode. This skill keeps
-going on its own, only stopping when it's actually stuck — the "orchestrator" mode. Read
-`/my-implement-task`'s SKILL.md first if you haven't; this skill reuses its per-task machinery
+implements one task inline and stops so a human can look — the "conductor" mode. This skill
+always dispatches each task to an isolated subagent and keeps going on its own, only stopping
+when it's actually stuck — the "orchestrator" mode. Read `/my-implement-task`'s SKILL.md first
+if you haven't; this skill reuses the shared per-task machinery
 ([`references/implementation-contract.md`](references/implementation-contract.md),
 [`references/trajectory-audit.md`](references/trajectory-audit.md)) rather than redefining it.
 
@@ -95,21 +96,25 @@ whose every dependency is in `done`.
 
 Look up this task's tier in `tasks.md`'s `Tier` column (loaded in step 1). If present, resolve it
 against `~/.pi/agent/model-tiers.md`'s mapping table and use the matching `provider/model-id` as
-the `model` param when dispatching. If the tier is absent, unmapped, or `model-tiers.md` doesn't
-exist, dispatch with no `model` override — don't halt the loop over a missing mapping. This only
-applies on the dispatched path; running the task directly in the current session ignores tier.
+the `model` param on the dispatch below. If the tier is absent, unmapped, or `model-tiers.md`
+doesn't exist, dispatch with no `model` override — don't halt the loop over a missing mapping.
 
-Follow [`references/implementation-contract.md`](references/implementation-contract.md) for this
-task's plan name and file path — exactly as `/my-implement-task`'s subagent branch does. Dispatch
-it to an isolated subagent (e.g. the generic `worker` agent via the `subagent` tool), or perform
-it directly in the current session. One task, one fresh context (or scope) per pass — never batch
-multiple tasks together.
+Dispatch the task to an isolated subagent (e.g. the generic `worker` agent via the `subagent`
+tool) with [`references/implementation-contract.md`](references/implementation-contract.md)'s
+contents as its task instructions, plus only: the plan name and the task file path. Do not
+pre-paste `AGENTS.md`, instruction-file, or ARD contents into the dispatch — the contract
+resolves and reads all of that itself from the paths you give it. Always dispatch — this skill
+never implements a task directly in the current session; that's what `/my-implement-task` is
+for. One task, one fresh subagent context per pass — never batch multiple tasks together.
 
 #### 5.3 Verify the report
 
-Check the report against [`references/trajectory-audit.md`](references/trajectory-audit.md),
-exactly as `/my-implement-task` step 3a.3 does — dispatch to an isolated subagent if you want a
-clean context, otherwise run the check yourself.
+The dispatched subagent's self-report is not verification — this is an eval, not a courtesy
+re-check. Dispatch a second subagent with
+[`references/trajectory-audit.md`](references/trajectory-audit.md) and the implementing
+subagent's full final report verbatim, asking it to check the report's claims against live repo
+evidence (changed files, reproduced test output, scope discipline, hard-constraint compliance,
+hallucinated references).
 
 - If the audit's blockers are the kind you can resolve yourself (it merely under-reported
   something, evidence is available to fix directly) — resolve them yourself and continue to 5.4.
@@ -217,6 +222,8 @@ On full completion, report:
 
 - Never batch multiple tasks into one implementation pass or dispatch. One task, one fresh
   context, every time — that isolation is what makes the loop trustworthy.
+- Never implement a task directly in the current session. Always dispatch — use
+  `/my-implement-task` if inline execution is what's wanted.
 - Never commit files the task didn't touch.
 - Never commit secrets, credentials, or `.env` files.
 - This skill commits automatically; `/my-implement-task` does not — that's the entire behavioral
