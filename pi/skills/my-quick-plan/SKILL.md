@@ -6,7 +6,7 @@ description: >
   coding, or has work too small for my-plan. Recommends escalating to my-plan if scope grows
   during the grill. Do NOT use for net-new .plans/{name} planning (my-plan), existing plan
   follow-up/review (my-follow-up-plan, my-review-plan), or task breakdown (my-plan-to-tasks).
-version: 1.0.0
+version: 1.0.1
 ---
 
 # /my-quick-plan
@@ -64,7 +64,11 @@ Ask via `ask_user`, structured like the grill questions:
 > "Given what came out of the grill, is this small enough to implement right here, or does it deserve a proper `/my-plan` with a PRD/ARD?"
 > `**Recommended:** {inline|/my-plan} — {one-sentence reason grounded in what the grill surfaced}`
 
-If the user picks `/my-plan`: summarize the resolved answers from step 2 into a short enriched prompt (original ask + the grill's resolved decisions) and tell the user to run `/my-plan` with it — don't run it for them, since `/my-plan` has its own invocation flow. Stop here.
+If the user picks `/my-plan`: summarize the resolved answers from step 2 into a short enriched prompt (original ask + the grill's resolved decisions) and print it as a ready-to-copy command line — don't run it for them, since `/my-plan` has its own invocation flow:
+
+> `/my-plan {enriched prompt}`
+
+Stop here.
 
 If the user picks inline: continue to step 4.
 

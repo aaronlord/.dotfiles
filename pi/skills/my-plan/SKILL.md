@@ -6,7 +6,7 @@ description: >
   my-quick-plan if the prompt turns out to be small scoped work. Do NOT use for small scoped
   work (my-quick-plan), existing-plan follow-ups/review (my-follow-up-plan, my-review-plan), or
   task breakdown (my-plan-to-tasks).
-version: 1.0.1
+version: 1.0.2
 ---
 
 # /my-plan
@@ -41,7 +41,11 @@ If it looks that small, ask via `ask_user` before doing anything else:
 > "This looks small enough to grill and implement directly — want me to switch to `/my-quick-plan` instead of drafting a full PRD/ARD?"
 > `**Recommended:** {/my-quick-plan|full plan} — {one-sentence reason grounded in the prompt}`
 
-If the user picks `/my-quick-plan`: tell them to run it with their original prompt — don't run it for them, since it has its own invocation flow. Stop here.
+If the user picks `/my-quick-plan`: don't run it for them, since it has its own invocation flow — but don't make them go dig up the original prompt either. Print a ready-to-copy command line:
+
+> `/my-quick-plan {original prompt, folded in with any clarifying detail recon surfaced}`
+
+Stop here.
 
 If the user picks the full plan, or the prompt is clearly not small (multi-module, new abstraction, needs a written record): continue to step 1.
 
