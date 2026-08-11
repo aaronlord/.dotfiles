@@ -338,12 +338,12 @@ export default function (pi: ExtensionAPI) {
   // Accumulate cost for the active git branch each turn
   pi.on("turn_end", async (event) => {
     if (event.message.role !== "assistant") return;
-    const m = event.message as AssistantMessage;
+    const m = event.message as AssistantMessage & { model?: string };
     const cost = m.usage?.cost?.total;
     if (cost == null || !currentBranch || !currentRepoRoot) return;
     const tokens =
       m.usage.input + m.usage.output + m.usage.cacheRead + m.usage.cacheWrite;
-    addBranchCost(currentRepoRoot, currentBranch, cost, tokens);
+    addBranchCost(currentRepoRoot, currentBranch, cost, tokens, m.model);
     currentBranchCostUsd += cost;
   });
 }

@@ -166,6 +166,33 @@ export function getDayStats(dateKey: string): DayStats | undefined {
   return statsCache.get(dateKey);
 }
 
+// all-time cost/tokens per model, across every cached day
+export function getAllTimeByModel(): Record<string, ModelStats> {
+  const byModel: Record<string, ModelStats> = {};
+  for (const day of statsCache.values()) {
+    for (const [model, stats] of Object.entries(day.byModel)) {
+      if (!byModel[model]) byModel[model] = { tokens: 0, costUsd: 0 };
+      byModel[model].tokens += stats.tokens;
+      byModel[model].costUsd += stats.costUsd;
+    }
+  }
+  return byModel;
+}
+
+// per-model cost/tokens for days >= fromKey
+export function getByModelSince(fromKey: string): Record<string, ModelStats> {
+  const byModel: Record<string, ModelStats> = {};
+  for (const [date, day] of statsCache) {
+    if (date < fromKey) continue;
+    for (const [model, stats] of Object.entries(day.byModel)) {
+      if (!byModel[model]) byModel[model] = { tokens: 0, costUsd: 0 };
+      byModel[model].tokens += stats.tokens;
+      byModel[model].costUsd += stats.costUsd;
+    }
+  }
+  return byModel;
+}
+
 // live update: fold a just-completed turn into today's cache immediately
 export function recordTurn(
   dateKey: string,

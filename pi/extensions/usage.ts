@@ -16,6 +16,7 @@ import {
   visibleWidth,
 } from "@earendil-works/pi-tui";
 import {
+  getByModelSince,
   getDayStats,
   getPeriodStats,
   loadAllSessions,
@@ -40,6 +41,13 @@ interface UsageReportBranchRow {
   branch: string;
   tokens: number;
   cost: number;
+  byModel: Record<string, { tokens: number; cost: number }>;
+}
+
+interface UsageReportModelRow {
+  model: string;
+  tokens: number;
+  cost: number;
 }
 
 interface UsageReport {
@@ -48,8 +56,9 @@ interface UsageReport {
   maxTokens: number;
   week: { tokens: number; costUsd: number };
   month: { tokens: number; costUsd: number };
-  allTime: { tokens: number; costUsd: number };
   branchRows: UsageReportBranchRow[];
+  branchCostStats: { meanUsd: number; medianUsd: number };
+  modelRows: UsageReportModelRow[];
 }
 
 // ---------------------------------------------------------------------------
@@ -100,6 +109,16 @@ function shortModel(model: string): string {
   return stripped.length > 0 ? stripped : name;
 }
 
+function median(values: number[]): number {
+  if (values.length === 0) return 0;
+  const sorted = [...values].sort((a, b) => a - b);
+  const mid = Math.floor(sorted.length / 2);
+  if (sorted.length % 2 === 1) return sorted[mid] ?? 0;
+  const hi = sorted[mid] ?? 0;
+  const lo = sorted[mid - 1] ?? hi;
+  return (lo + hi) / 2;
+}
+
 // ---------------------------------------------------------------------------
 // Extension entry point
 // ---------------------------------------------------------------------------
@@ -111,13 +130,22 @@ export default function (pi: ExtensionAPI) {
 
   pi.registerMessageRenderer("usage-report", (message, _options, theme) => {
     const report = message.details as UsageReport;
-    const { rows, maxCost, maxTokens, week, month, allTime, branchRows } = report;
+    const {
+      rows,
+      maxCost,
+      maxTokens,
+      week,
+      month,
+      branchRows,
+      branchCostStats,
+      modelRows,
+    } = report;
     const BAR_W = 24;
     const LABEL_W = 40;
 
-    function costBar(cost: number, isMax: boolean): string {
-      if (maxCost === 0) return theme.fg("dim", "░".repeat(BAR_W));
-      const filled = Math.round((cost / maxCost) * BAR_W);
+    function costBar(cost: number, isMax: boolean, max: number = maxCost): string {
+      if (max === 0) return theme.fg("dim", "░".repeat(BAR_W));
+      const filled = Math.max(0, Math.min(BAR_W, Math.round((cost / max) * BAR_W)));
       const fillColor = isMax ? "accent" : cost > 0 ? "borderAccent" : "dim";
       return (
         theme.fg(fillColor, "█".repeat(filled)) +
@@ -182,7 +210,6 @@ export default function (pi: ExtensionAPI) {
     for (const [label, stats] of [
       ["This week", week],
       ["This month", month],
-      ["All time", allTime],
     ] as const) {
       lines.push(
         `  ${theme.fg("muted", label.padEnd(LABEL_W))}  ${" ".repeat(BAR_W)}  ${tokCol(stats.tokens)}  ${costCol(stats.costUsd)}`,
@@ -199,11 +226,43 @@ export default function (pi: ExtensionAPI) {
           theme.fg("accent", "═══"),
       );
       lines.push("");
+      lines.push(
+        `  ${theme.fg("muted", "avg cost/branch".padEnd(LABEL_W))}  ${theme.fg("dim", "mean")} ${costCol(branchCostStats.meanUsd)}  ${theme.fg("dim", "median")} ${costCol(branchCostStats.medianUsd)}`,
+      );
       const maxBranchCost = Math.max(...branchRows.map((r) => r.cost), 0.001);
       for (const row of branchRows) {
         const label = row.branch.padEnd(LABEL_W);
         lines.push(
-          `  ${theme.fg("muted", label)}  ${costBar(row.cost, row.cost === maxBranchCost)}  ${tokCol(row.tokens)}  ${costCol(row.cost)}`,
+          `  ${theme.fg("muted", label)}  ${costBar(row.cost, row.cost === maxBranchCost, maxBranchCost)}  ${tokCol(row.tokens)}  ${costCol(row.cost)}`,
+        );
+        const models = Object.entries(row.byModel).sort(
+          ([, a], [, b]) => b.cost - a.cost,
+        );
+        if (models.length > 1) {
+          for (const [model, stats] of models) {
+            const subLabel = ("↳ " + shortModel(model)).padEnd(LABEL_W);
+            lines.push(
+              `  ${theme.fg("dim", subLabel)}  ${" ".repeat(BAR_W)}  ${tokCol(stats.tokens)}  ${costCol(stats.cost)}`,
+            );
+          }
+        }
+      }
+    }
+
+    if (modelRows.length > 0) {
+      lines.push("");
+      lines.push(theme.fg("dim", "─".repeat(70)));
+      lines.push(
+        theme.fg("accent", "═══") +
+          theme.fg("muted", " By Model (last 7 days) ") +
+          theme.fg("accent", "═══"),
+      );
+      lines.push("");
+      const maxModelCost = Math.max(...modelRows.map((r) => r.cost), 0.001);
+      for (const row of modelRows) {
+        const label = shortModel(row.model).padEnd(LABEL_W);
+        lines.push(
+          `  ${theme.fg("muted", label)}  ${costBar(row.cost, row.cost === maxModelCost, maxModelCost)}  ${tokCol(row.tokens)}  ${costCol(row.cost)}`,
         );
       }
     }
@@ -274,10 +333,35 @@ export default function (pi: ExtensionAPI) {
       for (const r of rows) r.isMax = r.costUsd === maxCost && r.costUsd > 0;
 
       const repoRoot = resolveRepoRoot(process.cwd());
-      const branchRows: UsageReportBranchRow[] = getBranchCostsForRepo(repoRoot)
-        .sort((a, b) => b.lastUpdated.localeCompare(a.lastUpdated))
+      const allBranchEntries = getBranchCostsForRepo(repoRoot).sort((a, b) =>
+        b.lastUpdated.localeCompare(a.lastUpdated),
+      );
+      const branchRows: UsageReportBranchRow[] = allBranchEntries
         .slice(0, 15)
-        .map((entry) => ({ branch: entry.branch, tokens: entry.tokens, cost: entry.cost }));
+        .map((entry) => ({
+          branch: entry.branch,
+          tokens: entry.tokens,
+          cost: entry.cost,
+          byModel: Object.fromEntries(
+            Object.entries(entry.byModel ?? {}).map(([model, stats]) => [
+              model,
+              { tokens: stats.tokens, cost: stats.cost },
+            ]),
+          ),
+        }));
+      const branchCostValues = allBranchEntries.map((entry) => entry.cost);
+      const branchCostStats = {
+        meanUsd:
+          branchCostValues.length > 0
+            ? branchCostValues.reduce((sum, value) => sum + value, 0) /
+              branchCostValues.length
+            : 0,
+        medianUsd: median(branchCostValues),
+      };
+
+      const modelRows: UsageReportModelRow[] = Object.entries(getByModelSince(weekStartKey()))
+        .map(([model, stats]) => ({ model, tokens: stats.tokens, cost: stats.costUsd }))
+        .sort((a, b) => b.cost - a.cost);
 
       const report: UsageReport = {
         rows,
@@ -285,8 +369,9 @@ export default function (pi: ExtensionAPI) {
         maxTokens,
         week: getPeriodStats(weekStartKey()),
         month: getPeriodStats(monthStartKey()),
-        allTime: getPeriodStats("2000-01-01"),
         branchRows,
+        branchCostStats,
+        modelRows,
       };
 
       pi.sendMessage({

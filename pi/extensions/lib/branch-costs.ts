@@ -19,7 +19,7 @@ import {
   writeFileSync,
 } from "node:fs";
 import { homedir } from "node:os";
-import { join } from "node:path";
+import { isAbsolute, join, resolve, sep } from "node:path";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -32,6 +32,7 @@ export interface BranchCostEntry {
   cost: number;
   tokens: number;
   lastUpdated: string;
+  byModel?: Record<string, { cost: number; tokens: number }>;
 }
 
 // ---------------------------------------------------------------------------
@@ -65,8 +66,28 @@ function readEntry(filePath: string): BranchCostEntry | undefined {
 // Public API
 // ---------------------------------------------------------------------------
 
-export function resolveRepoRoot(cwd: string): string {
+// --git-common-dir is shared by every worktree of a repo (unlike --show-toplevel,
+// which returns the worktree's own dir) — the key that keeps branch costs unified.
+function absoluteGitCommonDir(cwd: string): string | undefined {
   try {
+    const raw = execSync("git rev-parse --git-common-dir", {
+      cwd,
+      encoding: "utf8",
+    }).trim();
+    return isAbsolute(raw) ? raw : join(cwd, raw);
+  } catch {
+    return undefined;
+  }
+}
+
+export function resolveRepoRoot(cwd: string): string {
+  const commonDir = absoluteGitCommonDir(cwd);
+  if (commonDir) {
+    const resolved = resolve(commonDir);
+    return resolved.endsWith(`${sep}.git`) ? resolved.slice(0, -5) : resolved;
+  }
+  try {
+    // Not a git repo, or git too old for --git-common-dir — fall back to toplevel.
     return execSync("git rev-parse --show-toplevel", {
       cwd,
       encoding: "utf8",
@@ -82,10 +103,16 @@ export function addBranchCost(
   branch: string,
   cost: number,
   tokens: number,
+  model?: string,
 ): void {
   try {
     const filePath = entryFilePath(repoRoot, branch);
     const existing = readEntry(filePath);
+    const byModel = { ...existing?.byModel };
+    if (model) {
+      const prev = byModel[model] ?? { cost: 0, tokens: 0 };
+      byModel[model] = { cost: prev.cost + cost, tokens: prev.tokens + tokens };
+    }
     const entry: BranchCostEntry = {
       version: 1,
       repoRoot,
@@ -93,6 +120,7 @@ export function addBranchCost(
       cost: (existing?.cost ?? 0) + cost,
       tokens: (existing?.tokens ?? 0) + tokens,
       lastUpdated: new Date().toISOString(),
+      byModel,
     };
     mkdirSync(BRANCH_COSTS_DIR, { recursive: true });
     writeFileSync(filePath, JSON.stringify(entry, null, 2), "utf8");
