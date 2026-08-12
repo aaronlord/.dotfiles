@@ -5,7 +5,7 @@ description: >
   mode. Use when the user says implement-tasks, implement the whole plan, or drive it
   automatically after my-plan-to-tasks. Do NOT use for manual one-task-at-a-time progress; use
   my-implement-task for conductor mode instead.
-version: 1.4.0
+version: 1.5.0
 ---
 
 # /my-implement-tasks
@@ -95,18 +95,19 @@ whose every dependency is in `done`.
 - If no candidate exists but incomplete tasks remain, everything left depends on (or is)
   something blocked. Go to **6. Halt**.
 - If no candidate exists and every task is in `done`, go to **7. Wrap up**.
-- If the candidate's `tasks.md` Tier column is `interactive-only`, go to **6a. Halt for an
-  interactive-only task** instead of dispatching it — do not attempt to autonomously implement
+- If the candidate's `tasks.md` Tier column is `draft-only`, go to **6a. Halt for a
+  draft-only task** instead of dispatching it — do not attempt to autonomously implement
   it, and do not treat this as a failure or count it toward `consecutive_escalations`.
 
 #### 5.2 Implement
 
 Look up this task's tier in `tasks.md`'s `Tier` column (loaded in step 1) — a `{weight}/{orientation}`
-pair (e.g. `powerful/generalist`). If present, resolve it against
-`~/.pi/agent/model-tiers.md`'s matrix (weight = row, orientation = column) and use the matching
-`provider/model-id` as the `model` param on the dispatch below. If the tier is absent, doesn't
-parse as a known `{weight}/{orientation}` pair, or `model-tiers.md` doesn't exist, dispatch with
-no `model` override — don't halt the loop over a missing mapping.
+pair (e.g. `ultra-lightweight/generator` or `powerful/generalist`). If present, resolve it against
+`~/.pi/agent/model-matrix.md`'s weight × orientation table (weight = row, orientation = column)
+and use the matching `provider/model-id` as the `model` param and the matching `thinkingLevel` as
+the `thinkingLevel` param on the dispatch below. If the tier is absent, doesn't parse as a known
+`{weight}/{orientation}` pair, or `model-matrix.md` doesn't exist, dispatch with no `model`
+override and no `thinkingLevel` override — don't halt the loop over a missing mapping.
 
 Dispatch the task to an isolated subagent (e.g. the generic `worker` agent via the `subagent`
 tool) with [`references/implementation-contract.md`](references/implementation-contract.md)'s
@@ -125,9 +126,21 @@ subagent's full final report verbatim, asking it to check the report's claims ag
 evidence (changed files, reproduced test output, scope discipline, hard-constraint compliance,
 hallucinated references).
 
-- If the audit's blockers are the kind you can resolve yourself (it merely under-reported
-  something, evidence is available to fix directly) — resolve them yourself and continue to 5.4.
-  This does not count as a strike.
+Resolve this dispatch's `model`/`thinkingLevel` per the Reviewer rules in
+`~/.pi/agent/extensions/model-matrix/general.md`: default is the exact same `model`/`thinkingLevel`
+the 5.2 dispatch just used for this task, unless `~/.pi/agent/model-matrix.md`'s Reviewer overrides
+table has a row for this task's weight/orientation or this specific task — a fresh context at the same tier is what buys the independent check, not a
+heavier model by default. Same fallback as 5.2 if nothing resolves: no override, keep going.
+
+- "Resolve yourself" means acting on evidence the audit report already pasted in — flipping a
+  status field, updating `tasks.md`, re-reading a claim you can settle from the audit's own
+  quoted output. If resolving it would take any new tool call (re-running a command, catting a
+  file, grepping for a symbol) you have not already seen, that's a fresh investigation, not a
+  resolve-yourself — treat it as a real blocker and go to **5.5** instead of doing that
+  investigation here. The orchestrator loop is not the place to re-derive what a subagent was
+  dispatched to determine.
+- Otherwise: if the audit's blockers are the kind you can resolve from evidence already in hand —
+  resolve them and continue to 5.4. This does not count as a strike.
 - If a blocker means the work is actually wrong, or the implementation step itself reported
   BLOCKED — this task has failed this attempt. Skip to **5.5**.
 
@@ -146,12 +159,14 @@ For every other task:
    file — same lookup `/my-review` step 3 does. Build the file → instruction-file map.
 3. Check the diff against [`references/standards-review-criteria.md`](references/standards-review-criteria.md),
    passing the located standards sources (full content) and the file → instruction-file map.
-   Dispatch to an isolated subagent if you want a clean context, otherwise run it yourself.
+   Dispatch to an isolated subagent — keeps this out of the orchestrator's own context, same
+   reasoning as 5.2/5.3.
 4. Check the diff against [`references/spec-review-criteria.md`](references/spec-review-criteria.md),
    using **the task file itself** as the spec — not the plan's `prd.md`. The task's own
    "Acceptance Criteria" and "Interfaces" sections are the requirements to check the diff
    against; the PRD is the wrong scope here because most PRD requirements legitimately belong to
-   other tasks, and this would flag all of them as `missing`.
+   other tasks, and this would flag all of them as `missing`. Dispatch to an isolated subagent,
+   same as step 3.
 
 **Gate fails** if the standards check reports any `hard violation` row, or the spec check reports
 any `missing`/`partial`/`wrong` row. A `judgement call` or `scope creep` row alone does not fail
@@ -207,15 +222,15 @@ Three consecutive escalations means something systemic is wrong — a bad groomi
 environment, the wrong branch — not that any individual task needs one more retry. Hand it to
 the user rather than continuing to spend turns on it.
 
-### 6a. Halt for an interactive-only task
+### 6a. Halt for a draft-only task
 
 This is not a failure and does not count toward `consecutive_escalations` — it's an expected
 stop, the same way `/my-plan-to-tasks` intended when it tagged the task. Report to the user:
 
 - Every task completed and committed so far, in order.
-- The interactive-only task that stopped the loop, and its title/number.
+- The draft-only task that stopped the loop, and its title/number.
 - Instruct the user to run `/my-implement-task {name}` to complete that one task manually (its
-  inline conductor mode is exactly what an interactive-only task needs), then re-invoke
+  inline conductor mode is exactly what a draft-only task needs), then re-invoke
   `/my-implement-tasks {name}` to resume — loop state is derived from `tasks.md`/task-file status
   on disk, so resuming picks up cleanly once that task is marked `done`.
 
@@ -233,12 +248,12 @@ On halt (circuit breaker), report:
 - every blocked task, with its exact reason
 - any task left un-attempted because it depends on a blocked task
 
-On halt for an interactive-only task, report:
+On halt for a draft-only task, report:
 
 - every task completed and committed so far, in order
-- the interactive-only task that stopped the loop
+- the draft-only task that stopped the loop
 - the instruction to run `/my-implement-task {name}` for that task, then resume `/my-implement-tasks {name}`
-- any task left un-attempted because it depends on the interactive-only task
+- any task left un-attempted because it depends on the draft-only task
 
 On full completion, report:
 
@@ -260,7 +275,7 @@ On full completion, report:
   anything back automatically.
 - The full-suite CI gate isn't a separate step here — it's the plan's final task, which depends
   on every other task, so 5.1 can only ever select it last.
-- Do not halt the loop or ask the user because a task has no tier or `~/.pi/agent/model-tiers.md`
+- Do not halt the loop or ask the user because a task has no tier or `~/.pi/agent/model-matrix.md`
   is missing — fall back to no `model` override and keep going.
-- Do not dispatch an `interactive-only` task to a subagent under any tier — halt per 6a and defer
+- Do not dispatch a `draft-only` task to a subagent under any tier — halt per 6a and defer
   to `/my-implement-task` instead.

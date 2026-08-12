@@ -147,14 +147,17 @@ export function loadAllSessions(
 // Query API
 // ---------------------------------------------------------------------------
 
-export function getPeriodStats(fromKey: string): {
+export function getPeriodStats(
+  fromKey: string,
+  toKeyExclusive?: string,
+): {
   tokens: number;
   costUsd: number;
 } {
   let tokens = 0,
     costUsd = 0;
   for (const [date, day] of statsCache) {
-    if (date >= fromKey) {
+    if (date >= fromKey && (toKeyExclusive == null || date < toKeyExclusive)) {
       tokens += day.totalTokens;
       costUsd += day.costUsd;
     }

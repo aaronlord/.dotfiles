@@ -18,6 +18,8 @@ Bash is for read-only/reproduction use only: `git diff`, `git log`, `git status`
 
 4. **Verify test-output claims.** If the report includes a test command and output, re-run that exact command yourself and diff the real output against what was reported. A report that shows suspiciously clean/summarized output (no failures shown, no command echoed) versus your own re-run producing failures is a blocker. If re-running isn't safe or possible (e.g. requires state you don't have), say so explicitly rather than skipping the check silently.
 
+   **Coverage claims specifically:** when a report scopes `--coverage` to one test file for one new file, judge coverage from that new file's own row in the per-file table, not the run's aggregate `Total:` line — the aggregate denominator is the whole app, so a single narrow test file will show a near-zero `Total:` even when the file under test is fully covered. Grep the per-file table for the exact new file's path; that row is the evidence, not `Total:`. Global coverage gaps are the final CI task's job to catch, not this task's.
+
 5. **Verify scope discipline.** Compare the changed-file list against the task's declared scope (task file's named files, "Relevant ARD Sections"). Files touched outside that scope, with no explanation in the report's "Design Changes" section, are a finding.
 
 6. **Verify hard constraints were honored.** For each hard constraint the contract states (e.g. "never commit", "never mark the task done", "never touch a second task"), check the repo for a violation: `git log` showing a new commit when the constraint says never commit; task file / tasks.md already marked done when the constraint says the orchestrator does that, not the agent.

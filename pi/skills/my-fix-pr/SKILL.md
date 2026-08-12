@@ -5,7 +5,7 @@ description: >
   commit each resolved issue, then resolve addressed threads. Use when the user says fix PR
   review feedback or address review comments. Do NOT use to open a PR (my-open-pr) or review a
   branch before feedback exists (my-review).
-version: 1.0.0
+version: 1.2.0
 ---
 
 # fix-pr
@@ -84,26 +84,51 @@ For every unresolved review comment, and the CI issue if one was found, in order
 1. **Read the comment (or CI failure/bot comment) in full.** Understand what's being asked for or what broke.
 2. **Locate the relevant code** in the repo. Read the file and surrounding context.
 3. **Classify the issue:**
-   - **Obvious / mechanical** — typo, formatting, simple rename, missing import, trivial refactor with a clear correct answer. Apply the fix immediately without discussion.
-   - **Requires judgement** — design decisions, tradeoffs, unclear intent, non-trivial changes. Invoke `/my-grill-me` for these.
+   - **Obvious / mechanical** — typo, formatting, simple rename, missing import, trivial refactor with a clear correct answer.
+   - **Requires judgement** — design decisions, tradeoffs, unclear intent, non-trivial changes.
 
-### 5. For obvious fixes
+This step only builds the classified list — don't fix or dispatch anything yet.
 
-Apply the fix directly using the edit tool, then stage the file:
+### 5. Resolve every judgement call
 
-```bash
-git add <file>
-```
+For each comment classified **requires judgement** in step 4, load and follow the `my-grill-me`
+skill instructions: interrogate the user about the right approach, one question at a time, with
+your recommended answer for each. Resolve the decision tree before writing any code. Work through
+every judgement-call comment this way before moving to step 6 — this stays a conversation with
+the user, so it can't be parallelized or delegated, but all of it should happen up front rather
+than interleaved one issue at a time with fixing.
 
-Collect all obvious fixes into a **single commit** at the end (or group by logical theme if the fixes are unrelated).
+By the end of this step, every comment has a known, fully-specified fix approach — the obvious
+ones already had one from step 4, and the judgement ones now have whatever was agreed with the
+user. Nothing is still ambiguous.
 
-### 6. For non-obvious issues — invoke /my-grill-me
+### 6. Dispatch all fixes
 
-Load and follow the `my-grill-me` skill instructions: interrogate the user about the right approach, one question at a time. Provide your recommended answer for each question. Resolve the decision tree before writing any code.
+Now that every comment has a known fix approach, dispatch the actual edits — don't do this
+inline in the main session. Group **all** comments, obvious and judgement-resolved together, by
+file: never run two fixer subagents against the same file concurrently, so a file touched by
+both an obvious fix and a judgement-resolved fix gets **one** dispatch covering both, not two.
 
-Once you and the user agree on the approach, implement it.
+For each file/group, dispatch a `worker` subagent with: the fix approach(es) for that file (the
+proposed approach for obvious comments, the agreed approach for judgement ones — not the raw
+grill-me transcript), and the relevant code context — not the whole PR or every comment.
 
-Stage the changed files:
+Tier per `model-matrix.md`:
+
+- `lightweight/generator` default — covers obvious fixes and most judgement-resolved fixes, since
+  by this point the decision is fully specified either way.
+- `versatile/generalist` if a group's agreed approach still has real cross-cutting scope.
+- `powerful/generalist` if a group's fix is security-adjacent.
+
+Dispatch in parallel across files/groups — this is the payoff of resolving every decision in
+step 5 first instead of interleaving grill → dispatch → grill → dispatch one issue at a time.
+
+For any file/group whose dispatch includes a judgement-resolved fix, show the user the resulting
+diff and confirm it matches what was agreed before staging — that subagent wasn't part of the
+grill-me conversation and can drift from what was agreed even with a clear brief. Groups that are
+purely obvious skip this check.
+
+After each dispatch is confirmed (or immediately, for purely-obvious groups), stage the file(s):
 
 ```bash
 git add <file(s)>
@@ -122,6 +147,8 @@ Rules for the commit message:
 - Prefix is always `fix:` (lowercase)
 - Body is optional but use it when the fix needs more context
 - One commit per distinct issue or tightly coupled group of issues
+- If a file's dispatch combined an obvious fix and a judgement-resolved fix, commit it as one
+  commit whose message covers both — don't try to split one file's diff across two commits.
 - Message describes **what** was fixed, not the reviewer's comment verbatim
 
 ### 8. Ask before touching GitHub
@@ -166,7 +193,7 @@ mutation($id: ID!) {
 }' -f id="{thread_id}"
 ```
 
-For any comment the user decided **not** to fix (explicitly skipped, already addressed by existing code, or stale/no-longer-applicable), leave the thread unresolved but post a reply explaining why, so the reviewer has context without needing to re-ask. Append a signature line disclosing the reply is AI-generated, so the reviewer knows it wasn't manually typed by the PR author:
+For any comment the user decided **not** to fix (explicitly skipped, already addressed by existing code, or stale/no-longer-applicable), leave the thread unresolved but post a reply explaining why, so the reviewer has context without needing to re-ask:
 
 ```bash
 gh api repos/{owner}/{repo}/pulls/{pr_number}/comments/{comment_id}/replies \
@@ -226,3 +253,7 @@ After all comments (and any CI issue) are addressed, summarise what was done:
 - Always read the full file context before making a change — don't fix in isolation.
 - Don't confuse a cancelled run with a passing one — cancelled means unknown/likely-broken, always investigate.
 - Resolving a thread and replying to it are independent GitHub actions — a reply doesn't auto-resolve, and resolving doesn't require a reply. Fixed comments get resolved (reply optional); skipped comments get a reply and stay unresolved.
+- Do not edit files yourself in the main session for obvious or judgement-resolved fixes — dispatch a sized subagent per file/group via `model-matrix.md`, same as `my-review`'s fix step.
+- Do not dispatch two fixer subagents against the same file concurrently — group by file first, merging obvious and judgement-resolved fixes on the same file into one dispatch.
+- Do not skip the pre-stage diff check on a file/group whose dispatch includes a judgement-resolved fix — that subagent wasn't part of the interrogation and can drift from what was agreed even with a clear brief.
+- Do not interleave grilling and dispatching one issue at a time — resolve every judgement call (step 5) before dispatching any fixes (step 6), so all fixes can go out in one parallel wave and file-grouping can see the whole picture.

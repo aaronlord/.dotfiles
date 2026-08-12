@@ -5,7 +5,7 @@ description: >
   Docs. Use when the user says "review since main", "review this branch", or wants a diff/WIP
   code review. Do NOT use for PRD/ARD review (my-review-plan) or PR workflow steps (my-fix-pr,
   my-open-pr).
-version: 1.0.0
+version: 1.2.0
 ---
 
 Review the diff between `HEAD` and a fixed point the user supplies across five axes:
@@ -20,6 +20,15 @@ All five axes run as **independent review passes**, each scoped to its own crite
 pollute each other's context and each one enforces its own scope and output format by
 construction, not by per-call prompt text. This skill's job is to gather the dynamic inputs each
 pass needs and aggregate what comes back.
+
+**Security** always runs as two independent passes — one dispatched with `model-matrix.md`'s
+`versatile/generator` model, one with its `versatile/generalist` model — because it's a
+single-pass-ever axis (unlike Standards/Spec, which also get checked per-task during
+`/my-implement-tasks` step 5.4) where a second, differently-oriented model catches real
+additional coverage, not a re-check of something already checked. **Standards** currently also
+runs doubled, as a trial — revisit after a run of real usage: if the two passes rarely disagree,
+drop it back to single-pass, since Standards already gets checked once per task upstream and the
+second pass isn't earning its cost. Spec, Performance, and Docs stay single-pass.
 
 ## When to use
 
@@ -59,34 +68,48 @@ Look for the originating spec, in this order:
 
 ### 3. Identify the standards sources
 
-Look for any files in the repo that document how code should be written:
+Look for any files in the repo that document how code should be written. Main only needs to know
+*which* files exist and *which* apply to which changed file — the reviewing subagent reads the
+rule bodies itself. Don't read full file contents here; that cost belongs to the subagent that
+actually uses the rules, not to main building the map.
 
-- `AGENTS.md` (root and any path-level files in scope) — read them all
-- `.github/instructions/*.instructions.md` — read every file; record both the `applyTo:` glob and the rule body. Then, for each changed file in the diff, determine which instruction files' globs match it. Build a mapping: **file path → applicable instruction files**. Pass this mapping to the Standards pass so it knows which rules apply to which files.
-- `CODING_STANDARDS.md`, `CONTRIBUTING.md`, or equivalent
-- ADRs under `docs/` that establish conventions
+- `AGENTS.md` (root and any path-level files in scope) — record the paths only, do not read them.
+- `.github/instructions/*.instructions.md` — read only the frontmatter (the `applyTo:` glob line,
+  e.g. `head -5` or a frontmatter-only grep) of each file, not the rule body. Then, for each
+  changed file in the diff, determine which instruction files' globs match it. Build a mapping:
+  **file path → applicable instruction file paths**. Pass this mapping (paths, not bodies) to the
+  Standards pass.
+- `CODING_STANDARDS.md`, `CONTRIBUTING.md`, or equivalent — record the paths only.
+- ADRs under `docs/` that establish conventions — record the paths only.
 
-Read each file found. Pass their contents (or relevant excerpts) to the Standards pass so it can
-cite specific rules.
+Pass the file paths (not contents) found here to the Standards and Docs passes; each subagent
+reads the actual files itself once dispatched.
 
 ### 4. Run all five review passes
 
-If you want the axes isolated from each other's context, dispatch all five at once as isolated
-subagents/background tasks (e.g. the generic `worker` agent via the `subagent` tool, one dispatch
-per axis, each given its reference file's contents as its task instructions) — not a single
+If you want the axes isolated from each other's context, dispatch each pass at once as isolated
+subagents/background tasks (e.g. the generic `worker` agent via the `subagent` tool — one
+dispatch per axis, except Standards and Security which get two dispatches each, seven dispatches
+total — each given its reference file's contents as its task instructions) — not a single
 generic reviewer covering all axes. Each reference file already carries its own review method,
 tool scope, and output format; your job here is only to hand each pass the dynamic, per-repo data
 it needs. Keep each payload to data, not instructions — the instructions already live in the
-reference file. Otherwise, run the five passes sequentially yourself in the current session, one
-axis at a time, without letting findings from one axis bleed into another's output.
+reference file. Keep that data to paths and short mappings, not file contents — output tokens
+cost more than input tokens, so main writing full file bodies into a task string is more
+expensive than letting the subagent's own `read` tool pull them in as input tokens. Otherwise, run
+the passes sequentially yourself in the current session, one pass at a time, without letting
+findings from one axis bleed into another's output.
 
-**[`references/standards.md`](references/standards.md)** — pass:
+**[`references/standards.md`](references/standards.md)** — dispatch **twice**, once with
+`model-matrix.md`'s `versatile/generator` model/thinkingLevel and once with its
+`versatile/generalist` model/thinkingLevel (both isolated subagents, same reference file, same
+inputs). Pass each:
 
 - The full diff command and commit list.
-- The standards-source files found in step 3, with full contents or relevant excerpts.
-- The file-path → applicable instruction files mapping built in step 3.
+- The standards-source file **paths** found in step 3 (not contents) — the subagent reads them itself.
+- The file-path → applicable instruction file **paths** mapping built in step 3 (paths, not rule bodies).
 
-**[`references/spec.md`](references/spec.md)** — pass:
+**[`references/spec.md`](references/spec.md)** — single pass:
 
 - The diff command and commit list.
 - The path or fetched contents of the spec.
@@ -95,30 +118,73 @@ If the spec is missing, skip this pass entirely — `references/spec.md`'s contr
 "no spec available" output when asked with nothing to review, but prefer not to run it at all and
 note the omission in the final report.
 
-**[`references/security.md`](references/security.md)** — pass:
+**[`references/security.md`](references/security.md)** — dispatch **twice**, same split as
+Standards above (`versatile/generator` + `versatile/generalist`, both isolated subagents, same
+inputs):
 
 - The full diff command and commit list.
 
-**[`references/performance.md`](references/performance.md)** — pass:
+**[`references/performance.md`](references/performance.md)** — single pass:
 
 - The full diff command and commit list.
 
-**[`references/docs.md`](references/docs.md)** — pass:
+**[`references/docs.md`](references/docs.md)** — single pass:
 
 - The full diff command and commit list.
-- The list of doc files found in step 3 (`AGENTS.md`, `CONTEXT.md`, `docs/adr/`, `docs/**`), with contents or relevant excerpts.
+- The list of doc file **paths** found in step 3 (`AGENTS.md`, `CONTEXT.md`, `docs/adr/`, `docs/**`) — the subagent reads them itself, not contents or excerpts.
 
-### 5. Aggregate
+### 5. Reconcile the doubled passes
 
-Present the five reports under `## Standards`, `## Spec`, `## Security`, `## Performance`, and
-`## Docs` headings, verbatim or lightly cleaned. Do **not** merge or rerank findings — the five
-axes are deliberately separate.
+For **Standards** and **Security** only: you now have two reports per axis (generator-model pass,
+generalist-model pass). Merge them into the single axis report the user sees — do not show two
+full reports:
+
+- A finding both passes caught: keep one copy.
+- A finding only one pass caught: keep it in the merged list (don't drop it just because only one
+  model found it), but tag it inline with which pass caught it, e.g. `(generalist-only)` or
+  `(generator-only)`.
+
+Do this merge yourself in the current session — it's a comparison over two already-produced
+reports, not a task that needs its own subagent dispatch.
+
+### 6. Aggregate
+
+Present the five reports (Standards and Security already merged per step 5) under `## Standards`,
+`## Spec`, `## Security`, `## Performance`, and `## Docs`
+headings, verbatim or lightly cleaned. Do **not** merge or rerank findings **across** axes — the
+five axes are deliberately separate; merging is only for the two passes *within* Standards/Security.
 
 End with a one-line summary: total findings per axis, and the worst issue within each axis (if
 any). Don't pick a single winner across axes — that's the reranking the separation exists to
 prevent.
 
-### 6. Commit
+### 7. Apply fixes (optional)
+
+If the user asks you to fix findings after seeing the report, don't edit the files yourself in
+the main session — dispatch each fix to its own `worker` subagent, same pattern as the review
+passes. The main agent is usually the priciest model in play; burning it on mechanical edits a
+cheaper Generator model handles fine defeats the point of tiering models at all.
+
+1. Ask the user which findings to fix if it isn't obvious (all of them, one axis, a specific
+   finding) — don't assume "fix everything" from an ambiguous "fix it."
+2. Group findings by file. Never dispatch two fixer subagents against the same file concurrently
+   — conflicting edits. One dispatch per file (or per tightly-coupled file group), each given only
+   that file's findings, the cited rule/spec text, and the relevant diff hunk — not the whole
+   review report or whole diff.
+3. Pick weight/orientation per `model-matrix.md` (same table the review passes use):
+   - **`lightweight/generator`** (`mai-code-1-flash-picker` · low) — default for mechanical,
+     unambiguous fixes with a single clearly-cited rule (missing null check, wrong import,
+     formatting/convention mismatch, off-by-one).
+   - **`versatile/generalist`** (`claude-sonnet-5` · medium) — fixes needing judgment: spec
+     mismatches requiring reinterpretation, or anything touching more than one file/module.
+   - **`powerful/generalist`** (`claude-opus-5` · high) — security findings only, per
+     `~/.pi/agent/extensions/model-matrix/general.md`'s Authority-ladder guidance that a silently wrong security fix is costly
+     even when the change looks small.
+4. Dispatch fixer subagents in parallel across files (never within the same file), same as step 4.
+5. After they return, show the user a diff of what changed before step 8's commit — this is the
+   human-approval gate; don't let a fixer subagent's edits go straight to commit unseen.
+
+### 8. Commit
 
 After presenting the review, ask the user whether to commit the changes.
 
@@ -150,6 +216,8 @@ asking whether to commit — do not silently commit over them.
 ## Output format
 
 - Present findings under `## Standards`, `## Spec`, `## Security`, `## Performance`, and `## Docs`.
+- For Standards and Security, present one merged list per axis (not two reports) — tag any finding
+  caught by only one of the two passes with `(generator-only)` or `(generalist-only)`.
 - Keep each axis separate; verbatim or lightly cleaned is fine.
 - End with a one-line summary giving total findings per axis and the worst issue within each axis, if any.
 
@@ -160,3 +228,12 @@ asking whether to commit — do not silently commit over them.
 - Do not merge or rerank findings across axes; separation stops one axis from masking another.
 - Do not defer bad refs or empty diffs into downstream review passes; fail them during fixed-point validation.
 - Do not run the Spec pass when no spec exists; note the omission in the final report instead.
+- Do not double up Spec, Performance, or Docs without a specific reason — they're single-pass-ever
+  axes today, so doubling would be new cost with no re-check already happening upstream to weigh
+  against.
+- Do not present Standards/Security as two separate full reports — merge per step 5 and only
+  surface the divergence, not the raw duplication.
+- Do not implement suggested fixes yourself as the main agent — dispatch a sized subagent per
+  file/finding via `model-matrix.md`, same as the review passes themselves.
+- Do not dispatch two fixer subagents against the same file concurrently — group by file first.
+- Do not let fixer subagents' edits reach `git commit` unseen — show the diff before step 8.

@@ -1,18 +1,20 @@
 ---
 name: my-review-plan
 description: >
-  Stress-test a plan's PRD and ARD with a grill-me interview, then rewrite both files in place.
-  Use this skill when the user says review plan, refine plan, or sanity-check a draft before
-  task breakdown. Do NOT use for net-new planning (my-plan, my-quick-plan), follow-up changes to
-  an existing plan (my-follow-up-plan), or task grooming (my-plan-to-tasks).
-version: 1.1.0
+  Stress-test a plan's PRD and ARD by auditing them for real problems, then grilling the user on
+  those. Use this skill when the user says review plan, refine plan, or sanity-check a draft
+  before task breakdown. Do NOT use for net-new planning (my-plan, my-quick-plan), follow-up
+  changes to an existing plan (my-follow-up-plan), or task grooming (my-plan-to-tasks).
+version: 2.0.0
 ---
 
 # /my-review-plan
 
-Stress-test and refine an existing plan through a focused interview, then update the documents to reflect the shared understanding reached.
+Find what's wrong with an existing plan, grill the user on it, and correct the documents in place.
 
-By the time this runs, the user has likely hand-edited `prd.md`/`ard.md` already (renamed files, fixed contracts, left notes) — that's the expected flow between `/my-plan` and here. Read the files as they currently stand, don't assume they still match what `/my-plan` originally drafted.
+This is an **audit**, not a completeness sweep. `/my-plan` already grilled the user and already followed codebase precedent; the documents are deliberately terse. Your job is to find contradictions, wrong assumptions, and real risks — not to fill every silence you notice. Terse is the goal state, not a defect.
+
+By the time this runs, the user has likely hand-edited `prd.md`/`ard.md` (fixed the tree, adjusted contracts, left notes) — that's the expected flow between `/my-plan` and here. Read the files as they currently stand.
 
 ## When to use
 
@@ -36,40 +38,39 @@ Read both `.plans/{name}/prd.md` and `.plans/{name}/ard.md` in full.
 
 ### 2. Load codebase context
 
-Read `.plans/{name}/context.md`. This was written during `/my-plan` and contains all codebase exploration findings. Do not re-explore — trust this file. Only read additional source files if the plan references something not covered there.
+Read `.plans/{name}/context.md`. Written during `/my-plan`, it holds the codebase findings, the precedent the structure was based on, and every decision already settled with the user. Trust it. Only read source files to verify something the ARD claims, or where the plan references something context.md doesn't cover.
 
 If `context.md` has a `## Reference Documents` section, treat those `.plans/{name}/references/*.md` files as the source for anything the interview needs from that external URL — read the cached file, do not re-fetch the URL. If the interview surfaces a new URL not already cached, fetch it once, save it to `.plans/{name}/references/{slug}.md` with the same `source`/`fetched` frontmatter used during `/my-plan`, and append it to `context.md`'s `## Reference Documents` section so later phases reuse it too.
 
-### 3. Scan the plan against a fixed taxonomy
+### 3. Audit the plan for problems
 
-Before starting the interview, go through this exact list of categories. For each one, mark it `Clear`, `Partial`, or `Missing` based on what the PRD and ARD currently say. Do not skip a category because it seems unlikely to apply — mark it `Clear` if it clearly doesn't apply, but check it explicitly.
+Go looking for things that are **wrong**, not things that are absent. A silence is only a finding if acting on the plan as written would produce the wrong result. Check, in this order:
 
-- **Functional scope**: every actor and scenario from the PRD's User Stories has a corresponding design decision in the ARD; edge cases are named, not implied
-- **Data contracts**: every DTO, command payload, event, or API request/response shape in the ARD's "Data Contracts" section has every property named with a concrete type (no placeholder rows, no `TBD` types)
-- **Domain & data model**: entities, attributes, relationships, and schema changes are named concretely (no `{placeholder}` left unresolved)
-- **Interface contracts**: command/handler/job/repository names are concrete; input/output shapes are stated
-- **Non-functional behavior**: error handling, validation, and failure modes are addressed for each user story
-- **Integration & dependencies**: external services, other teams, or other modules this touches are named
-- **Testing boundaries**: the ARD's Implementation Notes "Testing" bullets name the test seams and prior art
-- **Terminology**: domain terms used in the PRD and ARD match CONTEXT.md's glossary (if one exists) and match each other
-- **Open questions**: every item in the ARD's Implementation Notes "Open Questions" bullets is a real, answerable question, not a vague statement
+- **Contradictions**: the ARD's structure or contracts conflict with the PRD, with the PRD's Out of Scope, with `context.md`'s recorded decisions, or with themselves.
+- **Wrong against reality**: a path, module, interface or column the ARD names doesn't exist as described (or already exists, differently). Verify against the codebase — this is the highest-value check.
+- **Broken precedent**: something in the tree doesn't match how this codebase does that thing, or introduces an abstraction with no counterpart anywhere in the repo.
+- **Contracts that can't work**: a DTO/payload missing a field the flow demonstrably needs, a type that can't carry the stated value, a placeholder that blocks implementation.
+- **Unhandled failure modes** that a user story actually implies — not every theoretical error path.
+- **Risky assumptions**: the plan depends on unmerged work, another team, or an external system behaving a particular way, and doesn't say so.
+- **Stale Open Questions**: anything still marked `[NEEDS CLARIFICATION]`.
+- **Terminology drift**: a domain term used differently from `CONTEXT.md`'s glossary or from itself.
 
-Every category marked `Partial` or `Missing` becomes at least one interview question. Prioritise `Missing` over `Partial`, and within those, resolve in this order: functional scope > data contracts > domain & data model > interface contracts > non-functional behavior > integration & dependencies > testing boundaries > terminology > open questions.
+What is explicitly **not** a finding: a section being short, a rationale not being written down, a testing note missing from `ard.md` (that lives in `context.md`), a file lacking an explanatory comment, or a decision the user already made in `/my-plan`'s grill.
 
-Data contracts are resolved early and field-by-field: for each DTO/payload with a placeholder row or missing property, ask the user for the exact property name and type before moving to other categories. Do not accept a vague answer ("an object with the usual fields") — press for the concrete list.
+If the audit turns up nothing real, say so and stop — flipping status to `reviewed` with no changes is a valid outcome. Do not manufacture questions to justify the run.
 
-### 4. Interview the user — one question at a time
+### 4. Grill the user on the findings — one question at a time
 
-Follow the `my-grill-me` approach: interview relentlessly about every aspect of the plan until you reach shared understanding. Walk down each branch of the decision tree, resolving dependencies between decisions one-by-one. Asking many questions is correct and expected — never shorten or cap the interview to save turns.
+Follow the `my-grill-me` approach for each finding from step 3. Interview until every real finding is resolved — don't cap the interview to save turns, but don't extend it past the findings either.
 
-Before working through the taxonomy questions, open the grill by asking the user for their initial thoughts on the plan (what's off, what's missing, what worries them). Fold anything they raise into the taxonomy scan from step 3 and interview on it alongside the categories you found.
+Open by asking the user for their own read on the plan (what's off, what worries them). Fold whatever they raise into the findings list and grill on it alongside.
 
 Rules:
 - Ask exactly **one question at a time**
 - If a question can be answered by exploring the codebase, do that instead of asking
-- Don't move to the next question until the current one is resolved
-- Don't stop early — exhaust every meaningful open question before concluding
-- After every other question is resolved, ask the user if they have anything further to add. If they raise something, resolve it (looping back into the rules above) and ask again. Only treat the interview as complete once the user explicitly replies that they have nothing to add.
+- Don't move on until the current question is resolved
+- Every question must trace to a specific finding or something the user raised
+- Once the findings are exhausted, ask the user if they have anything further to add. If they raise something, resolve it and ask again. Only conclude once they explicitly say they have nothing to add.
 
 **Every question must use this exact structure, in this exact order:**
 
@@ -81,45 +82,51 @@ Never skip step 2. Never phrase the recommendation as optional or bury it after 
 
 ### 5. Capture durable artifacts as you grill
 
-A grill that only updates the plan files loses its insights the moment the plan is archived. As terms get sharpened and decisions get made, use the `my-domain-modeling` skill to write them somewhere durable:
+A grill that only updates the plan files loses its insights the moment the plan is archived. Capture as you go, inline, not in a batch at the end:
 
-- Resolved or sharpened **domain terms** → the project glossary (`CONTEXT.md`)
-- **Hard-to-reverse, surprising, real-trade-off** decisions → an ADR in `docs/adr/`
+- Rationale, alternatives ruled out, testing notes, and every grill answer → `.plans/{name}/context.md` (agent-only, uncapped — this is where prose belongs)
+- Resolved or sharpened **domain terms** → the project glossary (`CONTEXT.md`), via `my-domain-modeling`
+- **Hard-to-reverse, surprising, real-trade-off** decisions → an ADR in `docs/adr/`, via `my-domain-modeling`
 
-Capture these inline during the interview, not in a batch at the end. Apply `my-domain-modeling`'s ADR bar — most decisions don't warrant one.
+Apply `my-domain-modeling`'s ADR bar — most decisions don't warrant one.
 
-### 6. Update the plan documents in place
+### 6. Correct the documents in place
 
-Once the interview is complete, rewrite both `prd.md` and `ard.md` to reflect the shared understanding:
+Once the interview is complete, edit `prd.md` and `ard.md` to reflect what was settled. **Edit, don't rewrite** — leave untouched anything the audit didn't flag.
 
-- Update _Status_ from `draft` to `reviewed`
-- Fill in gaps identified during the interview
-- Replace ambiguous language with precise decisions
-- Replace every placeholder row in "Data Contracts" with the confirmed property names and types
-- Clear out any Open Questions bullets that were resolved (or note the resolution inline)
-- Keep the user's original intent — don't over-engineer or change the scope
-- Keep ard.md terse — fragments over sentences, sacrifice grammar for concision. Interview answers get compressed to the essential fact, not transcribed. This file stays a fast human read/edit, not a report.
+Hard rules:
 
-Write the updated documents back to `.plans/{name}/prd.md` and `.plans/{name}/ard.md`.
+- The documents must not grow in shape. `ard.md` keeps exactly its existing sections: `Structure`, `Data Contracts`, `Other`, and `Out of Scope` / `Open Questions` where applicable. Do not add sections. Do not add rationale, decision, approach, testing, or module-boundary prose — that goes in `context.md`.
+- `prd.md` stays technology-agnostic throughout: no file paths, class names, frameworks, libraries or table names (naming an external system/integration the product depends on is the one exception).
+- Every grill answer's *reasoning* lands in `context.md`; only the resulting fact lands in `ard.md`.
+- Fix what was wrong, replace resolved placeholders with concrete values, delete resolved Open Questions.
+- Keep the user's intent and scope — don't over-engineer.
+- Update _Status_ from `draft` to `reviewed` in both files.
+
+If the corrected `ard.md` is longer than the one you started with, check whether the extra length is fact or justification. Justification comes back out.
 
 ### 7. Wrap up
 
 Tell the user:
 
-- What changed in each document
-- Any glossary terms or ADRs captured (with paths)
+- What changed in each document (and if nothing needed changing, say that)
+- What was recorded in `context.md`, plus any glossary terms or ADRs captured (with paths)
 - Any questions that remain open (and why)
 - Next step: run `/my-plan-to-tasks {name}` to break the ARD into tasks
 
 ## Output format
 
-- Updated `.plans/{name}/prd.md` and `.plans/{name}/ard.md`
-- A final wrap-up that states what changed in each document, any glossary/ADR artifacts created, any remaining open questions, and the next step: `/my-plan-to-tasks {name}`
+- Corrected `.plans/{name}/prd.md` and `.plans/{name}/ard.md`, plus any additions to `.plans/{name}/context.md`
+- A final wrap-up stating what changed, what was recorded where, any remaining open questions, and the next step: `/my-plan-to-tasks {name}`
 
 ## Anti-patterns to avoid
 
-- Do not re-explore the codebase broadly when `.plans/{name}/context.md` already answers the question.
+- Do not run a completeness sweep — audit for what's wrong, not for what's unsaid.
+- Do not treat terseness, missing rationale, or a short section as a finding.
+- Do not add sections to `ard.md` or move `context.md` material into it.
+- Do not re-litigate decisions the user already settled during `/my-plan`'s grill.
+- Do not re-explore the codebase broadly when `.plans/{name}/context.md` already answers the question — but do verify paths and interfaces the ARD names actually exist.
 - Do not ask multiple questions at once or advance before the current question is resolved.
-- Do not accept vague data contracts, unresolved placeholders, or hand-wavy answers where exact names and types are required.
+- Do not accept vague answers where exact names and types are required.
 - Do not finish the interview before the user explicitly says they have nothing further to add.
-- Do not over-engineer or change the user's intended scope while rewriting the plan.
+- Do not over-engineer or change the user's intended scope.

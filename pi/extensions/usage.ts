@@ -56,6 +56,8 @@ interface UsageReport {
   maxTokens: number;
   week: { tokens: number; costUsd: number };
   month: { tokens: number; costUsd: number };
+  prevWeek: { tokens: number; costUsd: number };
+  prevMonth: { tokens: number; costUsd: number };
   branchRows: UsageReportBranchRow[];
   branchCostStats: { meanUsd: number; medianUsd: number };
   modelRows: UsageReportModelRow[];
@@ -77,6 +79,26 @@ function weekStartKey(): string {
 
 function monthStartKey(): string {
   return new Date().toISOString().slice(0, 8) + "01";
+}
+
+function prevWeekStartKey(): string {
+  const d = new Date();
+  d.setDate(d.getDate() - 13);
+  return d.toISOString().slice(0, 10);
+}
+
+// same elapsed-day window as this month so far (MTD vs MTD, not MTD vs full month)
+function prevMonthRange(): [string, string] {
+  const now = new Date();
+  const elapsedDays = now.getDate();
+  const start = new Date(now);
+  start.setDate(1);
+  start.setMonth(start.getMonth() - 1);
+  const startKey = start.toISOString().slice(0, 10);
+  const end = new Date(start);
+  end.setDate(1 + elapsedDays);
+  const endKey = end.toISOString().slice(0, 10);
+  return [startKey, endKey];
 }
 
 // ---------------------------------------------------------------------------
@@ -109,6 +131,13 @@ function shortModel(model: string): string {
   return stripped.length > 0 ? stripped : name;
 }
 
+function fmtDelta(current: number, previous: number): string {
+  if (previous === 0) return current === 0 ? "±0%" : "new";
+  const pct = ((current - previous) / previous) * 100;
+  const arrow = pct > 0 ? "▲" : pct < 0 ? "▼" : "±";
+  return `${arrow}${Math.abs(pct).toFixed(0)}%`;
+}
+
 function median(values: number[]): number {
   if (values.length === 0) return 0;
   const sorted = [...values].sort((a, b) => a - b);
@@ -136,6 +165,8 @@ export default function (pi: ExtensionAPI) {
       maxTokens,
       week,
       month,
+      prevWeek,
+      prevMonth,
       branchRows,
       branchCostStats,
       modelRows,
@@ -207,12 +238,13 @@ export default function (pi: ExtensionAPI) {
     lines.push("");
     lines.push(theme.fg("dim", "─".repeat(70)));
 
-    for (const [label, stats] of [
-      ["This week", week],
-      ["This month", month],
+    for (const [label, stats, prev] of [
+      ["This week", week, prevWeek],
+      ["This month (MTD)", month, prevMonth],
     ] as const) {
+      const delta = theme.fg("dim", ` (${fmtDelta(stats.costUsd, prev.costUsd)} vs prev)`);
       lines.push(
-        `  ${theme.fg("muted", label.padEnd(LABEL_W))}  ${" ".repeat(BAR_W)}  ${tokCol(stats.tokens)}  ${costCol(stats.costUsd)}`,
+        `  ${theme.fg("muted", label.padEnd(LABEL_W))}  ${" ".repeat(BAR_W)}  ${tokCol(stats.tokens)}  ${costCol(stats.costUsd)}${delta}`,
       );
     }
 
@@ -369,6 +401,8 @@ export default function (pi: ExtensionAPI) {
         maxTokens,
         week: getPeriodStats(weekStartKey()),
         month: getPeriodStats(monthStartKey()),
+        prevWeek: getPeriodStats(prevWeekStartKey(), weekStartKey()),
+        prevMonth: getPeriodStats(...prevMonthRange()),
         branchRows,
         branchCostStats,
         modelRows,

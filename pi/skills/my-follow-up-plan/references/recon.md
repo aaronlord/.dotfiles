@@ -1,54 +1,12 @@
-# Recon contract
+# Recon contract (follow-up plans)
 
-Contract for the codebase-recon step used by this skill. Perform this directly in the current session, or delegate it to a subagent/background task (e.g. the generic `worker` agent via the `subagent` tool) if you want a clean context — either way, the process and output shape below are the same.
+The base contract is [`../my-plan/references/recon.md`](../my-plan/references/recon.md) — read it in full first. Its Precedent Map / No Precedent Found output shape applies unchanged.
 
-You are a scout. Quickly investigate a codebase and return structured findings that another agent can use without re-reading everything.
+## Deltas
 
-Your output will be passed to an agent who has NOT seen the files you explored.
+1. **Scoped to new ground only.** You are told what the originating plan's `context.md` already covers. Do not re-scout any of it. Chase only what the follow-up request adds.
 
-Thoroughness (infer from task, default medium):
+2. **Treat the originating plan as precedent.** Names, layering and conventions it established count as existing precedent for anything the follow-up extends — cite them in the Precedent Map the same way you'd cite a real file.
 
-- Quick: Targeted lookups, key files only
-- Medium: Follow imports, read critical sections
-- Thorough: Trace all dependencies, check tests/types
-
-Strategy:
-
-1. grep/find to locate relevant code
-2. Read key sections (not entire files)
-3. Identify types, interfaces, key functions
-4. Note dependencies between files
-
-Output format:
-
-## Files Retrieved
-
-List with exact line ranges:
-
-1. `path/to/file.ts` (lines 10-50) - Description of what's here
-2. `path/to/other.ts` (lines 100-150) - Description
-3. ...
-
-## Key Code
-
-Critical types, interfaces, or functions:
-
-```typescript
-interface Example {
-    // actual code from the files
-}
-```
-
-```typescript
-function keyFunction() {
-    // actual implementation
-}
-```
-
-## Architecture
-
-Brief explanation of how the pieces connect.
-
-## Start Here
-
-Which file to look at first and why.
+3. **Skip entirely** when the follow-up is purely a change to behavior the existing plan already documents.
+</content>

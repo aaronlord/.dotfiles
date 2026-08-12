@@ -5,7 +5,7 @@ description: >
   inherits its context. Use this skill when the user wants to follow up on, revisit, come back
   to, or build on a previous plan. Do NOT use for net-new planning (my-plan), plan review
   (my-review-plan), or task breakdown (my-plan-to-tasks).
-version: 1.1.0
+version: 1.3.0
 ---
 
 # /my-follow-up-plan
@@ -35,7 +35,6 @@ Read, in full:
 - `.plans/{name}/context.md`
 - `.plans/{name}/prd.md`
 - `.plans/{name}/ard.md`
-- `.plans/{name}/checklist.md` if present
 - `.plans/{name}/tasks.md` if present (just to see how much of it shipped — don't open individual task files unless something is unclear)
 
 This is recon input for step 3, not something to re-derive — do not re-scout what these files already answer.
@@ -51,21 +50,21 @@ Give a recommendation: default to "new plan" when the original plan's tasks are 
 
 ### 3a. Branch: update the existing plan in place
 
-1. Check whether the follow-up touches anything not already covered in `context.md`. If so, run [`references/recon.md`](references/recon.md) (Quick thoroughness, same boundaries as `/my-plan` step 3) scoped to just the new ground — dispatch it to an isolated subagent if you want a clean context, otherwise do it directly. Tell it explicitly what's already known from `context.md` so it doesn't re-tread it. Skip this step entirely if the follow-up is purely a change to already-documented behavior.
+1. Check whether the follow-up touches anything not already covered in `context.md`. If so, run [`references/recon.md`](references/recon.md) scoped to just the new ground — dispatch it to a subagent (cheap model is fine) so its depth stays out of this session. Tell it explicitly what's already known from `context.md` so it doesn't re-tread it. Skip this step entirely if the follow-up is purely a change to already-documented behavior.
 2. Run [`references/drafting.md`](references/drafting.md) (dispatched to an isolated subagent if you want a clean context, otherwise directly) with:
    - The follow-up request, verbatim.
    - The plan's path (`.plans/{name}/`) — point it at the existing `prd.md`/`ard.md`/`context.md` and have it read them itself rather than pasting their content into the prompt.
    - Any new recon findings from step 1.
    - Explicit instructions: **revise, don't rewrite** — carry forward every section the follow-up doesn't touch verbatim; only change what the new request actually changes. Reset `_Status_` back to `draft` in both `prd.md` and `ard.md` (the follow-up invalidates any prior `/my-review-plan` pass). Run the same self-review scan it normally runs on a fresh draft.
-3. Overwrite `.plans/{name}/context.md`, `prd.md`, `ard.md`, `checklist.md` with what's returned.
+3. Overwrite `.plans/{name}/context.md`, `prd.md`, `ard.md` with what's returned.
 4. Leave `tasks.md` and `tasks/` untouched, but flag them as stale in the handback (step 4) if the plan had any — the user will need to re-run `/my-plan-to-tasks {name}` for the affected part of the plan.
 
 ### 3b. Branch: new plan, seeded with the old one as context
 
 1. Infer a new feature name from the follow-up request (short, lowercase kebab-case). Show it to the user. If `.plans/{new-name}/` already exists, ask for a different name.
-2. Run [`references/recon.md`](references/recon.md) (Quick thoroughness, same boundaries as `/my-plan` step 3) on the follow-up request — dispatch it to an isolated subagent if you want a clean context, otherwise do it directly. Tell it what the old plan's `context.md` already covers so it doesn't re-discover modules already described there — it should only chase what's new.
-3. Cache any URLs in the follow-up prompt the same way `/my-plan` step 4 does, under `.plans/{new-name}/references/`.
-4. Create the scaffold `.plans/{new-name}/` (same shape as `/my-plan` step 5), and repoint `.plan` at it: `ln -sfn .plans/{new-name} .plan`.
+2. Run [`references/recon.md`](references/recon.md) on the follow-up request — dispatch it to a subagent (cheap model is fine). Tell it what the old plan's `context.md` already covers so it doesn't re-discover modules already described there; it should only chase what's new, and return a Precedent Map for it.
+3. Cache any URLs in the follow-up prompt the same way `/my-plan` step 5 does, under `.plans/{new-name}/references/`.
+4. Create the scaffold `.plans/{new-name}/` (same shape as `/my-plan` step 7), and repoint `.plan` at it: `ln -sfn .plans/{new-name} .plan`.
 5. Run [`references/drafting.md`](references/drafting.md) (dispatched to an isolated subagent if you want a clean context, otherwise directly) with:
    - The follow-up request, verbatim.
    - The inferred new feature name.
@@ -73,7 +72,7 @@ Give a recommendation: default to "new plan" when the original plan's tasks are 
    - Any cached reference pointers from step 3.
    - The old plan's path (`.plans/{name}/`), with instructions to read its `prd.md`/`ard.md`/`context.md` itself for background — inherited decisions (schema, module/aggregate names, established conventions) should be treated as given, not re-derived or re-questioned, unless the follow-up explicitly changes them. Anything inherited but now in tension with the follow-up becomes an Open Question in the new `ard.md`, not a silent override.
    - An explicit instruction to open the new `context.md` with a one-line `## Related Plan` note: path to `.plans/{name}/` and a one-sentence description of what carries over.
-6. Write the four returned blocks to `.plans/{new-name}/` exactly as returned.
+6. Write the three returned blocks to `.plans/{new-name}/` exactly as returned.
 
 ## Output format
 
@@ -84,11 +83,11 @@ Tell the user:
 - A brief summary of what changed (branch 3a) or what was drafted (branch 3b).
 - If branch 3a and the plan had tasks: that `tasks.md`/`tasks/` are now stale for the changed portion — re-run `/my-plan-to-tasks {name}`.
 - If branch 3a: `prd.md`/`ard.md` were reset to `draft` and revised — tell the user to review and hand-edit them (they're a terse rough draft, not a finished spec) before running `/my-review-plan {name}`.
-- If branch 3b: the link back to the originating plan. Tell the user to review and hand-edit the new `prd.md`/`ard.md` (rename files, fix data contracts, drop in notes) before running `/my-review-plan {new-name}`.
+- If branch 3b: the link back to the originating plan. Tell the user to review and hand-edit the new `prd.md`/`ard.md` (fix the tree, adjust contracts, drop in notes) before running `/my-review-plan {new-name}`.
 
 ## Anti-patterns to avoid
 
-- Do not re-scout what `.plans/{name}/context.md`, `prd.md`, `ard.md`, `checklist.md`, or `tasks.md` already answer.
+- Do not re-scout what `.plans/{name}/context.md`, `prd.md`, `ard.md`, or `tasks.md` already answer.
 - Do not open individual task files unless something is unclear.
 - Do not run [`references/recon.md`](references/recon.md) for branch 3a when the follow-up is purely a change to already-documented behavior.
 - Do not rewrite untouched sections when revising an existing plan; **revise, don't rewrite**.

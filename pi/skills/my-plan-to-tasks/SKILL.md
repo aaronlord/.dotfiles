@@ -5,7 +5,7 @@ description: >
   user says plan to tasks, break the plan into tasks, or groom a reviewed ARD for
   implementation. Do NOT use for net-new planning (my-plan, my-quick-plan), follow-up changes to
   an existing plan (my-follow-up-plan), or pre-groom review (my-review-plan).
-version: 1.4.0
+version: 1.8.0
 ---
 
 # /my-plan-to-tasks
@@ -33,7 +33,9 @@ Resolve `{name}` per "When to use" above, then point `.plan` at it: `ln -sfn .pl
 Given the plan name, read both files immediately — before asking the user any questions about goals, context, or scope. The plan files are the source of truth.
 
 - `.plans/{name}/prd.md` — user story, problem statement, goals
-- `.plans/{name}/ard.md` — architecture decisions (primary source for task derivation)
+- `.plans/{name}/ard.md` — the agreed structure: file tree, data contracts, non-file items (primary source for task derivation)
+
+The ARD is a **sketch, not a contract of completeness**. It carries the shape that was agreed; it deliberately omits rationale, testing notes, and detail. Filling that detail in is this skill's job — you may add files, tests, providers and migrations the tree doesn't list. What you may not do is contradict the tree: names, layering and directory placement in the ARD were taken from this codebase's own precedent and settled with the user. Follow that precedent for anything you add.
 
 If either file is missing, tell the user which one and stop. If the ARD status is still `draft` rather than `reviewed`, stop and show this exact message, substituting the real plan name:
 
@@ -44,7 +46,7 @@ Wait for the literal word `proceed`. Any other reply — including a vague "yes"
 
 ### 2. Load codebase context
 
-Read `.plans/{name}/context.md`. This was written during `/my-plan` and contains all codebase exploration findings. Use it as your starting point — don't re-do broad discovery. Then do targeted exploration of the specific code this plan will touch, looking for:
+Read `.plans/{name}/context.md`. Written during `/my-plan` and extended by `/my-review-plan`, it holds the codebase findings, the precedent the ARD's structure was copied from, and the reasoning behind every settled decision — all the material the ARD deliberately doesn't carry. Read it before deriving tasks; it is where "why is it shaped like this" is answered. Use it as your starting point — don't re-do broad discovery. Then do targeted exploration of the specific code this plan will touch, looking for:
 
 If `context.md` has a `## Reference Documents` section, read the cached `.plans/{name}/references/*.md` files it lists instead of re-fetching those URLs. If a task needs to cite one, cite the cached file path, not the raw URL. Only fetch a URL if it isn't already cached, then save and append it the same way `/my-plan` and `/my-review-plan` do.
 
@@ -68,22 +70,42 @@ Avoid horizontal slices (e.g. "all repositories" as one task). Each slice should
 
 Order tasks so dependencies come first. Number them sequentially.
 
-Assign each non-CI task a **tier** — either `interactive-only`, or a `{weight}/{orientation}` pair:
+Assign each non-CI task a **tier** — either `draft-only`, or a `{weight}/{orientation}` pair (per
+`/my-implement-tasks`'s Action-Allowed tier; see
+`~/.pi/agent/extensions/model-matrix/general.md`'s Authority ladder for what these three trust
+levels mean):
 
 **Weight** — capability/cost class:
 
-- `lightweight`: a matching instruction file fully covers the pattern, the task is boilerplate/CRUD, no novel logic.
+- `ultra-lightweight`: trivial, fully specified, low-risk work that is purely mechanical or boilerplate and does not need judgment; reserve it for `generator` tasks. Multi-file scaffolding (DTOs, resource classes, simple CRUD) still counts as `ultra-lightweight` when the task file already spells out the exact contract (field names, types, shapes) verbatim — "more files" or "looks like a real feature" is not, by itself, a reason to bump up.
+- `lightweight`: the pattern has to be *derived* from a matching instruction file or an analogous example rather than being fully spelled out in the task itself, but is still boilerplate/CRUD with no novel logic.
 - `versatile`: typical feature work — some judgment, but no new architecture or high-risk surface.
 - `powerful`: novel algorithm, cross-cutting refactor, or high-risk surface (security, auth-compat, money, compliance, data migration, a decision with no instruction-file precedent) — bump to `powerful` on stakes alone even when the task's apparent size or instruction-file coverage looks small.
 
+This skill skews toward over-assigning weight — grooming tends to hedge up "to be safe." When torn
+between two adjacent weights, default to the lower one; only bump up if you can name the specific
+derivation/judgment/risk the lower tier can't handle, not a vague sense that the task "feels"
+bigger.
+
+**Split for tier, not just for slice.** A vertical slice that mixes fully-specified boilerplate
+(DTOs, resource classes, migrations, generated types) with one judgment-heavy piece (a resolution
+chain, a novel query, a UI interaction) drags the whole task up to the judgment piece's tier —
+that's often wasteful, since the boilerplate portion could have been dispatched to a cheaper
+model on its own. Before finalizing the breakdown, check each `versatile`/`powerful` task for a
+sub-slice that is itself fully-specified and mechanical (e.g. "the DTO and repository interface"
+out of "the DTO, repository, and resolution chain"); if one exists and can be its own reviewable,
+testable unit, split it out as its own `ultra-lightweight`/`lightweight` task instead of folding it
+in. Only keep them merged when the boilerplate has no independent test/review value apart from the
+harder piece (e.g. a single-field DTO that only the resolution chain consumes).
+
 **Orientation** — what kind of capability the task needs:
 
-- `coder`: execute an already-fully-specified pattern faithfully, especially bulk/repetitive work across many files (renames, module migrations, mechanical find/replace). Favors long-context instruction-following over a model "helpfully" reinterpreting scope mid-task.
+- `generator`: execute an already-fully-specified pattern faithfully, especially bulk/repetitive work across many files (renames, module migrations, mechanical find/replace). Favors long-context instruction-following over a model "helpfully" reinterpreting scope mid-task.
 - `generalist`: judgment calls, ambiguity, subtle correctness a straightforward test won't catch, cross-cutting design impact, or prose/instruction-writing. Favors reasoning depth and self-correction over raw throughput.
 
-`interactive-only` overrides weight/orientation entirely — reserve it for tasks that are inherently about debate or ambiguity resolution rather than execution (e.g. drafting a contentious convention, a decision with no clear right answer worth grilling the user on). This should be rare; most tasks are executable and get a `{weight}/{orientation}` pair instead.
+Treat thinking level as a separate dispatch knob from tier: use `low` for small, well-specified work, and raise to `medium`/`high` when the task needs judgment, ambiguity, or cross-cutting changes. `draft-only` overrides weight/orientation entirely — reserve it for tasks that are inherently about debate or ambiguity resolution rather than execution (e.g. drafting a contentious convention, a decision with no clear right answer worth grilling the user on). This should be rare; most tasks are executable and get a `{weight}/{orientation}` pair instead.
 
-The tier only matters when a task is later implemented via a dispatched subagent (see `/my-implement-tasks`) — inline implementation via `/my-implement-task` ignores it, and `interactive-only` tasks are exactly what that inline path is for. Leave the CI-gate task untiered; it's mechanical, not judgment-heavy.
+The tier only matters when a task is later implemented via a dispatched subagent (see `/my-implement-tasks`) — inline implementation via `/my-implement-task` ignores it, and `draft-only` tasks are exactly what that inline path is for. Leave the CI-gate task untiered; it's mechanical, not judgment-heavy.
 
 Always append one final task — **"Ensure CI passes"** — as the last item, depending on all other tasks. This task is not negotiable and must not be removed during the quiz. Its job is to run the full CI suite end-to-end and fix any failures (test coverage gaps, static analysis errors, formatting issues) that slipped through during individual task implementation.
 
@@ -92,7 +114,8 @@ Always append one final task — **"Ensure CI passes"** — as the last item, de
 Before presenting the task list, check it against the PRD and ARD, item by item:
 
 - Every user story in the PRD's "User Stories" section is covered by at least one task. If a story has no task, add one — do not proceed with a gap.
-- Every non-CI task cites something concrete from the ARD (a module, command, handler, or decision) that you will quote under that task's "Relevant ARD Sections" in step 5. A task with nothing to cite is not derived from the plan — cut it or merge it into the task it actually belongs to.
+- Every non-CI task cites something concrete from the ARD or `context.md` (a file in the tree, a data contract, an item under Other, or a recorded decision) that you will quote under that task's "Relevant ARD Sections" in step 5. A task with nothing to cite is not derived from the plan — cut it or merge it into the task it actually belongs to.
+- Every file in the ARD's "Structure" tree and every item under "Other" is delivered by exactly one task.
 - Every DTO/payload in the ARD's "Data Contracts" section is produced or consumed by at least one task. If one isn't, add it to the task that should own it.
 - No two tasks name the same file or interface as their primary deliverable, unless one explicitly modifies what the other created.
 
@@ -102,19 +125,28 @@ Fix any gaps you find yourself before moving to step 4. Only mention this check 
 
 ### 4. Quiz the user on the breakdown
 
-Present the proposed task list as a numbered list. For each task show:
+Present the proposed task list as a numbered list. Every task line — no exceptions, no omitting
+it because it "looked obvious" — ends with its tier in bold, right after the title, so the user
+never has to ask which model a task is headed for:
 
-- **Title**: short imperative description
-- **What it covers**: which layers/files/concepts
-- **Depends on**: which earlier tasks must complete first (if any)
-- **Suggested tier**: `interactive-only`, or `{weight}/{orientation}` (e.g. `powerful/generalist`) — omit for the CI-gate task
+```
+1. **Title of the task** — `tier/orientation`
+   What it covers: which layers/files/concepts.
+   Depends on: which earlier tasks must complete first, or none.
+```
+
+Use `draft-only` in place of `tier/orientation` where that applies, and omit the tier entirely
+only for the CI-gate task. If you catch yourself about to present a task without its tier
+rendered inline, stop and add it before showing the list — do not describe the tier in prose
+elsewhere instead of on the line.
 
 Ask the user:
 
 - Does the granularity feel right?
 - Are the dependency relationships correct?
 - Should any tasks be merged or split?
-- Does each suggested tier look right, or should any be bumped up/down?
+- Does each suggested tier look right, or should any be bumped up/down — and does the split
+  make good use of cheaper models, or is boilerplate still bundled into a higher-tier task?
 
 Iterate until the user approves the breakdown.
 
@@ -178,9 +210,9 @@ Create or overwrite `.plans/{name}/tasks.md`:
 
 | #   | Task                                              | Status | Depends on | Tier                 |
 | --- | ------------------------------------------------- | ------ | ---------- | -------------------- |
-| 1   | [Task title](tasks/001-task-name.md)              | todo   | —          | lightweight/coder     |
+| 1   | [Task title](tasks/001-task-name.md)              | todo   | —          | ultra-lightweight/generator |
 | 2   | [Task title](tasks/002-task-name.md)              | todo   | 1          | versatile/generalist  |
-| 3   | [Task title](tasks/003-task-name.md)              | todo   | 1, 2       | interactive-only      |
+| 3   | [Task title](tasks/003-task-name.md)              | todo   | 1, 2       | draft-only      |
 | 4   | [Ensure CI passes](tasks/004-ensure-ci-passes.md) | todo   | all        | —                    |
 
 ## Progress
@@ -210,7 +242,8 @@ Tell the user:
 - Do not remove, merge away, or skip the final **"Ensure CI passes"** task.
 - Do not dispatch a subagent for the **"Ensure CI passes"** task — it's static boilerplate, write it directly.
 - Do not assign that task a tier — it's mechanical, not judgment-heavy.
-- Do not use `interactive-only` liberally — most tasks are executable; reserve it for tasks that are inherently about debate or ambiguity resolution, not ones that are merely hard or high-stakes (those get `powerful`, not `interactive-only`).
+- Do not use `draft-only` liberally — most tasks are executable; reserve it for tasks that are inherently about debate or ambiguity resolution, not ones that are merely hard or high-stakes (those get `powerful`, not `draft-only`).
+- Do not bump weight up just because a task touches multiple files or looks like "a real feature" — if the task file already gives the exact contract verbatim, that's still `ultra-lightweight`/`lightweight`, not a reason alone to escalate.
 - Do not add a tier field to individual task files — `tasks.md`'s Tier column is the single source of truth; it's only read on the subagent-dispatch path anyway.
 - Do not paste `prd.md`/`ard.md`/`context.md` contents into a task-writing subagent's dispatch — hand it the paths and let it read them.
 - Do not restate boilerplate already covered by matching instruction files.
@@ -219,3 +252,5 @@ Tell the user:
 - Do not write a deviation note without verifying it against the instruction file it deviates from — a wrong note is worse than none.
 - Do not restructure `## What` into per-file headers or tables for human scannability — the implementing agent, not a human, is the primary reader, and the flat format is the one proven correct at lowest cost.
 - Do not write a vague acceptance criterion like "tests pass" or "formatting is correct" when the stack's exact check command is knowable — name it literally.
+- Do not present a task in the step-4 quiz without its tier rendered inline on the task line — a tier mentioned only in this skill's own notes, or omitted because it "looked obvious," leaves the user unable to see which model each task is headed for.
+- Do not bundle fully-specified boilerplate (a DTO, a resource class, generated types) into a `versatile`/`powerful` task just because it sits on the same vertical slice — split it out as its own `ultra-lightweight`/`lightweight` task when it's independently testable/reviewable.
