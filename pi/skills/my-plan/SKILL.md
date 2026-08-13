@@ -67,7 +67,7 @@ If `.plans/{name}/` already exists, tell the user and point them at the `my-foll
 
 ### 4. Recon: find precedent
 
-Follow [`references/recon.md`](references/recon.md). **Always dispatch this to a subagent** (e.g. the generic `worker` agent via the `subagent` tool) — it reads real source in depth and that depth must not land in this session's context. This is lookup work, not judgement work: use `model-matrix.md`'s `lightweight/generator` model/thinkingLevel (`mai-code-1-flash-picker` · low) — pass it explicitly as `model`/`thinkingLevel` params on the `subagent` call rather than guessing a model name. Only fall back to the `subagent` tool's own default (per `~/.pi/agent/extensions/model-matrix/general.md`'s Fallback section) if `model-matrix.md` is missing.
+Follow [`references/recon.md`](references/recon.md). **Always dispatch this to a subagent** (e.g. the generic `worker` agent via the `subagent` tool) — it reads real source in depth and that depth must not land in this session's context. This is lookup work, not judgement work: use `model-matrix.md`'s `lightweight/generator` model/thinkingLevel (`mai-code-1.1-flash` · low) — pass it explicitly as `model`/`thinkingLevel` params on the `subagent` call rather than guessing a model name. Only fall back to the `subagent` tool's own default (per `~/.pi/agent/extensions/model-matrix/general.md`'s Fallback section) if `model-matrix.md` is missing.
 
 Use:
 

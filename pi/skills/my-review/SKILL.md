@@ -172,7 +172,7 @@ cheaper Generator model handles fine defeats the point of tiering models at all.
    that file's findings, the cited rule/spec text, and the relevant diff hunk — not the whole
    review report or whole diff.
 3. Pick weight/orientation per `model-matrix.md` (same table the review passes use):
-   - **`lightweight/generator`** (`mai-code-1-flash-picker` · low) — default for mechanical,
+   - **`lightweight/generator`** (`mai-code-1.1-flash` · low) — default for mechanical,
      unambiguous fixes with a single clearly-cited rule (missing null check, wrong import,
      formatting/convention mismatch, off-by-one).
    - **`versatile/generalist`** (`claude-sonnet-5` · medium) — fixes needing judgment: spec

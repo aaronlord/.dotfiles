@@ -5,7 +5,7 @@ description: >
   user says plan to tasks, break the plan into tasks, or groom a reviewed ARD for
   implementation. Do NOT use for net-new planning (my-plan, my-quick-plan), follow-up changes to
   an existing plan (my-follow-up-plan), or pre-groom review (my-review-plan).
-version: 1.8.0
+version: 1.9.0
 ---
 
 # /my-plan-to-tasks
@@ -98,6 +98,8 @@ testable unit, split it out as its own `ultra-lightweight`/`lightweight` task in
 in. Only keep them merged when the boilerplate has no independent test/review value apart from the
 harder piece (e.g. a single-field DTO that only the resolution chain consumes).
 
+**Bias the overall mix toward cheap tiers.** Splitting for tier (above) catches boilerplate hiding inside one task; this is about the shape of the whole list. Wherever a clean cut is possible, prefer cutting finer at the `ultra-lightweight`/`lightweight` end — a migration, a DTO, a config file, a repository skeleton, a mechanical rename each earn their own task rather than riding along with something harder. Coarser `versatile`/`powerful` tasks are still necessary for the genuinely hard parts, but they should not make up most of the list — if more than roughly half the tasks land `versatile` or `powerful`, re-scan for mechanical sub-slices you can peel off into their own cheap tasks before presenting the breakdown in step 4.
+
 **Orientation** — what kind of capability the task needs:
 
 - `generator`: execute an already-fully-specified pattern faithfully, especially bulk/repetitive work across many files (renames, module migrations, mechanical find/replace). Favors long-context instruction-following over a model "helpfully" reinterpreting scope mid-task.
@@ -147,6 +149,7 @@ Ask the user:
 - Should any tasks be merged or split?
 - Does each suggested tier look right, or should any be bumped up/down — and does the split
   make good use of cheaper models, or is boilerplate still bundled into a higher-tier task?
+- Does the overall mix skew toward cheap tiers, with `versatile`/`powerful` tasks as the minority?
 
 Iterate until the user approves the breakdown.
 
@@ -254,3 +257,4 @@ Tell the user:
 - Do not write a vague acceptance criterion like "tests pass" or "formatting is correct" when the stack's exact check command is knowable — name it literally.
 - Do not present a task in the step-4 quiz without its tier rendered inline on the task line — a tier mentioned only in this skill's own notes, or omitted because it "looked obvious," leaves the user unable to see which model each task is headed for.
 - Do not bundle fully-specified boilerplate (a DTO, a resource class, generated types) into a `versatile`/`powerful` task just because it sits on the same vertical slice — split it out as its own `ultra-lightweight`/`lightweight` task when it's independently testable/reviewable.
+- Do not let `versatile`/`powerful` tasks become the majority of the list — actively hunt for granular, cheap-tier slices before settling for a coarse breakdown.

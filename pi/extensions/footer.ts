@@ -8,6 +8,7 @@
  */
 
 import type { AssistantMessage } from "@earendil-works/pi-ai";
+import { isToolCallEventType } from "@earendil-works/pi-coding-agent";
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { isAbsolute, relative, resolve, sep } from "node:path";
 import { truncateToWidth, visibleWidth } from "@earendil-works/pi-tui";
@@ -17,6 +18,12 @@ import {
   getBranchCost,
   resolveRepoRoot,
 } from "./lib/branch-costs";
+import { addFeatureCost, resolveFeatureName } from "./lib/feature-costs";
+import {
+  addSkillCost,
+  extractSkillName,
+  extractSkillNameFromCommand,
+} from "./lib/skill-costs";
 import { getPeriodStats, loadAllSessions } from "./lib/usage-data";
 import "./usage";
 
@@ -86,6 +93,8 @@ function fmtDate(dateKey: string): string {
 
 let currentRepoRoot: string | undefined;
 let currentBranchCostUsd = 0;
+let currentFeature: string | undefined;
+let currentSkill: string | undefined;
 
 export default function (pi: ExtensionAPI) {
   // -------------------------------------------------------------------------
@@ -97,6 +106,8 @@ export default function (pi: ExtensionAPI) {
     // Load all sessions except the current one (avoid double-counting in-progress turns)
     loadAllSessions(currentFile, event);
     currentRepoRoot = resolveRepoRoot(process.cwd());
+    currentFeature = resolveFeatureName(process.cwd());
+    currentSkill = undefined; // reset per session — no skill active until one loads
     deleteLegacyFeatureCosts(); // one-time cleanup, no-op once file is gone
 
     // Set up custom footer (TUI only)
@@ -335,15 +346,37 @@ export default function (pi: ExtensionAPI) {
     });
   });
 
-  // Accumulate cost for the active git branch each turn
+  // Detect skill activation: reading a SKILL.md is the normal progressive-
+  // disclosure path; explicit `/skill:name` is the other. Either switches
+  // attribution — cost accrues to whichever skill activated most recently.
+  pi.on("tool_call", async (event) => {
+    if (!isToolCallEventType("read", event)) return;
+    const name = extractSkillName(event.input.path);
+    if (name) currentSkill = name;
+  });
+
+  pi.on("input", async (event) => {
+    const name = extractSkillNameFromCommand(event.text);
+    if (name) currentSkill = name;
+  });
+
+  // Accumulate cost for the active git branch (and active feature/skill, if any) each turn
   pi.on("turn_end", async (event) => {
     if (event.message.role !== "assistant") return;
     const m = event.message as AssistantMessage & { model?: string };
     const cost = m.usage?.cost?.total;
-    if (cost == null || !currentBranch || !currentRepoRoot) return;
+    if (cost == null || !currentRepoRoot) return;
     const tokens =
       m.usage.input + m.usage.output + m.usage.cacheRead + m.usage.cacheWrite;
-    addBranchCost(currentRepoRoot, currentBranch, cost, tokens, m.model);
-    currentBranchCostUsd += cost;
+    if (currentBranch) {
+      addBranchCost(currentRepoRoot, currentBranch, cost, tokens, m.model);
+      currentBranchCostUsd += cost;
+    }
+    if (currentFeature) {
+      addFeatureCost(currentRepoRoot, currentFeature, cost, tokens, m.model);
+    }
+    if (currentSkill) {
+      addSkillCost(currentRepoRoot, currentSkill, cost, tokens, m.model);
+    }
   });
 }

@@ -98,6 +98,18 @@ export function resolveRepoRoot(cwd: string): string {
   }
 }
 
+export function getCurrentBranch(cwd: string): string | undefined {
+  try {
+    const branch = execSync("git branch --show-current", {
+      cwd,
+      encoding: "utf8",
+    }).trim();
+    return branch.length > 0 ? branch : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 export function addBranchCost(
   repoRoot: string,
   branch: string,

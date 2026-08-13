@@ -42,6 +42,8 @@ Read `.plans/{name}/context.md`. Written during `/my-plan`, it holds the codebas
 
 If `context.md` has a `## Reference Documents` section, treat those `.plans/{name}/references/*.md` files as the source for anything the interview needs from that external URL — read the cached file, do not re-fetch the URL. If the interview surfaces a new URL not already cached, fetch it once, save it to `.plans/{name}/references/{slug}.md` with the same `source`/`fetched` frontmatter used during `/my-plan`, and append it to `context.md`'s `## Reference Documents` section so later phases reuse it too.
 
+Also read the repo root `AGENTS.md` and any `AGENTS.md`/instruction files nested under the directories the ARD's `Structure` touches. These hold naming conventions (filenames, purposes, casing, suffixes) the proposed tree must follow.
+
 ### 3. Audit the plan for problems
 
 Go looking for things that are **wrong**, not things that are absent. A silence is only a finding if acting on the plan as written would produce the wrong result. Check, in this order:
@@ -54,6 +56,7 @@ Go looking for things that are **wrong**, not things that are absent. A silence 
 - **Risky assumptions**: the plan depends on unmerged work, another team, or an external system behaving a particular way, and doesn't say so.
 - **Stale Open Questions**: anything still marked `[NEEDS CLARIFICATION]`.
 - **Terminology drift**: a domain term used differently from `CONTEXT.md`'s glossary or from itself.
+- **Naming convention violations**: a filename (or, where defined, a file's stated purpose) in the ARD's `Structure` doesn't follow the conventions set out in `AGENTS.md` or other applicable instruction files (casing, suffixes, directory placement, one-purpose-per-file rules, etc.).
 
 What is explicitly **not** a finding: a section being short, a rationale not being written down, a testing note missing from `ard.md` (that lives in `context.md`), a file lacking an explanatory comment, or a decision the user already made in `/my-plan`'s grill.
 
