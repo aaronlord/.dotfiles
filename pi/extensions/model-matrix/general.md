@@ -2,8 +2,11 @@
 
 General framework mapping a task's suggested `{weight}/{orientation}` (assigned by
 `/my-plan-to-tasks`) to a model + thinking level, and for picking a model in normal chat. This part
-is machine-agnostic — concrete model names, costs, and current tier assignments live in
-`~/.pi/agent/model-matrix.md` (per-machine, not versioned, may not exist everywhere).
+is machine/repo-agnostic — concrete model names, costs, and current tier assignments live in
+`model-matrix.md`: a repo-local `{repo root}/.agents/model-matrix.md` wins if present, otherwise
+the per-machine `~/.pi/agent/model-matrix.md` (neither is versioned by default; either may not
+exist). `/model-matrix` and the `model_matrix` tool resolve this automatically — anywhere else
+this doc says "model-matrix.md", that's the resolution order meant.
 
 ## Authority ladder
 
@@ -21,9 +24,9 @@ much checking that earns:
 
 ## Two axes
 
-- **Weight** — capability/cost class: `ultra-lightweight` (trivial, fully specified, low-risk) /
-  `lightweight` (cheap, well-specified) / `versatile` (typical feature work) / `powerful` (novel,
-  cross-cutting, or high-stakes).
+- **Weight** — capability/cost class: `lightweight` (trivial-to-cheap, fully/well-specified,
+  low-risk) / `versatile` (typical feature work) / `powerful` (novel, cross-cutting, or
+  high-stakes).
 - **Orientation** — capability style: `generator` (execute an already-fully-specified pattern
   faithfully, especially bulk/repetitive work — favors long-context instruction-following over
   "helpful" reinterpretation) vs `generalist` (judgment calls, ambiguity, cross-cutting design,
@@ -36,7 +39,7 @@ Thinking level is a separate knob from model choice: `low` for small well-specif
 `medium`/`high` when the task needs judgment, ambiguity, or cross-cutting changes.
 
 The concrete weight × orientation → model/thinking table, and per-model cost/strength profiles,
-live in `~/.pi/agent/model-matrix.md`.
+live in `model-matrix.md` (see resolution order above).
 
 ## Reviewer
 
@@ -50,7 +53,7 @@ heavier model; escalating by default would just spend more without a specific re
 
 **Overrides**: a weight/orientation (or task) can get a different reviewer than its generator (e.g.
 force an opus-class check regardless of cost). This override table, when populated, lives in
-`~/.pi/agent/model-matrix.md` since it names concrete models — leave it empty until you actually
+`model-matrix.md` since it names concrete models — leave it empty until you actually
 want one.
 
 ## Draft-only
@@ -61,6 +64,7 @@ dispatch it; run it via `/my-implement-task`'s inline conductor mode instead.
 
 ## Fallback
 
-No tier, tier doesn't parse, or `~/.pi/agent/model-matrix.md` is missing → dispatch with no
+No tier, tier doesn't parse, or `model-matrix.md` (repo-local or global, see resolution order
+above) is missing → dispatch with no
 `model`/`thinkingLevel` override and let the `subagent` tool use its own default. Don't halt the
 loop over it.

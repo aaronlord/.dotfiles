@@ -11,7 +11,6 @@ import type { AssistantMessage } from "@earendil-works/pi-ai";
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import {
   Box,
-  Text,
   truncateToWidth,
   visibleWidth,
 } from "@earendil-works/pi-tui";
@@ -26,6 +25,7 @@ import {
   resolveRepoRoot,
   getBranchCostsForRepo,
   getCurrentBranch,
+  getDefaultBranch,
 } from "./lib/branch-costs";
 import { getFeatureCostsForRepo, resolveFeatureName } from "./lib/feature-costs";
 import { getSkillCostsForRepo } from "./lib/skill-costs";
@@ -41,6 +41,14 @@ interface UsageRow {
   isToday: boolean;
   isMax: boolean;
   byModel: Record<string, { tokens: number; costUsd: number }>;
+}
+
+interface GroupStats {
+  count: number;
+  sumCost: number;
+  sumTokens: number;
+  meanCost: number;
+  medianCost: number;
 }
 
 interface UsageReportBranchRow {
@@ -81,8 +89,10 @@ interface UsageReport {
   prevWeek: { tokens: number; costUsd: number };
   prevMonth: { tokens: number; costUsd: number };
   branchRows: UsageReportBranchRow[];
-  branchCostStats: { meanUsd: number; medianUsd: number };
+  branchStatsAll: GroupStats;
+  defaultBranch?: string;
   featureRows: UsageReportFeatureRow[];
+  featureStatsAll: GroupStats;
   modelRows: UsageReportModelRow[];
   skillRows: UsageReportSkillRow[];
 }
@@ -155,13 +165,6 @@ function shortModel(model: string): string {
   return stripped.length > 0 ? stripped : name;
 }
 
-function fmtDelta(current: number, previous: number): string {
-  if (previous === 0) return current === 0 ? "±0%" : "new";
-  const pct = ((current - previous) / previous) * 100;
-  const arrow = pct > 0 ? "▲" : pct < 0 ? "▼" : "±";
-  return `${arrow}${Math.abs(pct).toFixed(0)}%`;
-}
-
 function median(values: number[]): number {
   if (values.length === 0) return 0;
   const sorted = [...values].sort((a, b) => a - b);
@@ -170,6 +173,20 @@ function median(values: number[]): number {
   const hi = sorted[mid] ?? 0;
   const lo = sorted[mid - 1] ?? hi;
   return (lo + hi) / 2;
+}
+
+// shared shown/all-tracked footer math for model/feature/branch sections
+function computeGroupStats(entries: { cost: number; tokens: number }[]): GroupStats {
+  const count = entries.length;
+  const sumCost = entries.reduce((sum, e) => sum + e.cost, 0);
+  const sumTokens = entries.reduce((sum, e) => sum + e.tokens, 0);
+  return {
+    count,
+    sumCost,
+    sumTokens,
+    meanCost: count > 0 ? sumCost / count : 0,
+    medianCost: median(entries.map((e) => e.cost)),
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -186,19 +203,21 @@ export default function (pi: ExtensionAPI) {
     const {
       rows,
       maxCost,
-      maxTokens,
       week,
       month,
       prevWeek,
       prevMonth,
       branchRows,
-      branchCostStats,
+      branchStatsAll,
+      defaultBranch,
       featureRows,
+      featureStatsAll,
       modelRows,
       skillRows,
     } = report;
-    const BAR_W = 24;
-    const LABEL_W = 40;
+    const BAR_W = 32;
+    const LABEL_W = 44;
+    const FOOTER_LABEL_W = 20; // footer labels ("top 9 shown", "7 models") are short — LABEL_W is sized for row names, not this
 
     function costBar(cost: number, isMax: boolean, max: number = maxCost): string {
       if (max === 0) return theme.fg("dim", "░".repeat(BAR_W));
@@ -217,20 +236,56 @@ export default function (pi: ExtensionAPI) {
       );
     }
 
+    function tokColDim(tokens: number): string {
+      return theme.fg("dim", fmtTok(tokens).padStart(7) + " tok");
+    }
+
     function costCol(costUsd: number): string {
       return theme.fg("syntaxNumber", `$${costUsd.toFixed(3)}`.padStart(8));
     }
 
-    const lines: string[] = [];
+    function costColDim(costUsd: number): string {
+      return theme.fg("dim", `$${costUsd.toFixed(3)}`.padStart(8));
+    }
 
-    // Title
-    lines.push(
+    const titleLine =
       theme.fg("accent", "═══") +
-        theme.fg("muted", " Token & Cost Usage — last 7 days ") +
-        theme.fg("accent", "═══"),
-    );
-    lines.push("");
+      theme.fg("muted", " Token & Cost Usage — last 7 days ") +
+      theme.fg("accent", "═══");
 
+    function fitCell(text: string, width: number): string {
+      const displayWidth = visibleWidth(text);
+      if (displayWidth > width) return truncateToWidth(text, width, "…");
+      return text + " ".repeat(Math.max(0, width - displayWidth));
+    }
+
+    function mergeColumns(left: string[], right: string[], leftWidth: number, rightWidth: number, gap = 4): string[] {
+      const rows: string[] = [];
+      const maxRows = Math.max(left.length, right.length);
+      for (let i = 0; i < maxRows; i++) {
+        const hasLeft = i < left.length;
+        const hasRight = i < right.length;
+        // only skip once BOTH columns have run out — an intentional blank line
+        // that's still within an array's bounds must still render as a blank row,
+        // otherwise it silently disappears once the other (shorter) column ends
+        if (!hasLeft && !hasRight) continue;
+        const leftText = hasLeft ? left[i] : "";
+        const rightText = hasRight ? right[i] : "";
+        rows.push(
+          fitCell(leftText, leftWidth) + " ".repeat(gap) + fitCell(rightText, rightWidth),
+        );
+      }
+      return rows;
+    }
+
+    function statsLine(label: string, stats: GroupStats): string {
+      return (
+        `  ${theme.fg("muted", label.padEnd(FOOTER_LABEL_W))}  ${theme.fg("dim", "Σ")} ${costCol(stats.sumCost)} ${tokCol(stats.sumTokens)}` +
+        `   ${theme.fg("dim", "mean")} ${costCol(stats.meanCost)}  ${theme.fg("dim", "median")} ${costCol(stats.medianCost)}`
+      );
+    }
+
+    const dailyLines: string[] = [];
     // Per-day rows
     for (const row of rows) {
       const label = fmtDate(row.dateKey).padEnd(LABEL_W);
@@ -238,12 +293,8 @@ export default function (pi: ExtensionAPI) {
         ? theme.fg("accent", label)
         : theme.fg("muted", label);
 
-      const todayMarker = row.isToday
-        ? "  " + theme.fg("accent", "◀ today")
-        : "";
-
-      lines.push(
-        `  ${datePart}  ${costBar(row.costUsd, row.isMax)}  ${tokCol(row.tokens)}  ${costCol(row.costUsd)}${todayMarker}`,
+      dailyLines.push(
+        `  ${datePart}  ${costBar(row.costUsd, row.isMax)}  ${tokCol(row.tokens)}  ${costCol(row.costUsd)}`,
       );
 
       // Per-model breakdown
@@ -253,7 +304,7 @@ export default function (pi: ExtensionAPI) {
       if (models.length > 1) {
         for (const [model, stats] of models) {
           const subLabel = ("↳ " + shortModel(model)).padEnd(LABEL_W);
-          lines.push(
+          dailyLines.push(
             `  ${theme.fg("dim", subLabel)}  ${" ".repeat(BAR_W)}  ${tokCol(stats.tokens)}  ${costCol(stats.costUsd)}`,
           );
         }
@@ -261,124 +312,82 @@ export default function (pi: ExtensionAPI) {
     }
 
     // Totals
-    lines.push("");
-    lines.push(theme.fg("dim", "─".repeat(70)));
+    dailyLines.push("");
+    dailyLines.push(theme.fg("dim", "─".repeat(70)));
 
-    for (const [label, stats, prev] of [
-      ["This week", week, prevWeek],
-      ["This month (MTD)", month, prevMonth],
+    for (const [label, stats, prevLabel, prev] of [
+      ["This week", week, "Last week", prevWeek],
+      ["This month (MTD)", month, "Last month (MTD)", prevMonth],
     ] as const) {
-      const delta = theme.fg("dim", ` (${fmtDelta(stats.costUsd, prev.costUsd)} vs prev)`);
-      lines.push(
-        `  ${theme.fg("muted", label.padEnd(LABEL_W))}  ${" ".repeat(BAR_W)}  ${tokCol(stats.tokens)}  ${costCol(stats.costUsd)}${delta}`,
+      dailyLines.push(
+        `  ${theme.fg("muted", label.padEnd(LABEL_W))}  ${" ".repeat(BAR_W)}  ${tokCol(stats.tokens)}  ${costCol(stats.costUsd)}`,
+      );
+      dailyLines.push(
+        `  ${theme.fg("dim", ("↳ " + prevLabel).padEnd(LABEL_W))}  ${" ".repeat(BAR_W)}  ${tokColDim(prev.tokens)}  ${costColDim(prev.costUsd)}`,
       );
     }
 
-    // cap avoids unbounded old-branch clutter; other repos' branches aren't comparable so excluded
-    if (branchRows.length > 0) {
-      lines.push("");
-      lines.push(theme.fg("dim", "─".repeat(70)));
-      lines.push(
-        theme.fg("accent", "═══") +
-          theme.fg("muted", " By Branch (this repo, most recent 15) ") +
-          theme.fg("accent", "═══"),
+    const activeDays = rows.filter((r) => r.costUsd > 0).length;
+    if (activeDays > 0) {
+      const avgPerActiveDay = week.costUsd / activeDays;
+      dailyLines.push(
+        `  ${theme.fg("muted", `avg/active day (${activeDays}d)`.padEnd(LABEL_W))}  ${" ".repeat(BAR_W)}  ${" ".repeat(11)}  ${costCol(avgPerActiveDay)}`,
       );
-      lines.push("");
-      lines.push(
-        `  ${theme.fg("muted", "avg cost/branch".padEnd(LABEL_W))}  ${theme.fg("dim", "mean")} ${costCol(branchCostStats.meanUsd)}  ${theme.fg("dim", "median")} ${costCol(branchCostStats.medianUsd)}`,
-      );
-      const maxBranchCost = Math.max(...branchRows.map((r) => r.cost), 0.001);
-      for (const row of branchRows) {
-        const label = row.branch.padEnd(LABEL_W);
-        const branchPart = row.isCurrent
-          ? theme.fg("accent", label)
-          : theme.fg("muted", label);
-        const currentMarker = row.isCurrent
-          ? "  " + theme.fg("accent", "◀ current")
-          : "";
-        lines.push(
-          `  ${branchPart}  ${costBar(row.cost, row.cost === maxBranchCost, maxBranchCost)}  ${tokCol(row.tokens)}  ${costCol(row.cost)}${currentMarker}`,
-        );
-        const models = Object.entries(row.byModel).sort(
-          ([, a], [, b]) => b.cost - a.cost,
-        );
-        if (models.length > 1) {
-          for (const [model, stats] of models) {
-            const subLabel = ("↳ " + shortModel(model)).padEnd(LABEL_W);
-            lines.push(
-              `  ${theme.fg("dim", subLabel)}  ${" ".repeat(BAR_W)}  ${tokCol(stats.tokens)}  ${costCol(stats.cost)}`,
-            );
-          }
-        }
-      }
     }
 
-    if (featureRows.length > 0) {
-      lines.push("");
-      lines.push(theme.fg("dim", "─".repeat(70)));
-      lines.push(
-        theme.fg("accent", "═══") +
-          theme.fg("muted", " By Feature (this repo) ") +
-          theme.fg("accent", "═══"),
+    // rows and footer often want different natural widths (a long top-model
+    // name can make the footer wider than every plain row) — size the whole
+    // block, including its rule, to whichever is widest so nothing overhangs
+    function finalizeBlock(header: string, rowLines: string[], footerLines: string[]): string[] {
+      if (footerLines.length === 0) return [header, ...rowLines];
+      const targetWidth = Math.max(
+        ...rowLines.map((l) => visibleWidth(l)),
+        ...footerLines.map((l) => visibleWidth(l)),
+        1,
       );
-      lines.push("");
-      const maxFeatureCost = Math.max(...featureRows.map((r) => r.cost), 0.001);
-      for (const row of featureRows) {
-        const label = row.feature.padEnd(LABEL_W);
-        const featurePart = row.isCurrent
-          ? theme.fg("accent", label)
-          : theme.fg("muted", label);
-        const currentMarker = row.isCurrent
-          ? "  " + theme.fg("accent", "◀ current")
-          : "";
-        lines.push(
-          `  ${featurePart}  ${costBar(row.cost, row.cost === maxFeatureCost, maxFeatureCost)}  ${tokCol(row.tokens)}  ${costCol(row.cost)}${currentMarker}`,
-        );
-        const models = Object.entries(row.byModel).sort(
-          ([, a], [, b]) => b.cost - a.cost,
-        );
-        if (models.length > 1) {
-          for (const [model, stats] of models) {
-            const subLabel = ("↳ " + shortModel(model)).padEnd(LABEL_W);
-            lines.push(
-              `  ${theme.fg("dim", subLabel)}  ${" ".repeat(BAR_W)}  ${tokCol(stats.tokens)}  ${costCol(stats.cost)}`,
-            );
-          }
-        }
-      }
+      return [
+        header,
+        ...rowLines.map((l) => fitCell(l, targetWidth)),
+        theme.fg("dim", "─".repeat(targetWidth)),
+        ...footerLines.map((l) => fitCell(l, targetWidth)),
+      ];
     }
 
+    const rightBlocks: string[][] = [];
     if (modelRows.length > 0) {
-      lines.push("");
-      lines.push(theme.fg("dim", "─".repeat(70)));
-      lines.push(
+      const modelHeader =
         theme.fg("accent", "═══") +
-          theme.fg("muted", " By Model (last 7 days) ") +
-          theme.fg("accent", "═══"),
-      );
-      lines.push("");
+        theme.fg("muted", " By Model (last 7 days) ") +
+        theme.fg("accent", "═══");
+      const modelRowLines: string[] = [];
       const maxModelCost = Math.max(...modelRows.map((r) => r.cost), 0.001);
       for (const row of modelRows) {
         const label = shortModel(row.model).padEnd(LABEL_W);
-        lines.push(
+        modelRowLines.push(
           `  ${theme.fg("muted", label)}  ${costBar(row.cost, row.cost === maxModelCost, maxModelCost)}  ${tokCol(row.tokens)}  ${costCol(row.cost)}`,
         );
       }
+      const modelStats = computeGroupStats(modelRows.map((r) => ({ cost: r.cost, tokens: r.tokens })));
+      const topModel = modelRows[0];
+      const modelFooterLines = [
+        statsLine(`${modelStats.count} models`, modelStats) +
+          (topModel && modelStats.sumCost > 0
+            ? `  ${theme.fg("dim", "top")} ${shortModel(topModel.model)} (${Math.round((topModel.cost / modelStats.sumCost) * 100)}%)`
+            : ""),
+      ];
+      rightBlocks.push(finalizeBlock(modelHeader, modelRowLines, modelFooterLines));
     }
 
     if (skillRows.length > 0) {
-      lines.push("");
-      lines.push(theme.fg("dim", "─".repeat(70)));
-      lines.push(
+      const skillBlock: string[] = [
         theme.fg("accent", "═══") +
           theme.fg("muted", " By Skill (this repo — heuristic) ") +
           theme.fg("accent", "═══"),
-      );
-      lines.push("");
+      ];
       const maxSkillCost = Math.max(...skillRows.map((r) => r.cost), 0.001);
       for (const row of skillRows) {
         const label = row.skill.padEnd(LABEL_W);
-        lines.push(
+        skillBlock.push(
           `  ${theme.fg("muted", label)}  ${costBar(row.cost, row.cost === maxSkillCost, maxSkillCost)}  ${tokCol(row.tokens)}  ${costCol(row.cost)}`,
         );
         const models = Object.entries(row.byModel).sort(
@@ -387,16 +396,135 @@ export default function (pi: ExtensionAPI) {
         if (models.length > 1) {
           for (const [model, stats] of models) {
             const subLabel = ("↳ " + shortModel(model)).padEnd(LABEL_W);
-            lines.push(
+            skillBlock.push(
               `  ${theme.fg("dim", subLabel)}  ${" ".repeat(BAR_W)}  ${tokCol(stats.tokens)}  ${costCol(stats.cost)}`,
             );
           }
         }
       }
+      rightBlocks.push(skillBlock);
     }
 
+    if (featureRows.length > 0) {
+      const topFeatureRows = featureRows.slice(0, 5);
+      if (topFeatureRows.length > 0) {
+        const featureHeader =
+          theme.fg("accent", "═══") +
+          theme.fg("muted", " By Feature (this repo, top 5) ") +
+          theme.fg("accent", "═══");
+        const featureRowLines: string[] = [];
+        const maxFeatureCost = Math.max(...topFeatureRows.map((r) => r.cost), 0.001);
+        for (const row of topFeatureRows) {
+          const label = row.feature.padEnd(LABEL_W);
+          const featurePart = row.isCurrent
+            ? theme.fg("accent", label)
+            : theme.fg("muted", label);
+          featureRowLines.push(
+            `  ${featurePart}  ${costBar(row.cost, row.cost === maxFeatureCost, maxFeatureCost)}  ${tokCol(row.tokens)}  ${costCol(row.cost)}`,
+          );
+          const models = Object.entries(row.byModel).sort(
+            ([, a], [, b]) => b.cost - a.cost,
+          );
+          if (models.length > 1) {
+            for (const [model, stats] of models) {
+              const subLabel = ("↳ " + shortModel(model)).padEnd(LABEL_W);
+              featureRowLines.push(
+                `  ${theme.fg("dim", subLabel)}  ${" ".repeat(BAR_W)}  ${tokCol(stats.tokens)}  ${costCol(stats.cost)}`,
+              );
+            }
+          }
+        }
+        const shownStats = computeGroupStats(topFeatureRows.map((r) => ({ cost: r.cost, tokens: r.tokens })));
+        const featureFooterLines = [statsLine(`top ${topFeatureRows.length} shown`, shownStats)];
+        if (featureStatsAll.count > topFeatureRows.length) {
+          featureFooterLines.push(statsLine(`all ${featureStatsAll.count} features`, featureStatsAll));
+        }
+        rightBlocks.push(finalizeBlock(featureHeader, featureRowLines, featureFooterLines));
+      }
+    }
+
+    if (branchRows.length > 0) {
+      const topBranchRows = branchRows.slice(0, 5);
+      if (topBranchRows.length > 0) {
+        const branchHeader =
+          theme.fg("accent", "═══") +
+          theme.fg("muted", " By Branch (this repo, most recent 5) ") +
+          theme.fg("accent", "═══");
+        const branchRowLines: string[] = [];
+        const maxBranchCost = Math.max(...topBranchRows.map((r) => r.cost), 0.001);
+        for (const row of topBranchRows) {
+          const label = row.branch.padEnd(LABEL_W);
+          const branchPart = row.isCurrent
+            ? theme.fg("accent", label)
+            : theme.fg("muted", label);
+          branchRowLines.push(
+            `  ${branchPart}  ${costBar(row.cost, row.cost === maxBranchCost, maxBranchCost)}  ${tokCol(row.tokens)}  ${costCol(row.cost)}`,
+          );
+          const models = Object.entries(row.byModel).sort(
+            ([, a], [, b]) => b.cost - a.cost,
+          );
+          if (models.length > 1) {
+            for (const [model, stats] of models) {
+              const subLabel = ("↳ " + shortModel(model)).padEnd(LABEL_W);
+              branchRowLines.push(
+                `  ${theme.fg("dim", subLabel)}  ${" ".repeat(BAR_W)}  ${tokCol(stats.tokens)}  ${costCol(stats.cost)}`,
+              );
+            }
+          }
+        }
+        const shownForStats = topBranchRows.filter((r) => r.branch !== defaultBranch);
+        const shownStats = computeGroupStats(shownForStats.map((r) => ({ cost: r.cost, tokens: r.tokens })));
+        const branchFooterLines = [statsLine(`top ${shownForStats.length} shown`, shownStats)];
+        if (branchStatsAll.count > shownForStats.length) {
+          branchFooterLines.push(statsLine(`all ${branchStatsAll.count} branches`, branchStatsAll));
+        }
+        if (defaultBranch) {
+          branchFooterLines.push(theme.fg("dim", `  (${defaultBranch} excluded from averages)`));
+        }
+        rightBlocks.push(finalizeBlock(branchHeader, branchRowLines, branchFooterLines));
+      }
+    }
+
+    // rule only between distinct sections, never leading the first or splitting a
+    // section's own rows from its footer (that's a blank line instead, see above)
+    const rightPanel: string[] = [];
+    rightBlocks.forEach((block, i) => {
+      if (i > 0) rightPanel.push("");
+      rightPanel.push(...block);
+    });
+
+    // Text/Box only learn the real column budget at render(width) time — guessing
+    // it upfront (e.g. via process.stdout.columns) doesn't match what Box actually
+    // hands the child, so pre-built wide lines silently got word-wrapped mid-row.
+    // Building layout inside render(width) uses the real budget, so nothing wraps.
+    const layout = {
+      render(width: number): string[] {
+        const gap = 4;
+        const wide = width >= 190 && rightPanel.length > 0;
+        if (!wide) {
+          return [titleLine, "", ...dailyLines, ...rightPanel];
+        }
+        // size columns to actual content, not a flat guess — avoids both a dead
+        // gap between columns (left too wide) and clipped text (right too narrow)
+        const available = width - gap;
+        const naturalLeftWidth = Math.max(...dailyLines.map((line) => visibleWidth(line)), 1);
+        const naturalRightWidth = Math.max(...rightPanel.map((line) => visibleWidth(line)), 1);
+        const leftWidth = Math.max(60, Math.min(naturalLeftWidth, available - 70));
+        const rightWidth = Math.max(70, Math.min(naturalRightWidth, available - leftWidth));
+        // title rides in the left column's row 0 so it lines up with the right
+        // column's first header instead of sitting alone a row above both
+        return mergeColumns(
+          [titleLine, ...dailyLines],
+          rightPanel,
+          leftWidth,
+          rightWidth,
+          gap,
+        );
+      },
+    };
+
     const box = new Box(1, 1);
-    box.addChild(new Text(lines.join("\n"), 0, 0));
+    box.addChild(layout);
     return box;
   });
 
@@ -465,8 +593,8 @@ export default function (pi: ExtensionAPI) {
       const allBranchEntries = getBranchCostsForRepo(repoRoot).sort((a, b) =>
         b.lastUpdated.localeCompare(a.lastUpdated),
       );
-      let topBranchEntries = allBranchEntries.slice(0, 15);
-      // current branch may have aged out of the top 15 — pin it in so it's never silently dropped
+      let topBranchEntries = allBranchEntries.slice(0, 5);
+      // current branch may have aged out of the top 5 — pin it in so it's never silently dropped
       if (
         currentBranch &&
         !topBranchEntries.some((entry) => entry.branch === currentBranch)
@@ -475,7 +603,7 @@ export default function (pi: ExtensionAPI) {
           (entry) => entry.branch === currentBranch,
         );
         if (currentEntry) {
-          topBranchEntries = [currentEntry, ...topBranchEntries.slice(0, 14)];
+          topBranchEntries = [currentEntry, ...topBranchEntries.slice(0, 4)];
         }
       }
       const branchRows: UsageReportBranchRow[] = topBranchEntries.map(
@@ -492,35 +620,46 @@ export default function (pi: ExtensionAPI) {
           ),
         }),
       );
-      const branchCostValues = allBranchEntries.map((entry) => entry.cost);
-      const branchCostStats = {
-        meanUsd:
-          branchCostValues.length > 0
-            ? branchCostValues.reduce((sum, value) => sum + value, 0) /
-              branchCostValues.length
-            : 0,
-        medianUsd: median(branchCostValues),
-      };
+      const defaultBranch = getDefaultBranch(process.cwd());
+      const branchStatsAll = computeGroupStats(
+        allBranchEntries
+          .filter((entry) => entry.branch !== defaultBranch)
+          .map((entry) => ({ cost: entry.cost, tokens: entry.tokens })),
+      );
 
       const modelRows: UsageReportModelRow[] = Object.entries(getByModelSince(weekStartKey()))
         .map(([model, stats]) => ({ model, tokens: stats.tokens, cost: stats.costUsd }))
         .sort((a, b) => b.cost - a.cost);
 
       const currentFeature = resolveFeatureName(process.cwd());
-      const featureRows: UsageReportFeatureRow[] = getFeatureCostsForRepo(repoRoot)
-        .sort((a, b) => b.cost - a.cost)
-        .map((entry) => ({
-          feature: entry.feature,
-          tokens: entry.tokens,
-          cost: entry.cost,
-          isCurrent: entry.feature === currentFeature,
-          byModel: Object.fromEntries(
-            Object.entries(entry.byModel ?? {}).map(([model, stats]) => [
-              model,
-              { tokens: stats.tokens, cost: stats.cost },
-            ]),
-          ),
-        }));
+      const featureEntries = getFeatureCostsForRepo(repoRoot).sort((a, b) => b.cost - a.cost);
+      let topFeatureEntries = featureEntries.slice(0, 5);
+      if (
+        currentFeature &&
+        !topFeatureEntries.some((entry) => entry.feature === currentFeature)
+      ) {
+        const currentEntry = featureEntries.find(
+          (entry) => entry.feature === currentFeature,
+        );
+        if (currentEntry) {
+          topFeatureEntries = [currentEntry, ...topFeatureEntries.slice(0, 4)];
+        }
+      }
+      const featureRows: UsageReportFeatureRow[] = topFeatureEntries.map((entry) => ({
+        feature: entry.feature,
+        tokens: entry.tokens,
+        cost: entry.cost,
+        isCurrent: entry.feature === currentFeature,
+        byModel: Object.fromEntries(
+          Object.entries(entry.byModel ?? {}).map(([model, stats]) => [
+            model,
+            { tokens: stats.tokens, cost: stats.cost },
+          ]),
+        ),
+      }));
+      const featureStatsAll = computeGroupStats(
+        featureEntries.map((entry) => ({ cost: entry.cost, tokens: entry.tokens })),
+      );
 
       const skillRows: UsageReportSkillRow[] = getSkillCostsForRepo(repoRoot)
         .sort((a, b) => b.cost - a.cost)
@@ -545,8 +684,10 @@ export default function (pi: ExtensionAPI) {
         prevWeek: getPeriodStats(prevWeekStartKey(), weekStartKey()),
         prevMonth: getPeriodStats(...prevMonthRange()),
         branchRows,
-        branchCostStats,
+        branchStatsAll,
+        defaultBranch,
         featureRows,
+        featureStatsAll,
         modelRows,
         skillRows,
       };

@@ -102,8 +102,10 @@ whose every dependency is in `done`.
 #### 5.2 Implement
 
 Look up this task's tier in `tasks.md`'s `Tier` column (loaded in step 1) — a `{weight}/{orientation}`
-pair (e.g. `ultra-lightweight/generator` or `powerful/generalist`). If present, resolve it against
-`~/.pi/agent/model-matrix.md`'s weight × orientation table (weight = row, orientation = column)
+pair (e.g. `lightweight/generator` or `powerful/generalist`). If present, resolve it against
+`model-matrix.md`'s weight × orientation table (repo-local `{repo root}/.agents/model-matrix.md` if
+present, else `~/.pi/agent/model-matrix.md` — see `~/.pi/agent/extensions/model-matrix/general.md`
+for the resolution order; weight = row, orientation = column)
 and use the matching `provider/model-id` as the `model` param and the matching `thinkingLevel` as
 the `thinkingLevel` param on the dispatch below. If the tier is absent, doesn't parse as a known
 `{weight}/{orientation}` pair, or `model-matrix.md` doesn't exist, dispatch with no `model`
@@ -128,7 +130,7 @@ hallucinated references).
 
 Resolve this dispatch's `model`/`thinkingLevel` per the Reviewer rules in
 `~/.pi/agent/extensions/model-matrix/general.md`: default is the exact same `model`/`thinkingLevel`
-the 5.2 dispatch just used for this task, unless `~/.pi/agent/model-matrix.md`'s Reviewer overrides
+the 5.2 dispatch just used for this task, unless `model-matrix.md`'s Reviewer overrides
 table has a row for this task's weight/orientation or this specific task — a fresh context at the same tier is what buys the independent check, not a
 heavier model by default. Same fallback as 5.2 if nothing resolves: no override, keep going.
 
@@ -275,7 +277,7 @@ On full completion, report:
   anything back automatically.
 - The full-suite CI gate isn't a separate step here — it's the plan's final task, which depends
   on every other task, so 5.1 can only ever select it last.
-- Do not halt the loop or ask the user because a task has no tier or `~/.pi/agent/model-matrix.md`
+- Do not halt the loop or ask the user because a task has no tier or `model-matrix.md`
   is missing — fall back to no `model` override and keep going.
 - Do not dispatch a `draft-only` task to a subagent under any tier — halt per 6a and defer
   to `/my-implement-task` instead.

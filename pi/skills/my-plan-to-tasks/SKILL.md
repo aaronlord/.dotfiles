@@ -77,8 +77,7 @@ levels mean):
 
 **Weight** — capability/cost class:
 
-- `ultra-lightweight`: trivial, fully specified, low-risk work that is purely mechanical or boilerplate and does not need judgment; reserve it for `generator` tasks. Multi-file scaffolding (DTOs, resource classes, simple CRUD) still counts as `ultra-lightweight` when the task file already spells out the exact contract (field names, types, shapes) verbatim — "more files" or "looks like a real feature" is not, by itself, a reason to bump up.
-- `lightweight`: the pattern has to be *derived* from a matching instruction file or an analogous example rather than being fully spelled out in the task itself, but is still boilerplate/CRUD with no novel logic.
+- `lightweight`: mechanical/boilerplate work with no novel logic and no judgment needed — either the task file already spells out the exact contract (field names, types, shapes) verbatim, or the pattern has to be *derived* from a matching instruction file or an analogous example. Multi-file scaffolding (DTOs, resource classes, simple CRUD) still counts as `lightweight` when the contract is fully known — "more files" or "looks like a real feature" is not, by itself, a reason to bump up.
 - `versatile`: typical feature work — some judgment, but no new architecture or high-risk surface.
 - `powerful`: novel algorithm, cross-cutting refactor, or high-risk surface (security, auth-compat, money, compliance, data migration, a decision with no instruction-file precedent) — bump to `powerful` on stakes alone even when the task's apparent size or instruction-file coverage looks small.
 
@@ -94,11 +93,11 @@ that's often wasteful, since the boilerplate portion could have been dispatched 
 model on its own. Before finalizing the breakdown, check each `versatile`/`powerful` task for a
 sub-slice that is itself fully-specified and mechanical (e.g. "the DTO and repository interface"
 out of "the DTO, repository, and resolution chain"); if one exists and can be its own reviewable,
-testable unit, split it out as its own `ultra-lightweight`/`lightweight` task instead of folding it
+testable unit, split it out as its own `lightweight` task instead of folding it
 in. Only keep them merged when the boilerplate has no independent test/review value apart from the
 harder piece (e.g. a single-field DTO that only the resolution chain consumes).
 
-**Bias the overall mix toward cheap tiers.** Splitting for tier (above) catches boilerplate hiding inside one task; this is about the shape of the whole list. Wherever a clean cut is possible, prefer cutting finer at the `ultra-lightweight`/`lightweight` end — a migration, a DTO, a config file, a repository skeleton, a mechanical rename each earn their own task rather than riding along with something harder. Coarser `versatile`/`powerful` tasks are still necessary for the genuinely hard parts, but they should not make up most of the list — if more than roughly half the tasks land `versatile` or `powerful`, re-scan for mechanical sub-slices you can peel off into their own cheap tasks before presenting the breakdown in step 4.
+**Bias the overall mix toward cheap tiers.** Splitting for tier (above) catches boilerplate hiding inside one task; this is about the shape of the whole list. Wherever a clean cut is possible, prefer cutting finer at the `lightweight` end — a migration, a DTO, a config file, a repository skeleton, a mechanical rename each earn their own task rather than riding along with something harder. Coarser `versatile`/`powerful` tasks are still necessary for the genuinely hard parts, but they should not make up most of the list — if more than roughly half the tasks land `versatile` or `powerful`, re-scan for mechanical sub-slices you can peel off into their own cheap tasks before presenting the breakdown in step 4.
 
 **Orientation** — what kind of capability the task needs:
 
@@ -213,7 +212,7 @@ Create or overwrite `.plans/{name}/tasks.md`:
 
 | #   | Task                                              | Status | Depends on | Tier                 |
 | --- | ------------------------------------------------- | ------ | ---------- | -------------------- |
-| 1   | [Task title](tasks/001-task-name.md)              | todo   | —          | ultra-lightweight/generator |
+| 1   | [Task title](tasks/001-task-name.md)              | todo   | —          | lightweight/generator |
 | 2   | [Task title](tasks/002-task-name.md)              | todo   | 1          | versatile/generalist  |
 | 3   | [Task title](tasks/003-task-name.md)              | todo   | 1, 2       | draft-only      |
 | 4   | [Ensure CI passes](tasks/004-ensure-ci-passes.md) | todo   | all        | —                    |
@@ -246,7 +245,7 @@ Tell the user:
 - Do not dispatch a subagent for the **"Ensure CI passes"** task — it's static boilerplate, write it directly.
 - Do not assign that task a tier — it's mechanical, not judgment-heavy.
 - Do not use `draft-only` liberally — most tasks are executable; reserve it for tasks that are inherently about debate or ambiguity resolution, not ones that are merely hard or high-stakes (those get `powerful`, not `draft-only`).
-- Do not bump weight up just because a task touches multiple files or looks like "a real feature" — if the task file already gives the exact contract verbatim, that's still `ultra-lightweight`/`lightweight`, not a reason alone to escalate.
+- Do not bump weight up just because a task touches multiple files or looks like "a real feature" — if the task file already gives the exact contract verbatim, that's still `lightweight`, not a reason alone to escalate.
 - Do not add a tier field to individual task files — `tasks.md`'s Tier column is the single source of truth; it's only read on the subagent-dispatch path anyway.
 - Do not paste `prd.md`/`ard.md`/`context.md` contents into a task-writing subagent's dispatch — hand it the paths and let it read them.
 - Do not restate boilerplate already covered by matching instruction files.
@@ -256,5 +255,5 @@ Tell the user:
 - Do not restructure `## What` into per-file headers or tables for human scannability — the implementing agent, not a human, is the primary reader, and the flat format is the one proven correct at lowest cost.
 - Do not write a vague acceptance criterion like "tests pass" or "formatting is correct" when the stack's exact check command is knowable — name it literally.
 - Do not present a task in the step-4 quiz without its tier rendered inline on the task line — a tier mentioned only in this skill's own notes, or omitted because it "looked obvious," leaves the user unable to see which model each task is headed for.
-- Do not bundle fully-specified boilerplate (a DTO, a resource class, generated types) into a `versatile`/`powerful` task just because it sits on the same vertical slice — split it out as its own `ultra-lightweight`/`lightweight` task when it's independently testable/reviewable.
+- Do not bundle fully-specified boilerplate (a DTO, a resource class, generated types) into a `versatile`/`powerful` task just because it sits on the same vertical slice — split it out as its own `lightweight` task when it's independently testable/reviewable.
 - Do not let `versatile`/`powerful` tasks become the majority of the list — actively hunt for granular, cheap-tier slices before settling for a coarse breakdown.

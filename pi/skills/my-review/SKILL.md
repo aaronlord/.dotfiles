@@ -5,7 +5,7 @@ description: >
   Docs. Use when the user says "review since main", "review this branch", or wants a diff/WIP
   code review. Do NOT use for PRD/ARD review (my-review-plan) or PR workflow steps (my-fix-pr,
   my-open-pr).
-version: 1.2.0
+version: 1.3.0
 ---
 
 Review the diff between `HEAD` and a fixed point the user supplies across five axes:
@@ -165,24 +165,39 @@ the main session — dispatch each fix to its own `worker` subagent, same patter
 passes. The main agent is usually the priciest model in play; burning it on mechanical edits a
 cheaper Generator model handles fine defeats the point of tiering models at all.
 
+Flow: **classified fixes → lightweight CI pass → orchestrator validates.** Finding a bug (Security
+pass, `powerful`-tier) and implementing its already-named fix are different jobs — don't let the
+finding's severity set the fix's tier.
+
 1. Ask the user which findings to fix if it isn't obvious (all of them, one axis, a specific
    finding) — don't assume "fix everything" from an ambiguous "fix it."
 2. Group findings by file. Never dispatch two fixer subagents against the same file concurrently
    — conflicting edits. One dispatch per file (or per tightly-coupled file group), each given only
    that file's findings, the cited rule/spec text, and the relevant diff hunk — not the whole
    review report or whole diff.
-3. Pick weight/orientation per `model-matrix.md` (same table the review passes use):
-   - **`lightweight/generator`** (`mai-code-1.1-flash` · low) — default for mechanical,
-     unambiguous fixes with a single clearly-cited rule (missing null check, wrong import,
-     formatting/convention mismatch, off-by-one).
-   - **`versatile/generalist`** (`claude-sonnet-5` · medium) — fixes needing judgment: spec
-     mismatches requiring reinterpretation, or anything touching more than one file/module.
-   - **`powerful/generalist`** (`claude-opus-5` · high) — security findings only, per
-     `~/.pi/agent/extensions/model-matrix/general.md`'s Authority-ladder guidance that a silently wrong security fix is costly
-     even when the change looks small.
-4. Dispatch fixer subagents in parallel across files (never within the same file), same as step 4.
-5. After they return, show the user a diff of what changed before step 8's commit — this is the
-   human-approval gate; don't let a fixer subagent's edits go straight to commit unseen.
+3. Classify each group's fix using [`references/fix-classifier.md`](references/fix-classifier.md)
+   — weight/orientation/thinking-level, plus its rule on sequencing instead of merging tiers when
+   a high-tier and low-tier fix share a file, and on stopping to `ask_user` when a fix's approach
+   is still genuinely ambiguous rather than guessing or hedging up to `powerful`.
+4. Dispatch fixer subagents per their classified tier, in parallel across independent file groups
+   (never within the same file/sequenced group concurrently). Each fixer makes the semantic edit
+   only and stops — it does not own a full lint/typecheck/test loop; that's step 5. A quick
+   self-check of the file it just touched is fine, but don't let the fixer iterate against the
+   full suite itself, that's what burns tokens at its (possibly high) output rate.
+5. **Lightweight/generator CI pass**: one dispatch (`lightweight/generator`, or main via `bash`
+   directly if that's cheaper) runs the project's actual CI equivalent — formatter, static
+   analysis, full test suite — once across every file the fixers touched.
+   - Fix mechanical failures inline: missing type hint, unused import, a test's expected value
+     needing to change to match behavior the finding already specified, formatting.
+   - Stop and surface anything **not mechanical** — a static-analysis error that reveals the fix's
+     approach doesn't actually hold up, or a test failure implicating unrelated behavior/an edge
+     case the original finding never described. Resolving these means re-deciding what the fix
+     should do, which this pass isn't positioned to judge safely. When genuinely in doubt whether
+     something is mechanical, treat it as not mechanical — don't guess, don't auto-retry.
+6. **Orchestrator validates**: review the CI pass's report together with the diff, confirm each
+   fix actually matches the finding it was meant to address (not just "CI is green"), then show the
+   user that diff before step 8's commit — this is the human-approval gate; don't let a fixer or
+   the CI pass's edits go straight to commit unseen.
 
 ### 8. Commit
 
@@ -234,6 +249,16 @@ asking whether to commit — do not silently commit over them.
 - Do not present Standards/Security as two separate full reports — merge per step 5 and only
   surface the divergence, not the raw duplication.
 - Do not implement suggested fixes yourself as the main agent — dispatch a sized subagent per
-  file/finding via `model-matrix.md`, same as the review passes themselves.
-- Do not dispatch two fixer subagents against the same file concurrently — group by file first.
-- Do not let fixer subagents' edits reach `git commit` unseen — show the diff before step 8.
+  file/finding via `references/fix-classifier.md`, same as the review passes themselves.
+- Do not dispatch two fixer subagents against the same file concurrently — group by file first,
+  and sequence rather than merge when a high-tier and low-tier fix share a file (see
+  `references/fix-classifier.md`).
+- Do not set a fix's tier from the finding's severity ("it's Security, so use the powerful tier")
+  — classify the fix itself; a severe finding with an already-decided fix pattern is usually a
+  cheap-tier fix.
+- Do not let a fixer subagent own its own lint/typecheck/test loop — it makes the edit and stops;
+  the lightweight CI pass (step 7.5) validates, not the fixer iterating against the suite itself.
+- Do not auto-retry or escalate a non-mechanical CI-pass failure — stop and surface it; guessing
+  at a re-fix is exactly the risk classifying tiers correctly was meant to avoid.
+- Do not let fixer subagents' or the CI pass's edits reach `git commit` unseen — show the diff
+  before step 8.

@@ -110,6 +110,35 @@ export function getCurrentBranch(cwd: string): string | undefined {
   }
 }
 
+// repo's long-lived catch-all branch (main/master/etc) — skews per-branch averages, so callers exclude it from stats
+export function getDefaultBranch(cwd: string): string | undefined {
+  try {
+    const ref = execSync("git symbolic-ref refs/remotes/origin/HEAD", {
+      cwd,
+      encoding: "utf8",
+    }).trim();
+    const name = ref.split("/").pop();
+    if (name) return name;
+  } catch {
+    /* no remote HEAD configured — fall through to local heuristic */
+  }
+  try {
+    const branches = execSync("git branch --format=%(refname:short)", {
+      cwd,
+      encoding: "utf8",
+    })
+      .split("\n")
+      .map((b) => b.trim())
+      .filter(Boolean);
+    for (const candidate of ["main", "master"]) {
+      if (branches.includes(candidate)) return candidate;
+    }
+  } catch {
+    /* not a git repo */
+  }
+  return undefined;
+}
+
 export function addBranchCost(
   repoRoot: string,
   branch: string,

@@ -173,10 +173,6 @@ export default function (pi: ExtensionAPI) {
               ? `?/${fmtTok(contextWindow)}`
               : `${pctStr}% (${fmtTok(contextWindow)})`;
 
-          // --- Historical stats (from cache) ---
-          const today = getPeriodStats(todayKey());
-          const week = getPeriodStats(weekStartKey());
-
           // --- Extension statuses (read early for inline injection) ---
           const extStatuses = footerData.getExtensionStatuses();
 
@@ -224,51 +220,20 @@ export default function (pi: ExtensionAPI) {
             parts.push(theme.fg("bashMode", rtkStatus));
           }
 
-          // Token and cost for today and week
-          if (totalCost > 0 || today.tokens > 0 || week.tokens > 0) {
+          // Total session cost and branch cost
+          if (totalCost > 0 || (currentBranch && currentBranchCostUsd > 0)) {
             parts.push(theme.fg("dim", "│"));
 
-            // Branch / feature cost (cumulative across all sessions on this branch)
-            const branch = currentBranch;
-            if (branch && currentBranchCostUsd > 0) {
+            parts.push(
+              theme.fg("syntaxFunction", "session ") +
+                theme.fg("syntaxNumber", `$${totalCost.toFixed(3)}`),
+            );
+
+            if (currentBranch && currentBranchCostUsd > 0) {
+              parts.push(theme.fg("muted", "/"));
               parts.push(
-                theme.fg("syntaxFunction", shortBranch(branch) + " ") +
+                theme.fg("syntaxFunction", shortBranch(currentBranch) + " ") +
                   theme.fg("syntaxNumber", `$${currentBranchCostUsd.toFixed(3)}`),
-              );
-
-              // parts.push(theme.fg("muted", "/"));
-              parts.push(theme.fg("dim", "│"));
-            }
-
-            const usingSubscription = ctx.model
-              ? ctx.modelRegistry.isUsingOAuth(ctx.model)
-              : false;
-
-            parts.push(
-              theme.fg("syntaxFunction", `${fmtTok(totalInput + totalOutput)}`),
-            );
-            parts.push(
-              theme.fg(
-                "syntaxNumber",
-                `$${totalCost.toFixed(3)}${usingSubscription ? " (sub)" : ""}`,
-              ),
-            );
-
-            if (today.tokens > 0) {
-              parts.push(theme.fg("muted", "/"));
-              parts.push(theme.fg("syntaxFunction", `${fmtTok(today.tokens)}`));
-              parts.push(
-                theme.fg("syntaxNumber", `$${today.costUsd.toFixed(3)}`),
-              );
-            }
-            if (
-              week.tokens > 0 &&
-              (today.tokens === 0 || week.tokens > today.tokens)
-            ) {
-              parts.push(theme.fg("muted", "/"));
-              parts.push(theme.fg("syntaxFunction", `${fmtTok(week.tokens)}`));
-              parts.push(
-                theme.fg("syntaxNumber", `$${week.costUsd.toFixed(3)}`),
               );
             }
           }
