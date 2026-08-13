@@ -30,11 +30,6 @@ import "./usage";
 /** The git branch active at the time of the last turn / branch change. */
 export let currentBranch: string | undefined;
 
-/** Last path segment of a branch name, e.g. "feat/my-thing" → "my-thing" */
-function shortBranch(branch: string): string {
-  return branch.split("/").pop() ?? branch;
-}
-
 // ---------------------------------------------------------------------------
 // Date helpers
 // ---------------------------------------------------------------------------
@@ -232,7 +227,7 @@ export default function (pi: ExtensionAPI) {
             if (currentBranch && currentBranchCostUsd > 0) {
               parts.push(theme.fg("muted", "/"));
               parts.push(
-                theme.fg("syntaxFunction", shortBranch(currentBranch) + " ") +
+                theme.fg("syntaxFunction", "branch ") +
                   theme.fg("syntaxNumber", `$${currentBranchCostUsd.toFixed(3)}`),
               );
             }
