@@ -5,7 +5,7 @@ description: >
   Docs. Use when the user says "review since main", "review this branch", or wants a diff/WIP
   code review. Do NOT use for PRD/ARD review (my-review-plan) or PR workflow steps (my-fix-pr,
   my-open-pr).
-version: 1.3.0
+version: 1.4.0
 ---
 
 Review the diff between `HEAD` and a fixed point the user supplies across five axes:
@@ -22,13 +22,11 @@ construction, not by per-call prompt text. This skill's job is to gather the dyn
 pass needs and aggregate what comes back.
 
 **Security** always runs as two independent passes — one dispatched with `model-matrix.md`'s
-`versatile/generator` model, one with its `versatile/generalist` model — because it's a
-single-pass-ever axis (unlike Standards/Spec, which also get checked per-task during
-`/my-implement-tasks` step 5.4) where a second, differently-oriented model catches real
-additional coverage, not a re-check of something already checked. **Standards** currently also
-runs doubled, as a trial — revisit after a run of real usage: if the two passes rarely disagree,
-drop it back to single-pass, since Standards already gets checked once per task upstream and the
-second pass isn't earning its cost. Spec, Performance, and Docs stay single-pass.
+`versatile/generator` model, one with its `versatile/generalist` model — because a second,
+differently-oriented model catches real additional coverage on an axis this is the only check
+for. **Standards** also runs doubled, for the same reason: `/my-implement-tasks` trusts each
+task's own self-report and runs no separate per-task Standards check, so this pass is the only
+independent Standards check the diff ever gets. Spec, Performance, and Docs stay single-pass.
 
 ## When to use
 

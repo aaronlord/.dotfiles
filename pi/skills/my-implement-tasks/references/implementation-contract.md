@@ -69,9 +69,22 @@ Design new code as **deep modules** — a lot of behaviour behind a small interf
 
 Run the project's formatter, type-checker/static analysis, and only the test files that cover the code you just wrote. Do not run the full suite — that's the orchestrator's job once every task in the plan is done. Running no tests is only acceptable for tasks where no behaviour was added (see Step 2); in that case, state explicitly why.
 
-Fix any failures yourself before reporting. Do not report done with a known-red check.
+For the formatter and static analysis, run them against the whole project, not just the files you touched — even if the task's own Acceptance Criteria names a scoped invocation (e.g. `phpstan analyse path/to/file.php`, an older-style task file may still say this). Tools like phpstan/psalm validate against a project-wide baseline/ignore-list, so a path-scoped run can spuriously fail — or wrongly pass — against a rule that references a file outside the scoped set; that's a false BLOCKED, not a real one. These tools cache per-file results, so a whole-project run costs little after the first one. If the whole-project run passes with no new errors traceable to your diff, that satisfies a scoped criterion too — don't treat disagreement from the narrower, scoped command as the true answer.
+
+A failure here is ordinary work, not a reason to stop: read the output, form a hypothesis, fix
+the code or test, rerun. Repeat until green. Do not report done with a known-red check, and do
+not report BLOCKED off a single failing run — that's what the Escalation rules below are for,
+and they require real, repeated attempts, not one.
 
 ## Escalation rules — stop, don't push through
+
+The conditions below are the *only* reasons to stop. A red test, a lint error, a type error, on
+their own, are not BLOCKED conditions — they're the normal signal to debug and fix, right here,
+using the task/ARD/context/AGENTS.md reading you already did in Step 1. If you're dispatched as
+a subagent, bailing out before you've actually exhausted a real fix attempt is expensive for the
+orchestrator, not just for you: a retry means a brand-new subagent re-reading everything Step 1
+read, from zero, just to get back to where you already were. You are the cheapest place to fix
+this — you already have all the context loaded.
 
 - If a single shell command (install, build, package-manager invocation, etc.) fails with the same error twice in a row, stop — do not try a third variant (switching package managers, clearing caches, reinstalling). This is an environment/tooling failure, not a logic bug; report BLOCKED with the exact command and error verbatim and say it looks like an environment issue, not a code issue. Do not burn further attempts guessing at fixes.
 - If the same task fails the same acceptance criterion on 3 separate fix attempts, stop. Do not attempt a 4th fix. Report BLOCKED, name the exact criterion that keeps failing, and say the task's design may need to change.
@@ -84,7 +97,7 @@ Fix any failures yourself before reporting. Do not report done with a known-red 
 
 - Never commit. Committing is the reviewer's responsibility, not the implementer's — whether inline or dispatched.
 - Never commit secrets, credentials, or `.env` files — this holds even though you aren't committing; don't write them to disk in a way that risks being swept into a later commit.
-- Never touch a task other than the one you were given. Never mark the task done, and never edit `tasks.md` — that's the orchestrator's job, after it independently re-verifies your work.
+- Never touch a task other than the one you were given. Never mark the task done, and never edit `tasks.md` — that's the orchestrator's job, once it reads your final report.
 
 ## Output format (when reporting back — subagent mode; also the shape to keep in mind for your own final summary in inline mode)
 

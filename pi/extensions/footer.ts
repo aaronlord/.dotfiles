@@ -89,7 +89,8 @@ function fmtDate(dateKey: string): string {
 let currentRepoRoot: string | undefined;
 let currentBranchCostUsd = 0;
 let currentFeature: string | undefined;
-let currentSkill: string | undefined;
+/** Last-active skill this session (heuristic) — read by subagent/index.ts to attribute subagent spend. */
+export let currentSkill: string | undefined;
 
 export default function (pi: ExtensionAPI) {
   // -------------------------------------------------------------------------
@@ -153,6 +154,27 @@ export default function (pi: ExtensionAPI) {
                 promptTotal > 0
                   ? (m.usage.cacheRead / promptTotal) * 100
                   : undefined;
+            } else if (
+              entry.type === "message" &&
+              (entry.message as any).role === "toolResult" &&
+              (entry.message as any).toolName === "subagent"
+            ) {
+              // subagent processes run with --no-session, so their cost never
+              // shows up as an "assistant" entry of this session — it only rolls
+              // up into this toolResult's nested details. Fold it in here too,
+              // so "session $X" matches the same main+sub total "branch $X" uses.
+              const results = (entry.message as any).details?.results;
+              if (Array.isArray(results)) {
+                for (const r of results) {
+                  const u = r?.usage;
+                  if (!u) continue;
+                  totalInput += u.input ?? 0;
+                  totalOutput += u.output ?? 0;
+                  totalCacheRead += u.cacheRead ?? 0;
+                  totalCacheWrite += u.cacheWrite ?? 0;
+                  totalCost += u.cost ?? 0;
+                }
+              }
             }
           }
 

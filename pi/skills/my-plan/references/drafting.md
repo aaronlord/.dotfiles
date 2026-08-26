@@ -65,8 +65,9 @@ _Status: draft_
 ## Structure
 
 File tree (```-fenced) of every new/modified production file. Indentation only — no ASCII tree glyphs
-(`├──`/`└──`/`│`). Trailing slash on dirs, extension on files. Names follow the precedent map.
-Omit test files and test directories; they are noise in the planning-stage tree.
+(`├──`/`└──`/`│`), 4 spaces per nesting level (not 2 — easier to hand-edit). Trailing slash on dirs,
+extension on files. Names follow the precedent map. Omit test files and test directories; they are
+noise in the planning-stage tree.
 
 Trailing `#` comment on a line only where the file's purpose is genuinely non-obvious. Most
 lines get no comment. No justification, no alternatives, no "why this name".

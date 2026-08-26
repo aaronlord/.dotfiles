@@ -5,7 +5,7 @@ description: >
   one-task-at-a-time "conductor" mode. Use when the user wants to drive each task by hand
   after my-plan-to-tasks. Do NOT use for unattended end-to-end execution; use my-implement-tasks
   for the orchestrator loop instead.
-version: 2.1.0
+version: 2.3.0
 ---
 
 # /my-implement-task

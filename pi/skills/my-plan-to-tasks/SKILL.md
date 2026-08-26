@@ -5,7 +5,7 @@ description: >
   user says plan to tasks, break the plan into tasks, or groom a reviewed ARD for
   implementation. Do NOT use for net-new planning (my-plan, my-quick-plan), follow-up changes to
   an existing plan (my-follow-up-plan), or pre-groom review (my-review-plan).
-version: 1.9.0
+version: 1.14.0
 ---
 
 # /my-plan-to-tasks
@@ -154,17 +154,13 @@ Iterate until the user approves the breakdown.
 
 ### 5. Write the task files
 
-Each approved non-CI task is written by a **dispatched subagent**, one per task, run in parallel via the `subagent` tool's `tasks` array — not by this session directly. This keeps the heavy task-writing contract (templates, no-placeholder rules, instruction-file matching) out of the orchestrator's own context; each subagent reads it only when it needs it.
+Write every task file directly in this session — no subagent dispatch. Read [`references/task-writing.md`](references/task-writing.md) once and follow its contract exactly (template, no-placeholder rules, instruction-file matching) for each approved task, writing to `.plans/{name}/tasks/{nnn}-{task-slug}.md` (zero-padded three-digit index, e.g. `001-create-upsert-student-command.md`). You already hold `prd.md`, `ard.md`, and `context.md` in context from steps 1–2 — don't re-read them per task.
 
-For each approved task, dispatch the generic `worker` agent (or equivalent) with:
+The model for this whole skill run is whatever the user set for the session — pick it (or ask the user to) based on the plan's overall difficulty before starting step 5, rather than routing per task.
 
-- The plan name and this task's number, title, scope, and dependencies, as approved in step 4.
-- Absolute paths to `.plans/{name}/prd.md`, `.plans/{name}/ard.md`, `.plans/{name}/context.md` — the subagent reads these itself, don't paste their contents into the dispatch.
-- The absolute path to [`references/task-writing.md`](references/task-writing.md) — instruct the subagent to follow that contract exactly, including its template, and to write the file to `.plans/{name}/tasks/{nnn}-{task-slug}.md` (zero-padded three-digit index, e.g. `001-create-upsert-student-command.md`).
+After writing all task files, verify each exists at the expected path and skim it against the cross-consistency findings from step 3a — a task written from a narrow brief can still duplicate another task's ownership or miss an ARD data contract. Fix any gap directly.
 
-After all dispatches return, verify each wrote its file at the expected path and skim it against the cross-consistency findings from step 3a — a subagent working from a narrow brief can still duplicate another task's ownership or miss an ARD data contract. Fix any gap directly rather than re-dispatching.
-
-The final **"Ensure CI passes"** task is static boilerplate with no ARD-specific judgment calls — write it directly in this session from the template below, don't dispatch a subagent for it:
+The final **"Ensure CI passes"** task is static boilerplate with no ARD-specific judgment calls — write it directly from the template below:
 
 <ci-gate-task-template>
 # Task {n}: Ensure CI passes
@@ -201,7 +197,7 @@ N/A — this task is a CI gate, not a feature.
 Do not skip or shortcut this task. If CI fails, fix the root cause — do not suppress warnings or lower thresholds.
 </ci-gate-task-template>
 
-All other tasks use the `<task-template>` in [`references/task-writing.md`](references/task-writing.md) — each dispatched subagent writes its own file from that template, not this session.
+All other tasks use the `<task-template>` in [`references/task-writing.md`](references/task-writing.md), written directly in this session.
 
 ### 6. Write the tasks index
 
@@ -242,18 +238,21 @@ Tell the user:
 - Do not use this skill before `/my-review-plan` unless the user explicitly accepts grooming an ARD still marked `draft` by replying with the literal word `proceed`.
 - Do not create horizontal slices; derive thin vertical tracer-bullet tasks instead.
 - Do not remove, merge away, or skip the final **"Ensure CI passes"** task.
-- Do not dispatch a subagent for the **"Ensure CI passes"** task — it's static boilerplate, write it directly.
-- Do not assign that task a tier — it's mechanical, not judgment-heavy.
+- Do not dispatch a subagent to write any task file — write every task directly in this session, including the CI-gate task.
+- Do not assign the CI-gate task a tier — it's mechanical, not judgment-heavy.
 - Do not use `draft-only` liberally — most tasks are executable; reserve it for tasks that are inherently about debate or ambiguity resolution, not ones that are merely hard or high-stakes (those get `powerful`, not `draft-only`).
 - Do not bump weight up just because a task touches multiple files or looks like "a real feature" — if the task file already gives the exact contract verbatim, that's still `lightweight`, not a reason alone to escalate.
 - Do not add a tier field to individual task files — `tasks.md`'s Tier column is the single source of truth; it's only read on the subagent-dispatch path anyway.
-- Do not paste `prd.md`/`ard.md`/`context.md` contents into a task-writing subagent's dispatch — hand it the paths and let it read them.
 - Do not restate boilerplate already covered by matching instruction files.
 - Do not write placeholders, vague acceptance criteria, guessed names, or hand-wavy references to other tasks in place of concrete paths and signatures.
 - Do not write a task as `todo` when its target files already exist on the default branch — check first, mark `done` or drop it instead.
 - Do not write a deviation note without verifying it against the instruction file it deviates from — a wrong note is worse than none.
 - Do not restructure `## What` into per-file headers or tables for human scannability — the implementing agent, not a human, is the primary reader, and the flat format is the one proven correct at lowest cost.
 - Do not write a vague acceptance criterion like "tests pass" or "formatting is correct" when the stack's exact check command is knowable — name it literally.
+- Do not name a bare, unscoped test-runner command (`vitest run`, `phpunit`, `go test ./...`) as an acceptance criterion — it reads as license to run the full suite. Scope it to the exact test file(s)/filter this task's tests cover, e.g. `vitest run src/students/upsert.test.ts`.
+- Do not copy a project's whole-project coverage/type-coverage CI command (e.g. `pest --coverage --min=100`) verbatim into a task's acceptance criteria just because it's the literal command named in the project's CI docs — a `--min` threshold evaluates against the whole codebase regardless of any path argument, so it's not actually scoped. Drop the threshold flags for per-task criteria and defer that check to the CI-gate task.
+- Do not name a formatter's check-only flag (`pint --test`, `prettier --check`, `black --check`) as a per-task acceptance criterion — that mode is reserved for the CI-gate task. A per-task criterion should name the auto-fix mode (`pint`, `prettier --write`, `black`), unscoped against the whole project — not scoped to this task's files, same reasoning as the static-analysis check above.
+- Do not scope a per-task phpstan/psalm/type-checker criterion to this task's path(s) (e.g. `phpstan analyse src/Students`) — name the bare, project-wide command instead. A path-scoped run can spuriously disagree with a project-wide baseline/ignore-list, and the tool's own result cache makes a full run cheap after the first one.
 - Do not present a task in the step-4 quiz without its tier rendered inline on the task line — a tier mentioned only in this skill's own notes, or omitted because it "looked obvious," leaves the user unable to see which model each task is headed for.
 - Do not bundle fully-specified boilerplate (a DTO, a resource class, generated types) into a `versatile`/`powerful` task just because it sits on the same vertical slice — split it out as its own `lightweight` task when it's independently testable/reviewable.
 - Do not let `versatile`/`powerful` tasks become the majority of the list — actively hunt for granular, cheap-tier slices before settling for a coarse breakdown.

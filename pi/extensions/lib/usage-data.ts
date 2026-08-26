@@ -85,23 +85,44 @@ function parseJsonlFile(filePath: string, skipFile?: string): void {
       const entry = JSON.parse(line);
       if (entry.type !== "message") continue;
       const msg = entry.message;
-      if (!msg || msg.role !== "assistant") continue;
-      const cost = msg.usage?.cost?.total;
-      if (cost == null) continue;
+      if (!msg) continue;
 
       const ts = entry.timestamp;
       if (!ts) continue;
-
       const dateKey = tsToDateKey(ts);
-      const model = msg.model ?? "unknown";
-      const tokens =
-        msg.usage.totalTokens ??
-        (msg.usage.input ?? 0) +
-          (msg.usage.output ?? 0) +
-          (msg.usage.cacheRead ?? 0) +
-          (msg.usage.cacheWrite ?? 0);
 
-      addToCache(dateKey, model, tokens, cost);
+      if (msg.role === "assistant") {
+        const cost = msg.usage?.cost?.total;
+        if (cost == null) continue;
+        const model = msg.model ?? "unknown";
+        const tokens =
+          msg.usage.totalTokens ??
+          (msg.usage.input ?? 0) +
+            (msg.usage.output ?? 0) +
+            (msg.usage.cacheRead ?? 0) +
+            (msg.usage.cacheWrite ?? 0);
+        addToCache(dateKey, model, tokens, cost);
+        continue;
+      }
+
+      // subagent processes run with --no-session (no JSONL of their own) — their
+      // full usage rolls up into this toolResult message on the parent instead,
+      // which is the only place that cost is ever recorded
+      if (msg.role === "toolResult" && msg.toolName === "subagent") {
+        const results = msg.details?.results;
+        if (!Array.isArray(results)) continue;
+        for (const r of results) {
+          const cost = r?.usage?.cost;
+          if (!cost) continue;
+          const u = r.usage;
+          const tokens =
+            (u.input ?? 0) + (u.output ?? 0) + (u.cacheRead ?? 0) + (u.cacheWrite ?? 0);
+          // subagent model is stored as "provider/model" (agent frontmatter form),
+          // unlike the bare model id on normal assistant turns — strip to match
+          const model = String(r.model ?? "unknown").split("/").pop() || "unknown";
+          addToCache(dateKey, model, tokens, cost);
+        }
+      }
     } catch {
       /* skip malformed lines */
     }

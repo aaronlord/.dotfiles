@@ -29,11 +29,46 @@ import {
 import { Container, Markdown, Spacer, Text } from "@earendil-works/pi-tui";
 import { Type } from "typebox";
 import { type AgentConfig, type AgentScope, discoverAgents } from "./agents.ts";
+import { currentSkill } from "../footer";
+import { addBranchCost, getCurrentBranch, resolveRepoRoot } from "../lib/branch-costs";
+import { addFeatureCost, resolveFeatureName } from "../lib/feature-costs";
+import { addSkillCost } from "../lib/skill-costs";
+import { recordTurn } from "../lib/usage-data";
 
 const MAX_PARALLEL_TASKS = 8;
 const MAX_CONCURRENCY = 4;
 const COLLAPSED_ITEM_COUNT = 10;
 const PER_TASK_OUTPUT_CAP = 50 * 1024;
+
+function todayKey(): string {
+	return new Date().toISOString().slice(0, 10);
+}
+
+// subagent processes run with --no-session, so their cost never lands in a
+// session JSONL of their own or in the main session's turn_end hook (that hook
+// only sees the parent's own tokens for the tool-call turn). Fold each
+// completed run's usage into the same trackers turn_end uses, immediately,
+// so it's visible in /usage without waiting for the next session reload.
+function recordSubagentCost(result: SingleResult, cwd: string): void {
+	const cost = result.usage.cost;
+	if (!cost) return;
+	const u = result.usage;
+	const tokens = u.input + u.output + u.cacheRead + u.cacheWrite;
+	// result.model is "provider/model" (agent frontmatter form) — strip to match
+	// the bare model id normal assistant turns use, so rows merge in /usage
+	const model = (result.model ?? "unknown").split("/").pop() || "unknown";
+
+	recordTurn(todayKey(), model, tokens, cost);
+
+	const repoRoot = resolveRepoRoot(cwd);
+	const branch = getCurrentBranch(cwd);
+	if (branch) addBranchCost(repoRoot, branch, cost, tokens, model);
+	const feature = resolveFeatureName(cwd);
+	if (feature) addFeatureCost(repoRoot, feature, cost, tokens, model);
+	// no skill detected — usually a cross-session-restart heuristic gap, not
+	// truly "no skill"; bucket as unknown instead of silently dropping the cost
+	addSkillCost(repoRoot, currentSkill ?? "unknown", cost, tokens, model);
+}
 
 function formatTokens(count: number): string {
 	if (count < 1000) return count.toString();
@@ -596,6 +631,7 @@ export default function (pi: ExtensionAPI) {
 						makeDetails("chain"),
 					);
 					results.push(result);
+					recordSubagentCost(result, step.cwd ?? ctx.cwd);
 
 					const isError = isFailedResult(result);
 					if (isError) {
@@ -675,6 +711,7 @@ export default function (pi: ExtensionAPI) {
 						makeDetails("parallel"),
 					);
 					allResults[index] = result;
+					recordSubagentCost(result, t.cwd ?? ctx.cwd);
 					emitParallelUpdate();
 					return result;
 				});
@@ -711,6 +748,7 @@ export default function (pi: ExtensionAPI) {
 					onUpdate,
 					makeDetails("single"),
 				);
+				recordSubagentCost(result, params.cwd ?? ctx.cwd);
 				const isError = isFailedResult(result);
 				if (isError) {
 					const errorMsg = getResultOutput(result);

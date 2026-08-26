@@ -106,7 +106,10 @@ export function addSkillCost(
   }
 }
 
-export function getSkillCostsForRepo(repoRoot: string): SkillCostEntry[] {
+export function getSkillCostsForRepo(
+  repoRoot: string,
+  since?: string | Date,
+): SkillCostEntry[] {
   let files: string[];
   try {
     files = existsSync(SKILL_COSTS_DIR) ? readdirSync(SKILL_COSTS_DIR) : [];
@@ -114,10 +117,13 @@ export function getSkillCostsForRepo(repoRoot: string): SkillCostEntry[] {
     return [];
   }
 
+  const sinceMs = since == null ? undefined : new Date(since).getTime();
   const entries: SkillCostEntry[] = [];
   for (const file of files) {
     const entry = readEntry(join(SKILL_COSTS_DIR, file));
-    if (entry && entry.repoRoot === repoRoot) entries.push(entry);
+    if (!entry || entry.repoRoot !== repoRoot) continue;
+    if (sinceMs != null && new Date(entry.lastUpdated).getTime() < sinceMs) continue;
+    entries.push(entry);
   }
   return entries;
 }

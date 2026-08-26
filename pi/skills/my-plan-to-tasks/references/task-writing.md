@@ -114,9 +114,43 @@ List any tasks that must be completed before this one, or `none`.
 - [ ] Criterion 2
 - [ ] ...
 
-Name the exact required checks for this task's stack by their literal command (e.g.
-`pint --test`, `phpstan analyse`, `vitest run`), not just "tests pass" — a generically-worded
-criterion is easy for an implementer to silently under-run and self-report as done anyway.
+Name the exact required checks for this task's stack by their literal command. For the test
+runner, **scope it to the file(s) this task touches** — not the bare command. `vitest run` or
+`phpunit` alone runs the whole suite; write the full invocation with the target path or filter
+instead, e.g. `vitest run src/students/upsert.test.ts`, `phpunit --filter StudentUpsertTest`,
+`go test ./internal/students/...`. If this task adds a new test file, name it by its exact path
+even though it doesn't exist yet — the implementer creates it as part of the task. Never write a
+generic "tests pass" or an unscoped test-runner invocation — that's what leads implementers to
+run the full suite on every task instead of just what this task changed (the full suite is the
+CI-gate task's job, not this one's).
+
+**Formatter and static-analysis checks go the other way — name them unscoped, against the whole
+project, not this task's path(s).** Tools like `phpstan`/`psalm` validate against a project-wide
+baseline/ignore-list (e.g. `phpstan.neon`'s `ignoreErrors`); a path-scoped run can spuriously fail
+or misreport against a rule that references a file outside the scoped set — that's a false
+BLOCKED, not a real one. These tools also cache per-file results (phpstan's result cache,
+ESLint's `--cache`, etc.), so a whole-project run costs little after the first one — scoping buys
+nothing and risks a wrong answer. Name the bare project-wide command, e.g. `phpstan analyse` (or
+whatever `AGENTS.md`/the CI config already invokes), not `phpstan analyse src/Students`. (If a
+project's static-analysis tool genuinely has no incremental cache and a full run is
+prohibitively slow, that's an exception — scope it, and say so in the task's `## Notes`.) For a
+formatter with separate check-only and auto-fix modes (e.g. `pint` vs. `pint --test`,
+`prettier --write` vs. `prettier --check`, `black` vs. `black --check`), name the auto-fix mode
+in a task's acceptance criteria, unscoped the same way — the check-only mode is a non-mutating
+report reserved for the CI-gate task, which needs to confirm no drift remains after every task
+has already run the fixer; naming the check-only flag on a feature task leaves the implementer
+staring at a report instead of just fixing the formatting.
+
+**A literal, fully-flagged command is not automatically scoped.** If the project's CI pipeline
+docs (e.g. `AGENTS.md`) list a coverage or type-coverage command with a `--min`/threshold flag
+(e.g. `pest --coverage --min=100`, `jest --coverage --coverageThreshold=...`), do not copy that
+command verbatim into a task's acceptance criteria just because it's the only literal test
+command the project names — a coverage-threshold tool checks the percentage against the whole
+codebase even when you add a path argument restricting which tests run, so it still fails (or
+misleadingly passes) for reasons unrelated to this task. For per-task criteria, drop the
+threshold/coverage flags entirely and name only the plain test-runner invocation against this
+task's test file(s); leave the coverage/type-coverage threshold check to the CI-gate task, where
+it belongs.
 
 ## Relevant ARD Sections
 

@@ -74,7 +74,7 @@ Systems/modules this epic touches or creates, one line each — what changes, wh
 
 _Rough, non-authoritative — refined per-plan, not a spec._
 
-Optional ```-fenced sketch of a file tree, indentation only (no ASCII tree glyphs), showing the shape of what's coming. Skip if premature.
+Optional ```-fenced sketch of a file tree, indentation only (no ASCII tree glyphs), 4 spaces per nesting level (not 2 — easier to hand-edit), showing the shape of what's coming. Skip if premature.
 
 ## Cross-Team Dependencies
 

@@ -95,6 +95,7 @@ interface UsageReport {
   featureStatsAll: GroupStats;
   modelRows: UsageReportModelRow[];
   skillRows: UsageReportSkillRow[];
+  skillStatsAll: GroupStats;
 }
 
 // ---------------------------------------------------------------------------
@@ -214,6 +215,7 @@ export default function (pi: ExtensionAPI) {
       featureStatsAll,
       modelRows,
       skillRows,
+      skillStatsAll,
     } = report;
     const BAR_W = 32;
     const LABEL_W = 44;
@@ -379,15 +381,15 @@ export default function (pi: ExtensionAPI) {
     }
 
     if (skillRows.length > 0) {
-      const skillBlock: string[] = [
+      const skillHeader =
         theme.fg("accent", "═══") +
-          theme.fg("muted", " By Skill (this repo — heuristic) ") +
-          theme.fg("accent", "═══"),
-      ];
+        theme.fg("muted", " By Skill (this repo, last 7 days — heuristic) ") +
+        theme.fg("accent", "═══");
+      const skillRowLines: string[] = [];
       const maxSkillCost = Math.max(...skillRows.map((r) => r.cost), 0.001);
       for (const row of skillRows) {
         const label = row.skill.padEnd(LABEL_W);
-        skillBlock.push(
+        skillRowLines.push(
           `  ${theme.fg("muted", label)}  ${costBar(row.cost, row.cost === maxSkillCost, maxSkillCost)}  ${tokCol(row.tokens)}  ${costCol(row.cost)}`,
         );
         const models = Object.entries(row.byModel).sort(
@@ -396,13 +398,18 @@ export default function (pi: ExtensionAPI) {
         if (models.length > 1) {
           for (const [model, stats] of models) {
             const subLabel = ("↳ " + shortModel(model)).padEnd(LABEL_W);
-            skillBlock.push(
+            skillRowLines.push(
               `  ${theme.fg("dim", subLabel)}  ${" ".repeat(BAR_W)}  ${tokCol(stats.tokens)}  ${costCol(stats.cost)}`,
             );
           }
         }
       }
-      rightBlocks.push(skillBlock);
+      const shownStats = computeGroupStats(skillRows.map((r) => ({ cost: r.cost, tokens: r.tokens })));
+      const skillFooterLines = [statsLine(`top ${skillRows.length} shown`, shownStats)];
+      if (skillStatsAll.count > skillRows.length) {
+        skillFooterLines.push(statsLine(`all ${skillStatsAll.count} skills`, skillStatsAll));
+      }
+      rightBlocks.push(finalizeBlock(skillHeader, skillRowLines, skillFooterLines));
     }
 
     if (featureRows.length > 0) {
@@ -661,19 +668,24 @@ export default function (pi: ExtensionAPI) {
         featureEntries.map((entry) => ({ cost: entry.cost, tokens: entry.tokens })),
       );
 
-      const skillRows: UsageReportSkillRow[] = getSkillCostsForRepo(repoRoot)
-        .sort((a, b) => b.cost - a.cost)
-        .map((entry) => ({
-          skill: entry.skill,
-          tokens: entry.tokens,
-          cost: entry.cost,
-          byModel: Object.fromEntries(
-            Object.entries(entry.byModel ?? {}).map(([model, stats]) => [
-              model,
-              { tokens: stats.tokens, cost: stats.cost },
-            ]),
-          ),
-        }));
+      const skillCutoff = new Date();
+      skillCutoff.setDate(skillCutoff.getDate() - 6);
+      const skillEntries = getSkillCostsForRepo(repoRoot, skillCutoff.toISOString())
+        .sort((a, b) => b.cost - a.cost);
+      const skillRows: UsageReportSkillRow[] = skillEntries.map((entry) => ({
+        skill: entry.skill,
+        tokens: entry.tokens,
+        cost: entry.cost,
+        byModel: Object.fromEntries(
+          Object.entries(entry.byModel ?? {}).map(([model, stats]) => [
+            model,
+            { tokens: stats.tokens, cost: stats.cost },
+          ]),
+        ),
+      }));
+      const skillStatsAll = computeGroupStats(
+        skillEntries.map((entry) => ({ cost: entry.cost, tokens: entry.tokens })),
+      );
 
       const report: UsageReport = {
         rows,
@@ -690,6 +702,7 @@ export default function (pi: ExtensionAPI) {
         featureStatsAll,
         modelRows,
         skillRows,
+        skillStatsAll,
       };
 
       pi.sendMessage({
