@@ -5,7 +5,7 @@ description: >
   Docs. Use when the user says "review since main", "review this branch", or wants a diff/WIP
   code review. Do NOT use for PRD/ARD review (my-review-plan) or PR workflow steps (my-fix-pr,
   my-open-pr).
-version: 1.4.0
+version: 1.6.0
 ---
 
 Review the diff between `HEAD` and a fixed point the user supplies across five axes:
@@ -156,19 +156,35 @@ End with a one-line summary: total findings per axis, and the worst issue within
 any). Don't pick a single winner across axes — that's the reranking the separation exists to
 prevent.
 
-### 7. Apply fixes (optional)
+### 7. Walk through findings
 
-If the user asks you to fix findings after seeing the report, don't edit the files yourself in
-the main session — dispatch each fix to its own `worker` subagent, same pattern as the review
-passes. The main agent is usually the priciest model in play; burning it on mechanical edits a
-cheaper Generator model handles fine defeats the point of tiering models at all.
+After showing the reports and summary, show one table containing every finding before asking any
+follow-up. Give each finding a stable ID (`STD-1`, `SPEC-1`, `SEC-1`, `PERF-1`, `DOC-1`, etc.)
+and include its axis, reported severity (don't invent one), concise finding, and file/line when
+available. Preserve report order within each axis; don't rank findings across axes. If there are no
+findings, say so and skip this step.
 
-Flow: **classified fixes → lightweight CI pass → orchestrator validates.** Finding a bug (Security
+Then walk findings one at a time in table order. Use `ask_user` once per finding; ask what the user
+wants done with that finding, with choices such as fix, accept/ignore, defer, or discuss. Wait for
+the answer before asking about the next finding. Keep each decision tied to its finding ID. If the
+user chooses discuss, discuss only that finding, then ask what they want done with it before
+continuing. Don't assume all findings should be fixed. After the walk-through, summarize recorded
+decisions; pass only findings marked for fixing to step 8.
+
+### 8. Apply fixes (optional)
+
+If step 7 recorded any findings as fix, handle only those here. If none were marked for fixing,
+skip this step. Don't edit files yourself in the main session — dispatch each fix to its own
+`worker` subagent, same pattern as the review passes. The main agent is usually the priciest model
+in play; burning it on mechanical edits a cheaper Generator model handles fine defeats the point
+of tiering models at all.
+
+Flow: **classified fixes → model breakdown approval → lightweight CI pass → orchestrator validates.** Finding a bug (Security
 pass, `powerful`-tier) and implementing its already-named fix are different jobs — don't let the
 finding's severity set the fix's tier.
 
-1. Ask the user which findings to fix if it isn't obvious (all of them, one axis, a specific
-   finding) — don't assume "fix everything" from an ambiguous "fix it."
+1. Use the fix decisions recorded in step 7. If a later request changes or ambiguously expands
+   that selection, clarify with `ask_user` before proceeding; don't assume "fix everything."
 2. Group findings by file. Never dispatch two fixer subagents against the same file concurrently
    — conflicting edits. One dispatch per file (or per tightly-coupled file group), each given only
    that file's findings, the cited rule/spec text, and the relevant diff hunk — not the whole
@@ -177,14 +193,36 @@ finding's severity set the fix's tier.
    — weight/orientation/thinking-level, plus its rule on sequencing instead of merging tiers when
    a high-tier and low-tier fix share a file, and on stopping to `ask_user` when a fix's approach
    is still genuinely ambiguous rather than guessing or hedging up to `powerful`.
-4. Dispatch fixer subagents per their classified tier, in parallel across independent file groups
-   (never within the same file/sequenced group concurrently). Each fixer makes the semantic edit
-   only and stops — it does not own a full lint/typecheck/test loop; that's step 5. A quick
-   self-check of the file it just touched is fine, but don't let the fixer iterate against the
-   full suite itself, that's what burns tokens at its (possibly high) output rate.
-5. **Lightweight/generator CI pass**: one dispatch (`lightweight/generator`, or main via `bash`
-   directly if that's cheaper) runs the project's actual CI equivalent — formatter, static
-   analysis, full test suite — once across every file the fixers touched.
+4. **Show the post-review fixer model breakdown and get approval before dispatch.** This breakdown
+   is for fixers and the post-fix CI pass only — never the models used for Standards, Spec,
+   Security, Performance, or Docs review. Resolve each classified tier against `model-matrix.md`
+   using its documented repo-local-then-global lookup, and show one row per fixer group. Keep groups that must run sequentially as separate rows. If CI will run directly in the main session, show `main session / no model` for its row:
+
+   ```text
+   | fixer group | findings/files | tier | suggested model | thinking |
+   | --- | --- | --- | --- | --- |
+   | 1 | Security #1 — src/auth.ts | versatile/generalist | github-copilot/claude-sonnet-5 | medium |
+   | CI pass | all fixer files | lightweight/generator | github-copilot/gpt-5.6-luna | low |
+   ```
+
+   If the matrix is missing or a tier has no mapping, show `default subagent model` and no
+   thinking override. Then use `ask_user` to ask whether to accept the breakdown or override it.
+   Accept overrides by fixer-group number or `CI pass`; the user may provide a different known
+   `{weight}/{orientation}` tier (re-resolve it through the matrix), an exact `provider/model-id`,
+   and/or a `thinkingLevel`. `draft-only` is not valid for fixer dispatch. Do not reinterpret
+   overrides, silently change review-pass models, or dispatch
+   until the user approves the final breakdown. If the user changes a model, preserve all other
+   classified groupings and sequencing unless they explicitly change those too.
+5. Dispatch fixer subagents per the approved model and thinking-level breakdown, in parallel
+   across independent file groups (never within the same file/sequenced group concurrently).
+   Each fixer makes the semantic edit only and stops — it does not own a full lint/typecheck/test
+   loop; that's step 6. A quick self-check of the file it just touched is fine, but don't let the
+   fixer iterate against the full suite itself, that's what burns tokens at its (possibly high)
+   output rate.
+6. **Post-fix CI pass**: use approved CI-pass execution choice — dispatch one subagent with its
+   approved model and thinking level, or run directly in the main session only when that choice
+   was shown and approved. It runs the project's actual CI equivalent —
+   formatter, static analysis, full test suite — once across every file the fixers touched.
    - Fix mechanical failures inline: missing type hint, unused import, a test's expected value
      needing to change to match behavior the finding already specified, formatting.
    - Stop and surface anything **not mechanical** — a static-analysis error that reveals the fix's
@@ -192,12 +230,12 @@ finding's severity set the fix's tier.
      case the original finding never described. Resolving these means re-deciding what the fix
      should do, which this pass isn't positioned to judge safely. When genuinely in doubt whether
      something is mechanical, treat it as not mechanical — don't guess, don't auto-retry.
-6. **Orchestrator validates**: review the CI pass's report together with the diff, confirm each
+7. **Orchestrator validates**: review the CI pass's report together with the diff, confirm each
    fix actually matches the finding it was meant to address (not just "CI is green"), then show the
-   user that diff before step 8's commit — this is the human-approval gate; don't let a fixer or
+   user that diff before step 9's commit — this is the human-approval gate; don't let a fixer or
    the CI pass's edits go straight to commit unseen.
 
-### 8. Commit
+### 9. Commit
 
 After presenting the review, ask the user whether to commit the changes.
 
@@ -233,6 +271,8 @@ asking whether to commit — do not silently commit over them.
   caught by only one of the two passes with `(generator-only)` or `(generalist-only)`.
 - Keep each axis separate; verbatim or lightly cleaned is fine.
 - End with a one-line summary giving total findings per axis and the worst issue within each axis, if any.
+- Then show one stable-ID table of all findings and ask the user about each one at a time with
+  `ask_user`; record fix/accept/defer/discuss decisions before proceeding.
 
 ## Anti-patterns to avoid
 
@@ -248,6 +288,8 @@ asking whether to commit — do not silently commit over them.
   surface the divergence, not the raw duplication.
 - Do not implement suggested fixes yourself as the main agent — dispatch a sized subagent per
   file/finding via `references/fix-classifier.md`, same as the review passes themselves.
+- Do not treat review-pass model assignments as fixer model assignments — classify and display
+  post-review fixer models separately, then wait for user approval.
 - Do not dispatch two fixer subagents against the same file concurrently — group by file first,
   and sequence rather than merge when a high-tier and low-tier fix share a file (see
   `references/fix-classifier.md`).
@@ -255,8 +297,8 @@ asking whether to commit — do not silently commit over them.
   — classify the fix itself; a severe finding with an already-decided fix pattern is usually a
   cheap-tier fix.
 - Do not let a fixer subagent own its own lint/typecheck/test loop — it makes the edit and stops;
-  the lightweight CI pass (step 7.5) validates, not the fixer iterating against the suite itself.
+  the post-fix CI pass validates, not the fixer iterating against the suite itself.
 - Do not auto-retry or escalate a non-mechanical CI-pass failure — stop and surface it; guessing
   at a re-fix is exactly the risk classifying tiers correctly was meant to avoid.
 - Do not let fixer subagents' or the CI pass's edits reach `git commit` unseen — show the diff
-  before step 8.
+  before step 9.

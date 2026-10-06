@@ -27,13 +27,10 @@ much checking that earns:
 - **Weight** — capability/cost class: `lightweight` (trivial-to-cheap, fully/well-specified,
   low-risk) / `versatile` (typical feature work) / `powerful` (novel, cross-cutting, or
   high-stakes).
-- **Orientation** — capability style: `generator` (execute an already-fully-specified pattern
-  faithfully, especially bulk/repetitive work — favors long-context instruction-following over
-  "helpful" reinterpretation) vs `generalist` (judgment calls, ambiguity, cross-cutting design,
-  prose/instruction-writing — favors reasoning depth and self-correction). Both are the DAG
-  (Directed Acyclic Graph — execution flows one-way through dispatch nodes, never looping back to
-  an earlier one) **Generator** node (they produce artifacts); see **Reviewer** below for the
-  checking node.
+- **Orientation** — capability style:
+  - `generator`: code and artifact production. Implementing features, writing tests, refactoring, fixing bugs, and executing well-bounded technical tasks. Favors strong coding ability, instruction-following, and test-driven validation.
+  - `generalist`: open-ended reasoning, cross-cutting architectural trade-offs, synthesis, and prose/instruction writing. Favors high reasoning depth, judgment under ambiguity, and self-correction over pure code throughput.
+  Both are the DAG (Directed Acyclic Graph — execution flows one-way through dispatch nodes, never looping back to an earlier one) **Generator** node (they produce artifacts); see **Reviewer** below for the checking node.
 
 Thinking level is a separate knob from model choice: `low` for small well-specified work, up to
 `medium`/`high` when the task needs judgment, ambiguity, or cross-cutting changes.

@@ -29,10 +29,8 @@ lower tier can't make on its own.
 
 ## Orientation
 
-- **`generator`**: execute the already-decided pattern faithfully. Most fixes land here once the
-  review pass or triage step named the concrete change.
-- **`generalist`**: the fix still requires deciding *how*, not just *that* — cross-cutting
-  refactor, or a design choice with more than one defensible answer.
+- **`generator`**: code and artifact production — implementing the fix, writing tests, refactoring, and verifying behavior. Most fixes land here once the concrete flaw and direction are identified.
+- **`generalist`**: open-ended reasoning, architectural trade-offs, synthesis, or deciding fixes across ambiguous boundaries with multiple competing solutions.
 
 ## Unresolved judgment calls
 

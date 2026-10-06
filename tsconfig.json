@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "strict": true,
+    "skipLibCheck": true
+  },
+  "files": [
+    "pi/types/pi-runtime.d.ts",
+    "pi/extensions/usage.ts"
+  ]
+}

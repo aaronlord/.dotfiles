@@ -75,6 +75,8 @@ Run `git status --porcelain`. If it is non-empty, stop and tell the user to comm
 first. This loop commits automatically after every task — starting from a dirty tree risks
 sweeping unrelated changes into the first commit.
 
+Branch and status checks are independent read-only operations; run them in one parallel tool batch when available.
+
 ### 4. Build the task queue
 
 From `tasks.md`, note for every task: its status (`todo`/`done`/`blocked`), and its `Depends on`
@@ -235,6 +237,8 @@ On full completion, report:
 - Never dispatch a parallel batch when some tasks are not truly independent — a ready task that
   still depends on another task in the same batch, or an obvious shared-file conflict, must be
   serialized instead.
+- Use parallel tool calls for independent read-only orchestration work, but never overlap formatters,
+  git mutations, commits, or commands sharing files, ports, databases, caches, or output paths.
 - Never implement a task directly in the current session. Always dispatch — use
   `/my-implement-task` if inline execution is what's wanted.
 - Never commit files the task didn't touch.

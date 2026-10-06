@@ -30,7 +30,7 @@ Break a reviewed ARD into an ordered, dependency-aware list of tasks ready for i
 
 Resolve `{name}` per "When to use" above, then point `.plan` at it: `ln -sfn .plans/{name} .plan`.
 
-Given the plan name, read both files immediately — before asking the user any questions about goals, context, or scope. The plan files are the source of truth.
+Given the plan name, read both files immediately — before asking the user any questions about goals, context, or scope. The plan files are the source of truth. These independent reads may run in one `multi_tool_use.parallel` batch.
 
 - `.plans/{name}/prd.md` — user story, problem statement, goals
 - `.plans/{name}/ard.md` — the agreed structure: file tree, data contracts, non-file items (primary source for task derivation)
@@ -54,7 +54,7 @@ If `context.md` has a `## Reference Documents` section, read the cached `.plans/
 - Natural implementation order based on dependencies (schema before repositories, interfaces before implementations, etc.)
 - Prior art for similar tasks in the project
 
-**Staleness check.** ARDs and previously-written task files drift from reality — designs move, code ships without status updates. Before deriving new tasks, verify the ARD's key claims against the current codebase: for every module, path, or interface the ARD names, confirm it actually exists at that location (or doesn't yet). If the plan already has a `tasks/` directory from a prior run, check whether any task marked `todo` has its target files already present on the default branch — a wrong or guessed path is far more expensive to an implementer than a missing detail, and a task claiming `todo` for already-shipped work is a silent trap.
+**Staleness check.** ARDs and previously-written task files drift from reality — designs move, code ships without status updates. Before deriving new tasks, verify the ARD's key claims against the current codebase: for every module, path, or interface the ARD names, confirm it actually exists at that location (or doesn't yet). If the plan already has a `tasks/` directory from a prior run, check whether any task marked `todo` has its target files already present on the default branch — a wrong or guessed path is far more expensive to an implementer than a missing detail, and a task claiming `todo` for already-shipped work is a silent trap. Run independent path and file checks in parallel when available; keep checks that depend on earlier results sequential.
 
 ### 3. Derive tasks as vertical slices
 
@@ -101,8 +101,8 @@ harder piece (e.g. a single-field DTO that only the resolution chain consumes).
 
 **Orientation** — what kind of capability the task needs:
 
-- `generator`: execute an already-fully-specified pattern faithfully, especially bulk/repetitive work across many files (renames, module migrations, mechanical find/replace). Favors long-context instruction-following over a model "helpfully" reinterpreting scope mid-task.
-- `generalist`: judgment calls, ambiguity, subtle correctness a straightforward test won't catch, cross-cutting design impact, or prose/instruction-writing. Favors reasoning depth and self-correction over raw throughput.
+- `generator`: code and artifact production. Implementing features, writing tests, refactoring, fixing bugs, and executing well-bounded technical tasks. Favors strong coding capability, instruction-following, and test validation over "helpful" scope creep. Most implementation tasks land here.
+- `generalist`: open-ended reasoning, cross-cutting architectural trade-offs, synthesis, and prose/instruction-writing. Favors reasoning depth, judgment under ambiguity, and self-correction. Use for tasks deciding *what/how* across multiple boundaries or without a clear spec.
 
 Treat thinking level as a separate dispatch knob from tier: use `low` for small, well-specified work, and raise to `medium`/`high` when the task needs judgment, ambiguity, or cross-cutting changes. `draft-only` overrides weight/orientation entirely — reserve it for tasks that are inherently about debate or ambiguity resolution rather than execution (e.g. drafting a contentious convention, a decision with no clear right answer worth grilling the user on). This should be rare; most tasks are executable and get a `{weight}/{orientation}` pair instead.
 
@@ -251,8 +251,8 @@ Tell the user:
 - Do not write a vague acceptance criterion like "tests pass" or "formatting is correct" when the stack's exact check command is knowable — name it literally.
 - Do not name a bare, unscoped test-runner command (`vitest run`, `phpunit`, `go test ./...`) as an acceptance criterion — it reads as license to run the full suite. Scope it to the exact test file(s)/filter this task's tests cover, e.g. `vitest run src/students/upsert.test.ts`.
 - Do not copy a project's whole-project coverage/type-coverage CI command (e.g. `pest --coverage --min=100`) verbatim into a task's acceptance criteria just because it's the literal command named in the project's CI docs — a `--min` threshold evaluates against the whole codebase regardless of any path argument, so it's not actually scoped. Drop the threshold flags for per-task criteria and defer that check to the CI-gate task.
-- Do not name a formatter's check-only flag (`pint --test`, `prettier --check`, `black --check`) as a per-task acceptance criterion — that mode is reserved for the CI-gate task. A per-task criterion should name the auto-fix mode (`pint`, `prettier --write`, `black`), unscoped against the whole project — not scoped to this task's files, same reasoning as the static-analysis check above.
-- Do not scope a per-task phpstan/psalm/type-checker criterion to this task's path(s) (e.g. `phpstan analyse src/Students`) — name the bare, project-wide command instead. A path-scoped run can spuriously disagree with a project-wide baseline/ignore-list, and the tool's own result cache makes a full run cheap after the first one.
+- Do not name a formatter's check-only flag (`pint --test`, `prettier --check`, `black --check`) as an acceptance criterion — formatters should fix, not just complain. Use auto-fix mode (`pint`, `prettier --write`, `black`) targeted to touched files.
+- Do not run unscoped whole-project formatters or static analysis when task-scoped targets exist — keep feedback fast and targeted to touched files.
 - Do not present a task in the step-4 quiz without its tier rendered inline on the task line — a tier mentioned only in this skill's own notes, or omitted because it "looked obvious," leaves the user unable to see which model each task is headed for.
 - Do not bundle fully-specified boilerplate (a DTO, a resource class, generated types) into a `versatile`/`powerful` task just because it sits on the same vertical slice — split it out as its own `lightweight` task when it's independently testable/reviewable.
 - Do not let `versatile`/`powerful` tasks become the majority of the list — actively hunt for granular, cheap-tier slices before settling for a coarse breakdown.

@@ -113,12 +113,12 @@ For each file/group, dispatch a `worker` subagent with: the fix approach(es) for
 proposed approach for obvious comments, the agreed approach for judgement ones — not the raw
 grill-me transcript), and the relevant code context — not the whole PR or every comment.
 
-Tier per `model-matrix.md`:
+Tier per `model-matrix.md` (all generators for implementation):
 
 - `lightweight/generator` default — covers obvious fixes and most judgement-resolved fixes, since
   by this point the decision is fully specified either way.
-- `versatile/generalist` if a group's agreed approach still has real cross-cutting scope.
-- `powerful/generalist` if a group's fix is security-adjacent.
+- `versatile/generator` if a group's agreed approach still has real cross-cutting scope.
+- `powerful/generator` if a group's fix is security-adjacent or high-risk.
 
 Dispatch in parallel across files/groups — this is the payoff of resolving every decision in
 step 5 first instead of interleaving grill → dispatch → grill → dispatch one issue at a time.

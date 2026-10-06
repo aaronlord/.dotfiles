@@ -66,6 +66,8 @@ rules, hard constraints, output format — lives in one place:
 [`references/implementation-contract.md`](references/implementation-contract.md). This skill
 never duplicates that prose.
 
+During implementation, use `multi_tool_use.parallel` for independent read-only lookups and, after any mutating formatter completes, independent targeted checks. Keep dependency-ordered work sequential. Never run concurrent writers, git mutations, overlapping suites, or checks sharing a database, server, port, cache, or output path.
+
 Read `references/implementation-contract.md` now, in full, and follow it directly in this
 session for the task at `.plans/{name}/tasks/{nnn}-task-name.md`. When it finishes (or reports
 BLOCKED per its own escalation rules — stop and escalate to the user, do not attempt to route

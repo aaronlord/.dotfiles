@@ -15,6 +15,7 @@ You will be given (at minimum): the plan name and the task file path. Resolve ev
 - If the task file has an `## Instruction Files` section, read every file listed there before touching any code. Treat these with the same weight as `AGENTS.md`. Do not skip or skim them.
 - Check `.github/instructions/*.instructions.md` for any file whose `applyTo:` glob matches a file you're about to write or edit, that isn't already listed in the task. Read every matching one before touching that file. Pull this proactively — don't wait for it to be injected reactively.
 - Before writing any test, open an existing test for the most analogous code in the project and read it. Mirror its structure exactly — framework, syntax, organisation. Do not default to a style you already know instead of the project's.
+- Batch independent read-only lookups with `multi_tool_use.parallel` when available. Keep dependency-ordered reads sequential; never parallelize commands that mutate files or git state.
 
 ## Step 2: Implement
 
@@ -68,6 +69,8 @@ Design new code as **deep modules** — a lot of behaviour behind a small interf
 ## Step 3: Run targeted CI
 
 Run the project's formatter, type-checker/static analysis, and only the test files that cover the code you just wrote. Do not run the full suite — that's the orchestrator's job once every task in the plan is done. Running no tests is only acceptable for tasks where no behaviour was added (see Step 2); in that case, state explicitly why.
+
+Run any mutating formatter first and wait for it to finish. Then batch independent static-analysis and test commands with `multi_tool_use.parallel` when they do not share exclusive resources. Serialize tests that share a database, server, port, cache, or output path. Never launch duplicate runs of the same suite; during failure investigation, follow repository instructions for one bare run and captured output.
 
 For the formatter and static analysis, run them against the whole project, not just the files you touched — even if the task's own Acceptance Criteria names a scoped invocation (e.g. `phpstan analyse path/to/file.php`, an older-style task file may still say this). Tools like phpstan/psalm validate against a project-wide baseline/ignore-list, so a path-scoped run can spuriously fail — or wrongly pass — against a rule that references a file outside the scoped set; that's a false BLOCKED, not a real one. These tools cache per-file results, so a whole-project run costs little after the first one. If the whole-project run passes with no new errors traceable to your diff, that satisfies a scoped criterion too — don't treat disagreement from the narrower, scoped command as the true answer.
 

@@ -31,7 +31,7 @@ The user provides a free-text prompt describing what they want done. No feature 
 
 ### 1. Quick recon — direct, not dispatched
 
-Do a light, direct look at the relevant part of the codebase yourself — `read`/`bash`/`grep`, no subagent dispatch. This task is small enough that spinning up a dedicated recon subagent is overkill.
+Do a light, direct look at the relevant part of the codebase yourself — `read`/`bash`/`grep`, no subagent dispatch. This task is small enough that spinning up a dedicated recon subagent is overkill. Run unrelated read-only lookups in one `multi_tool_use.parallel` batch when available; keep dependent lookups and all writes sequential.
 
 - Find the file(s) most likely involved.
 - Skim for existing conventions (naming, patterns, test style) you'll need to match later.

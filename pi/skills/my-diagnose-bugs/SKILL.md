@@ -67,6 +67,8 @@ Treat the loop as a product. Once you have _a_ loop, **tighten** it:
 - Sharper signal? (Assert on the specific symptom, not "didn't throw".)
 - More deterministic? (Pin time, seed the faker, isolate the DB, freeze the network.)
 
+Use `multi_tool_use.parallel` for independent read-only probes or hypothesis checks when they do not share mutable state. Keep the single red-capable repro loop authoritative; serialize probes that touch the same database, server, port, cache, or output path. Do not launch duplicate suite runs while investigating one failure.
+
 A 30-second flaky loop is barely better than no loop; a 2-second deterministic one is **tight** — a debugging superpower.
 
 #### Non-deterministic bugs

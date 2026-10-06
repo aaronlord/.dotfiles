@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+current_session="$1"
+
+panes=$(tmux list-panes -s -t "$current_session" -F "#{@pi_pane_status}" 2>/dev/null)
+[ -z "$panes" ] && exit 0
+
+icons=()
+while IFS= read -r status; do
+  case "$status" in
+    working) icons+=("#[fg=#f1ff5e]󰑮") ;;
+    prompt)  icons+=("#[fg=#ff5ea0]󰞋") ;;
+    idle)    icons+=("#[fg=#5eff6c]") ;;
+  esac
+done <<< "$panes"
+
+[ ${#icons[@]} -eq 0 ] && exit 0
+echo -n "${icons[*]} "

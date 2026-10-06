@@ -1,3 +1,5 @@
+/// <reference path="../../types/pi-runtime.d.ts" />
+
 /**
  * usage-data — shared JSONL-parsing / session-stats cache
  *
@@ -17,11 +19,15 @@ import { join } from "node:path";
 
 interface ModelStats {
   tokens: number;
+  inputTokens: number;
+  outputTokens: number;
   costUsd: number;
 }
 
 export interface DayStats {
   totalTokens: number;
+  inputTokens: number;
+  outputTokens: number;
   costUsd: number;
   byModel: Record<string, ModelStats>;
 }
@@ -53,16 +59,35 @@ function addToCache(
   model: string,
   tokens: number,
   cost: number,
+  inputTokens = 0,
+  outputTokens = 0,
 ): void {
   let day = statsCache.get(dateKey);
   if (!day) {
-    day = { totalTokens: 0, costUsd: 0, byModel: {} };
+    day = {
+      totalTokens: 0,
+      inputTokens: 0,
+      outputTokens: 0,
+      costUsd: 0,
+      byModel: {},
+    };
     statsCache.set(dateKey, day);
   }
   day.totalTokens += tokens;
+  day.inputTokens += inputTokens;
+  day.outputTokens += outputTokens;
   day.costUsd += cost;
-  if (!day.byModel[model]) day.byModel[model] = { tokens: 0, costUsd: 0 };
+  if (!day.byModel[model]) {
+    day.byModel[model] = {
+      tokens: 0,
+      inputTokens: 0,
+      outputTokens: 0,
+      costUsd: 0,
+    };
+  }
   day.byModel[model].tokens += tokens;
+  day.byModel[model].inputTokens += inputTokens;
+  day.byModel[model].outputTokens += outputTokens;
   day.byModel[model].costUsd += cost;
 }
 
@@ -101,7 +126,14 @@ function parseJsonlFile(filePath: string, skipFile?: string): void {
             (msg.usage.output ?? 0) +
             (msg.usage.cacheRead ?? 0) +
             (msg.usage.cacheWrite ?? 0);
-        addToCache(dateKey, model, tokens, cost);
+        addToCache(
+          dateKey,
+          model,
+          tokens,
+          cost,
+          msg.usage.input ?? 0,
+          msg.usage.output ?? 0,
+        );
         continue;
       }
 
@@ -120,7 +152,14 @@ function parseJsonlFile(filePath: string, skipFile?: string): void {
           // subagent model is stored as "provider/model" (agent frontmatter form),
           // unlike the bare model id on normal assistant turns — strip to match
           const model = String(r.model ?? "unknown").split("/").pop() || "unknown";
-          addToCache(dateKey, model, tokens, cost);
+          addToCache(
+            dateKey,
+            model,
+            tokens,
+            cost,
+            u.input ?? 0,
+            u.output ?? 0,
+          );
         }
       }
     } catch {
@@ -173,17 +212,23 @@ export function getPeriodStats(
   toKeyExclusive?: string,
 ): {
   tokens: number;
+  inputTokens: number;
+  outputTokens: number;
   costUsd: number;
 } {
   let tokens = 0,
+    inputTokens = 0,
+    outputTokens = 0,
     costUsd = 0;
   for (const [date, day] of statsCache) {
     if (date >= fromKey && (toKeyExclusive == null || date < toKeyExclusive)) {
       tokens += day.totalTokens;
+      inputTokens += day.inputTokens;
+      outputTokens += day.outputTokens;
       costUsd += day.costUsd;
     }
   }
-  return { tokens, costUsd };
+  return { tokens, inputTokens, outputTokens, costUsd };
 }
 
 export function getDayStats(dateKey: string): DayStats | undefined {
@@ -195,8 +240,17 @@ export function getAllTimeByModel(): Record<string, ModelStats> {
   const byModel: Record<string, ModelStats> = {};
   for (const day of statsCache.values()) {
     for (const [model, stats] of Object.entries(day.byModel)) {
-      if (!byModel[model]) byModel[model] = { tokens: 0, costUsd: 0 };
+      if (!byModel[model]) {
+        byModel[model] = {
+          tokens: 0,
+          inputTokens: 0,
+          outputTokens: 0,
+          costUsd: 0,
+        };
+      }
       byModel[model].tokens += stats.tokens;
+      byModel[model].inputTokens += stats.inputTokens;
+      byModel[model].outputTokens += stats.outputTokens;
       byModel[model].costUsd += stats.costUsd;
     }
   }
@@ -209,8 +263,17 @@ export function getByModelSince(fromKey: string): Record<string, ModelStats> {
   for (const [date, day] of statsCache) {
     if (date < fromKey) continue;
     for (const [model, stats] of Object.entries(day.byModel)) {
-      if (!byModel[model]) byModel[model] = { tokens: 0, costUsd: 0 };
+      if (!byModel[model]) {
+        byModel[model] = {
+          tokens: 0,
+          inputTokens: 0,
+          outputTokens: 0,
+          costUsd: 0,
+        };
+      }
       byModel[model].tokens += stats.tokens;
+      byModel[model].inputTokens += stats.inputTokens;
+      byModel[model].outputTokens += stats.outputTokens;
       byModel[model].costUsd += stats.costUsd;
     }
   }
@@ -223,6 +286,8 @@ export function recordTurn(
   model: string,
   tokens: number,
   cost: number,
+  inputTokens = 0,
+  outputTokens = 0,
 ): void {
-  addToCache(dateKey, model, tokens, cost);
+  addToCache(dateKey, model, tokens, cost, inputTokens, outputTokens);
 }

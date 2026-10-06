@@ -351,11 +351,27 @@ export default function (pi: ExtensionAPI) {
     const tokens =
       m.usage.input + m.usage.output + m.usage.cacheRead + m.usage.cacheWrite;
     if (currentBranch) {
-      addBranchCost(currentRepoRoot, currentBranch, cost, tokens, m.model);
+      addBranchCost(
+        currentRepoRoot,
+        currentBranch,
+        cost,
+        tokens,
+        m.model,
+        m.usage.input,
+        m.usage.output,
+      );
       currentBranchCostUsd += cost;
     }
     if (currentFeature) {
-      addFeatureCost(currentRepoRoot, currentFeature, cost, tokens, m.model);
+      addFeatureCost(
+        currentRepoRoot,
+        currentFeature,
+        cost,
+        tokens,
+        m.model,
+        m.usage.input,
+        m.usage.output,
+      );
     }
     if (currentSkill) {
       addSkillCost(currentRepoRoot, currentSkill, cost, tokens, m.model);

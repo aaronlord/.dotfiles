@@ -58,13 +58,13 @@ function recordSubagentCost(result: SingleResult, cwd: string): void {
 	// the bare model id normal assistant turns use, so rows merge in /usage
 	const model = (result.model ?? "unknown").split("/").pop() || "unknown";
 
-	recordTurn(todayKey(), model, tokens, cost);
+	recordTurn(todayKey(), model, tokens, cost, u.input, u.output);
 
 	const repoRoot = resolveRepoRoot(cwd);
 	const branch = getCurrentBranch(cwd);
-	if (branch) addBranchCost(repoRoot, branch, cost, tokens, model);
+	if (branch) addBranchCost(repoRoot, branch, cost, tokens, model, u.input, u.output);
 	const feature = resolveFeatureName(cwd);
-	if (feature) addFeatureCost(repoRoot, feature, cost, tokens, model);
+	if (feature) addFeatureCost(repoRoot, feature, cost, tokens, model, u.input, u.output);
 	// no skill detected — usually a cross-session-restart heuristic gap, not
 	// truly "no skill"; bucket as unknown instead of silently dropping the cost
 	addSkillCost(repoRoot, currentSkill ?? "unknown", cost, tokens, model);

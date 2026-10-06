@@ -56,7 +56,7 @@ tmux-session = "session=$(basename {{ worktree_path }} | tr . _) && tmux new-ses
 tmux-attach = "session=$(basename {{ worktree_path }} | tr . _) && tmux switch-client -t \"$session\" 2>/dev/null || true"
 
 [post-remove]
-tmux-kill = "session=$(basename {{ worktree_path }} | tr . _) && tmux kill-session -t \"$session\" 2>/dev/null || true"
+tmux-kill = "session=$(basename {{ worktree_path }} | tr . _); current=$(tmux display-message -p -t \"${TMUX_PANE:-}\" '#S' 2>/dev/null || tmux display-message -p '#S' 2>/dev/null || true); if [ \"$current\" != \"$session\" ]; then tmux kill-session -t \"$session\" 2>/dev/null || true; fi"
 ```
 
 - Creating a worktree spins up a detached tmux session named after the
@@ -66,7 +66,7 @@ tmux-kill = "session=$(basename {{ worktree_path }} | tr . _) && tmux kill-sessi
   to repos without one).
 - **Every** `wt switch` (not just creation) re-attaches your tmux
   client to that worktree's session.
-- Removing a worktree kills its tmux session.
+- Removing a worktree kills its tmux session, unless that session is active; active session stays put instead of tmux selecting another session.
 
 An `open` alias (`wt open`, or a `w` tmux keybinding wired up per-repo)
 to jump straight to a branch's dev URL is deliberately **not** defined

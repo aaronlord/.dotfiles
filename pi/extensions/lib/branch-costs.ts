@@ -31,8 +31,10 @@ export interface BranchCostEntry {
   branch: string;
   cost: number;
   tokens: number;
+  inputTokens?: number;
+  outputTokens?: number;
   lastUpdated: string;
-  byModel?: Record<string, { cost: number; tokens: number }>;
+  byModel?: Record<string, { cost: number; tokens: number; inputTokens?: number; outputTokens?: number }>;
 }
 
 // ---------------------------------------------------------------------------
@@ -145,14 +147,26 @@ export function addBranchCost(
   cost: number,
   tokens: number,
   model?: string,
+  inputTokens = 0,
+  outputTokens = 0,
 ): void {
   try {
     const filePath = entryFilePath(repoRoot, branch);
     const existing = readEntry(filePath);
     const byModel = { ...existing?.byModel };
     if (model) {
-      const prev = byModel[model] ?? { cost: 0, tokens: 0 };
-      byModel[model] = { cost: prev.cost + cost, tokens: prev.tokens + tokens };
+      const prev = byModel[model] ?? {
+        cost: 0,
+        tokens: 0,
+        inputTokens: 0,
+        outputTokens: 0,
+      };
+      byModel[model] = {
+        cost: prev.cost + cost,
+        tokens: prev.tokens + tokens,
+        inputTokens: (prev.inputTokens ?? 0) + inputTokens,
+        outputTokens: (prev.outputTokens ?? 0) + outputTokens,
+      };
     }
     const entry: BranchCostEntry = {
       version: 1,
@@ -160,6 +174,8 @@ export function addBranchCost(
       branch,
       cost: (existing?.cost ?? 0) + cost,
       tokens: (existing?.tokens ?? 0) + tokens,
+      inputTokens: (existing?.inputTokens ?? 0) + inputTokens,
+      outputTokens: (existing?.outputTokens ?? 0) + outputTokens,
       lastUpdated: new Date().toISOString(),
       byModel,
     };

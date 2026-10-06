@@ -23,6 +23,7 @@ import {
   wrapTextWithAnsi,
 } from "@earendil-works/pi-tui";
 import { Type } from "typebox";
+import { getSuggestionIndex } from "./lib/clarify-input.ts";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -134,15 +135,13 @@ export default function clarify(pi: ExtensionAPI) {
               return;
             }
 
-            // Number keys = pick suggestion
-            if (suggestions.length > 0) {
-              const num = Number(data);
-              if (!isNaN(num) && num >= 1 && num <= suggestions.length) {
-                selectedSuggestion = num;
-                editor.setText(suggestions[num - 1]);
-                refresh();
-                return;
-              }
+            // Number keys pick suggestions only before free-text starts.
+            const num = getSuggestionIndex(data, suggestions, editor.getText());
+            if (num !== null) {
+              selectedSuggestion = num;
+              editor.setText(suggestions[num - 1]);
+              refresh();
+              return;
             }
 
             // Everything else goes to the editor

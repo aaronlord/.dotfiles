@@ -87,15 +87,15 @@ for d in agents extensions skills prompts themes; do
   line "$src -> $dst"
 done
 
-# presets.json is tracked and symlinked directly
-presets_src="$dir/pi/presets.json"
-presets_dst="$HOME/.pi/agent/presets.json"
-if [[ -e "$presets_dst" && ! -L "$presets_dst" ]]; then
-  mv "$presets_dst" "${presets_dst}.bak"
-  warn "Backed up existing presets.json to ${presets_dst}.bak"
+# commands.json is tracked and symlinked directly
+commands_src="$dir/pi/commands.json"
+commands_dst="$HOME/.pi/agent/commands.json"
+if [[ -e "$commands_dst" && ! -L "$commands_dst" ]]; then
+  mv "$commands_dst" "${commands_dst}.bak"
+  warn "Backed up existing commands.json to ${commands_dst}.bak"
 fi
-ln -sfn "$presets_src" "$presets_dst"
-line "$presets_src -> $presets_dst"
+ln -sfn "$commands_src" "$commands_dst"
+line "$commands_src -> $commands_dst"
 
 # settings.json is host-owned — pi writes runtime state into it (last model,
 # changelog version), so seed it from the tracked example instead of symlinking.

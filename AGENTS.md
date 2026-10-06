@@ -5,7 +5,7 @@ When running test suites to investigate failures, run the command bare (no shell
 ### Bash command habits
 
 Do not prepend `cd <project-dir> &&` to bash commands — the shell is already in the correct working directory.
-Run one command per bash tool call. Do not chain commands with `&&`. Wait for the result before running the next command.
+Do not chain commands with `&&`.
 
 ### Directory traversal
 

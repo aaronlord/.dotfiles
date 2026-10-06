@@ -1,0 +1,57 @@
+#!/usr/bin/env bash
+current_session="$1"
+MAX_LEN=8
+
+panes=$(tmux list-panes -a -F "#{session_name}:::#{@pi_pane_status}" 2>/dev/null)
+[ -z "$panes" ] && exit 0
+
+# Compute alphabetical session index (1-based) matching `choose-tree -sZ -O name`
+declare -A session_index
+mapfile -t all_sessions < <(tmux list-sessions -F "#{session_name}" 2>/dev/null | sort)
+for i in "${!all_sessions[@]}"; do
+  session_index["${all_sessions[i]}"]=$((i + 1))
+done
+
+declare -A session_icons
+
+while IFS= read -r line; do
+  [ -z "$line" ] && continue
+  session="${line%:::*}"
+  status="${line##*:::}"
+  [ -z "$status" ] && continue
+  [ "$session" = "$current_session" ] && continue
+
+  case "$status" in
+    working) icon="#[fg=#f1ff5e]󰑮" ;;
+    prompt)  icon="#[fg=#ff5ea0]󰞋" ;;
+    idle)    icon="#[fg=#5eff6c]" ;;
+    *)       icon="" ;;
+  esac
+
+  [ -n "$icon" ] && session_icons["$session"]+="${session_icons["$session"]:+ }$icon"
+done <<< "$panes"
+
+entries=()
+# Sort by alphabetical session index
+for session in "${all_sessions[@]}"; do
+  [ -z "${session_icons[$session]}" ] && continue
+
+  idx="${session_index[$session]}"
+  display_name="$session"
+  if [ "${#display_name}" -gt "$MAX_LEN" ]; then
+    display_name="…${display_name: -$((MAX_LEN - 1))}"
+  fi
+  entries+=("#[fg=#5ef1ff]${idx}:#[fg=#7b8496]${display_name} ${session_icons[$session]}")
+done
+
+delim="  #[fg=#3b4252]|  "
+result=""
+for e in "${entries[@]}"; do
+  if [ -z "$result" ]; then
+    result="$e"
+  else
+    result="${result}${delim}${e}"
+  fi
+done
+
+echo -n "$result"

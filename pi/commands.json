@@ -1,0 +1,92 @@
+{
+    "diagnose-bugs": {
+        "provider": "github-copilot",
+        "model": "gemini-3.8-flash",
+        "thinkingLevel": "high",
+        "skill": "my-diagnose-bugs"
+    },
+    "feature": {
+        "provider": "github-copilot",
+        "model": "claude-sonnet-5",
+        "thinkingLevel": "high",
+        "skill": "my-feature"
+    },
+    "fix-pr": {
+        "provider": "github-copilot",
+        "model": "gpt-6-luna",
+        "thinkingLevel": "high",
+        "skill": "my-fix-pr"
+    },
+    "fix-notes": {
+        "provider": "github-copilot",
+        "model": "gpt-6-luna",
+        "thinkingLevel": "high",
+        "skill": "my-fix-notes"
+    },
+    "follow-up-plan": {
+        "provider": "github-copilot",
+        "model": "gemini-3.8-flash",
+        "thinkingLevel": "high",
+        "skill": "my-follow-up-plan"
+    },
+    "implement-tasks": {
+        "provider": "github-copilot",
+        "model": "gpt-6-luna",
+        "thinkingLevel": "medium",
+        "skill": "my-implement-tasks"
+    },
+    "open-pr": {
+        "provider": "github-copilot",
+        "model": "gpt-6-luna",
+        "thinkingLevel": "medium",
+        "skill": "my-open-pr"
+    },
+    "plan": {
+        "provider": "github-copilot",
+        "model": "gemini-3.8-flash",
+        "thinkingLevel": "high",
+        "skill": "my-plan"
+    },
+    "plan-to-tasks": {
+        "provider": "github-copilot",
+        "model": "gemini-3.8-flash",
+        "thinkingLevel": "high",
+        "skill": "my-plan-to-tasks"
+    },
+    "quick-plan": {
+        "provider": "github-copilot",
+        "model": "gemini-3.8-flash",
+        "thinkingLevel": "high",
+        "skill": "my-quick-plan"
+    },
+    "resolve-merge-conflicts": {
+        "provider": "github-copilot",
+        "model": "gemini-3.8-flash",
+        "thinkingLevel": "high",
+        "skill": "my-resolve-merge-conflicts"
+    },
+    "review": {
+        "provider": "github-copilot",
+        "model": "gpt-6-luna",
+        "thinkingLevel": "high",
+        "skill": "my-review"
+    },
+    "review-feature": {
+        "provider": "github-copilot",
+        "model": "gemini-3.8-flash",
+        "thinkingLevel": "high",
+        "skill": "my-review-feature"
+    },
+    "review-plan": {
+        "provider": "github-copilot",
+        "model": "gemini-3.8-flash",
+        "thinkingLevel": "high",
+        "skill": "my-review-plan"
+    },
+    "update-docs": {
+        "provider": "github-copilot",
+        "model": "gpt-6-luna",
+        "thinkingLevel": "high",
+        "skill": "my-update-docs"
+    }
+}
